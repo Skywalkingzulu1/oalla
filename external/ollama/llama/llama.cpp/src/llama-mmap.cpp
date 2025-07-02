@@ -10,6 +10,14 @@
 #include <cerrno>
 #include <algorithm>
 
+#ifdef __ANDROID__
+#include <unistd.h>
+#include <sys/mman.h>
+#define POSIX_MADV_WILLNEED 3
+#define POSIX_MADV_RANDOM 1
+#define posix_madvise(addr, len, advice) madvise(addr, len, advice)
+#endif
+
 #ifdef __has_include
     #if __has_include(<unistd.h>)
         #include <unistd.h>
