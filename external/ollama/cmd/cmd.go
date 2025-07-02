@@ -1271,12 +1271,47 @@ func generate(cmd *cobra.Command, opts runOptions) error {
 	return nil
 }
 
-func RunServer(_ *cobra.Command, _ []string) error {
+func RunServer(cmd *cobra.Command, _ []string) error {
+	// Map of flag name -> corresponding environment variable
+	flagToEnv := map[string]string{
+		"debug":             "OLLAMA_DEBUG",
+		"host":              "OLLAMA_HOST",
+		"keep-alive":        "OLLAMA_KEEP_ALIVE",
+		"max-loaded-models": "OLLAMA_MAX_LOADED_MODELS",
+		"max-queue":         "OLLAMA_MAX_QUEUE",
+		"models":            "OLLAMA_MODELS",
+		"num-parallel":      "OLLAMA_NUM_PARALLEL",
+		"noprune":           "OLLAMA_NOPRUNE",
+		"origins":           "OLLAMA_ORIGINS",
+		"sched-spread":      "OLLAMA_SCHED_SPREAD",
+		"flash-attention":   "OLLAMA_FLASH_ATTENTION",
+		"kv-cache-type":     "OLLAMA_KV_CACHE_TYPE",
+		"llm-library":       "OLLAMA_LLM_LIBRARY",
+		"gpu-overhead":      "OLLAMA_GPU_OVERHEAD",
+		"load-timeout":      "OLLAMA_LOAD_TIMEOUT",
+	}
+
+	for flagName, envKey := range flagToEnv {
+		flag := cmd.Flags().Lookup(flagName)
+		if flag == nil || !flag.Changed {
+			continue
+		}
+
+		val := flag.Value.String()
+		if val != "" {
+			_ = os.Setenv(envKey, val)
+		}
+	}
+
 	if err := initializeKeypair(); err != nil {
 		return err
 	}
 
-	ln, err := net.Listen("tcp", envconfig.Host().Host)
+	host := os.Getenv("OLLAMA_HOST")
+	if host == "" {
+		host = "127.0.0.1:11434" // default fallback
+	}
+	ln, err := net.Listen("tcp", host)
 	if err != nil {
 		return err
 	}
@@ -1471,6 +1506,22 @@ func NewCLI() *cobra.Command {
 		Args:    cobra.ExactArgs(0),
 		RunE:    RunServer,
 	}
+
+	serveCmd.Flags().Bool("debug", false, "Enable debug logging")
+	serveCmd.Flags().String("host", "", "Bind address for the server (e.g. 127.0.0.1:11434)")
+	serveCmd.Flags().String("keep-alive", "", "Duration to keep model loaded (e.g. 5m)")
+	serveCmd.Flags().Int("max-loaded-models", 0, "Maximum number of models to keep in memory")
+	serveCmd.Flags().Int("max-queue", 0, "Maximum number of queued requests")
+	serveCmd.Flags().String("models", "", "Path to model directory")
+	serveCmd.Flags().Int("num-parallel", 0, "Number of parallel model runners")
+	serveCmd.Flags().Bool("noprune", false, "Disable automatic pruning of unused models")
+	serveCmd.Flags().String("origins", "", "Comma-separated list of allowed CORS origins")
+	serveCmd.Flags().Bool("sched-spread", false, "Enable spread-based scheduling")
+	serveCmd.Flags().Bool("flash-attention", false, "Enable flash attention (if supported)")
+	serveCmd.Flags().String("kv-cache-type", "", "Type of KV cache to use (e.g. device, host)")
+	serveCmd.Flags().String("llm-library", "", "LLM library to use (e.g. ggml, llama.cpp)")
+	serveCmd.Flags().Float64("gpu-overhead", 0, "GPU overhead ratio")
+	serveCmd.Flags().Duration("load-timeout", 0, "Timeout duration for model loading")
 
 	pullCmd := &cobra.Command{
 		Use:     "pull MODEL",
