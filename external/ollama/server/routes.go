@@ -1215,6 +1215,14 @@ func (s *Server) GenerateRoutes(rc *ollama.Registry) (http.Handler, error) {
 	r.GET("/v1/models", openai.ListMiddleware(), s.ListHandler)
 	r.GET("/v1/models/:model", openai.RetrieveMiddleware(), s.ShowHandler)
 
+	// TODO: uset config style as ollama config
+	staticDir := os.Getenv("OLLAMA_WEB_STATIC_DIR")
+	if staticDir == "" {
+		staticDir = "./web" // fallback
+	}
+
+	r.Static("/web", staticDir)
+
 	if rc != nil {
 		// wrap old with new
 		rs := &registry.Local{
