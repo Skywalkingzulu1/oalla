@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ollama WhatsApp Style</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    .unallow-select {
+      /* Prevent text selection */
+      -webkit-user-select: none;
+      /* Safari */
+      -moz-user-select: none;
+      /* Firefox */
+      -ms-user-select: none;
+      /* IE10+/Edge */
+      user-select: none;
+      /* Standard */
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: #f0f2f5;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #075e54;
+      color: white;
+      padding: 1rem;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    header select {
+      font-size: 1rem;
+      padding: 0.3rem 0.5rem;
+      border-radius: 6px;
+      border: none;
+    }
+
+    .mobile-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      background-color: #f0f2f5;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .search-bar {
+      padding: 0.5rem;
+      background: white;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+    }
+
+    .chat-list {
+      flex: 1;
+      background: white;
+      overflow-y: auto;
+      border-top: 1px solid #ddd;
+    }
+
+    .chat-item {
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+
+    .chat-item:hover {
+      background: #f1f1f1;
+    }
+
+    .start-new {
+      padding: 1rem;
+      text-align: center;
+      font-style: italic;
+      cursor: pointer;
+      color: #0f766e;
+      background-color: #e0f2f1;
+      margin: 1rem;
+      border-radius: 10px;
+    }
+
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      background: #ece5dd;
+    }
+
+    .message-wrapper {
+      display: flex;
+      margin: 0.3rem 0.75rem;
+    }
+
+    .message-wrapper.user {
+      justify-content: flex-end;
+    }
+
+    .message-wrapper.assistant {
+      justify-content: flex-start;
+    }
+
+    .bubble {
+      max-width: 75%;
+      padding: 0.6rem 0.8rem;
+      border-radius: 12px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      word-break: break-word;
+    }
+
+    .message-wrapper.user .bubble {
+      background: #dcf8c6;
+      border-top-right-radius: 0;
+    }
+
+    .message-wrapper.assistant .bubble {
+      background: #ffffff;
+      border-top-left-radius: 0;
+    }
+
+    .text {
+      font-size: 0.95rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .meta {
+      font-size: 0.7rem;
+      text-align: right;
+      color: #555;
+    }
+
+    .input-area {
+      background: #fff;
+      border-top: 1px solid #ccc;
+      padding: 0.5rem 0.75rem;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: #f0f2f5;
+      border-radius: 24px;
+      padding-right: 2.5rem;
+      width: 100%;
+    }
+
+    .input-wrapper textarea {
+      flex: 1;
+      border: none;
+      background: transparent;
+      resize: none;
+      padding: 0.6rem 1rem;
+      font-size: 1rem;
+      border-radius: 24px;
+      min-height: 40px;
+      max-height: 100px;
+      outline: none;
+    }
+
+    .send-button {
+      position: absolute;
+      right: 0.3rem;
+      bottom: 0.3rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #25d366;
+      color: white;
+      border: none;
+      font-size: 1.2rem;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .send-button:hover {
+      background: #128c7e;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-around;
+      padding: 0.5rem;
+      background: white;
+      border-top: 1px solid #ccc;
+    }
+
+    .footer button {
+      flex: 1;
+      margin: 0 0.5rem;
+      border-radius: 6px;
+      border: none;
+      background: #128c7e;
+      color: white;
+      font-size: 1rem;
+      padding: 0.75rem;
+      cursor: pointer;
+    }
+
+    .footer button:hover {
+      background: #075e54;
+    }
+
+    .download-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      background: #f9fafb;
+    }
+
+    .progress {
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      color: #4b5563;
+      background: #f3f4f6;
+      padding: 0.5rem;
+      border-radius: 5px;
+      height: 80px;
+      overflow-y: auto;
+    }
+
+    .model-list {
+      margin-top: 1rem;
+    }
+
+    .model-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid #ccc;
+      background: white;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+
+    .model-item button {
+      background: #f87171;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+    }
+
+    .model-name {
+      font-size: 0.65rem;
+      color: #888;
+      display: inline-block;
+      margin-left: 4px;
+    }
+
+    .history-nav {
+      font-size: 0.65rem;
+      color: #999;
+    }
+
+    .model-change-button {
+      border: none;
+      background: none;
+      font-size: 0.75rem;
+      cursor: pointer;
+      margin-left: 0.4rem;
+      color: #888;
+    }
+
+    .model-change-button:hover {
+      color: #075e54;
+    }
+
+    .model-dropdown {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      z-index: 999;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      min-width: 140px;
+      white-space: nowrap;
+    }
+
+    .model-dropdown div {
+      padding: 0.4rem 0.75rem;
+      cursor: pointer;
+    }
+
+    .model-dropdown div:hover {
+      background-color: #e0f2f1;
+    }
+
+    .cancel-button {
+      border: none;
+      background: #f87171;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      align-self: flex-end;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="unallow-select">
+    🧠 Ollama
+    <select id="modelSelect" onchange="updateModelLabel()"
+      style="margin-left: 1rem; font-size: 1rem; padding: 0.2rem 0.5rem; border-radius: 6px;">
+    </select>
+  </header>
+  <div class="mobile-wrapper">
+    <div id="topicScreen" class="screen active">
+      <div class="search-bar" style="position: relative;">
+        <input id="searchInput" type="text" placeholder="Search chats..." oninput="onSearchInput(this)">
+        <button id="clearSearchBtn" onclick="clearSearch()" style="
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    font-size: 1rem;
+    cursor: pointer;
+    display: none;
+    color: #888;
+  ">❌</button>
+      </div>
+      <div class="chat-list" id="chatList">
+      </div>
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea id="quickInput" placeholder="Ask AI..." oninput="toggleQuickSend()"></textarea>
+          <button id="quickSendBtn" class="send-button" style="display: none;" onclick="quickSend()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="chatScreen" class="screen">
+      <div style="padding: 0.5rem; background: #fff; border-bottom: 1px solid #ccc;">
+        <button onclick="showScreen('topic')"
+          style="background:none;border:none;color:#075e54;font-size:1rem;cursor:pointer;">← Back</button>
+      </div>
+      <div class="chat-box" id="chatBox"></div>
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea id="userInput" placeholder="Type a message" oninput="toggleSendButton()"></textarea>
+          <button id="sendBtn" onclick="sendMessage()" class="send-button" style="display: none;">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="downloadScreen" class="screen">
+      <div class="download-area">
+        <label for="modelUrl">Model Name (e.g., deepseek-r1):</label>
+        <input type="text" id="modelUrl" placeholder="e.g. deepseek-r1">
+        <button onclick="downloadModel()">Pull Model</button>
+        <div class="progress" id="downloadProgress">Progress log will appear here...</div>
+        <div class="model-list" id="modelList"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button onclick="showScreen('topic')">💬 Chat</button>
+    <button onclick="showScreen('download')">⬇️ Model Download</button>
+  </div>
+
+  <div id="chatActionModal" class="unallow-select" style="
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  padding: 1rem;
+  z-index: 1000;
+">
+    <div id="modalTitle" style="font-weight: bold; margin-bottom: 1rem;"></div>
+    <button onclick="confirmPinAction()"
+      style="width:100%; padding: 0.75rem; margin-bottom: 0.5rem; background:#0f766e; color:white; border:none; border-radius:8px;">📌
+      Pin/Unpin Topic</button>
+    <button onclick="confirmDeleteAction()"
+      style="width:100%; padding: 0.75rem; background:#ef4444; color:white; border:none; border-radius:8px;">🗑 Delete
+      Topic</button>
+    <button onclick="closeModal()"
+      style="width:100%; margin-top:0.5rem; padding: 0.5rem; background:#f3f4f6; border:none; border-radius:8px;">Cancel</button>
+  </div>
+
+  <script>
+    let lastSearchQuery = '';
+    let longPressTriggered = false;
+    let selectedTopicId = null;
+    let pressTimer = null;
+    let pinnedTopics = JSON.parse(localStorage.getItem('pinnedTopics') || '[]');
+    let isGenerating = false;
+    let controller = null;
+    // Add global state to track edit mode
+    let editIndex = null;
+
+
+    let currentChatId = null;
+    let chats = JSON.parse(localStorage.getItem('ollamaChats') || '{}');
+    let currentAbortController = null;
+    const modelSelect = document.getElementById('modelSelect');
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.querySelector('.input-area button');
+
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+      if (name === 'topic') {
+        document.getElementById('topicScreen').classList.add('active');
+        const searchInput = document.querySelector('.search-bar input');
+        if (!lastSearchQuery) {
+          searchInput.value = '';
+          renderChatList();
+        } else {
+          searchInput.value = lastSearchQuery;
+          debounceSearch(() => searchChats(lastSearchQuery), 0);
+        }
+      }
+
+      if (name === 'chat') document.getElementById('chatScreen').classList.add('active');
+      if (name === 'download') document.getElementById('downloadScreen').classList.add('active');
+    }
+
+    // Update sendMessage to support editing
+    async function sendMessage() {
+      const content = userInput.value.trim();
+      if (!content || !currentChatId || isGenerating) return;
+
+      if (editIndex !== null) {
+        chats[currentChatId][editIndex].content = content;
+        chats[currentChatId][editIndex].timestamp = Date.now();
+        chats[currentChatId] = chats[currentChatId].slice(0, editIndex + 1);
+        editIndex = null;
+      } else {
+        chats[currentChatId].push({ role: 'user', content, timestamp: Date.now() });
+      }
+
+      userInput.value = '';
+      userInput.disabled = true;
+      sendBtn.disabled = true;
+      renderMessages();
+
+      const assistantDiv = document.createElement('div');
+      assistantDiv.className = 'message-wrapper assistant';
+      assistantDiv.innerHTML = `<div class="bubble"><div class="text"></div><div class="meta unallow-select">...</div></div>`;
+      chatBox.appendChild(assistantDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      const textDiv = assistantDiv.querySelector('.text');
+      let assistantText = '';
+      controller = new AbortController();
+      isGenerating = true;
+      const stopButton = appendStopButton(() => controller.abort(), assistantDiv);
+
+      try {
+        const response = await fetch(`/api/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ model: modelSelect.value, messages: chats[currentChatId], stream: true }),
+          signal: controller.signal
+        });
+
+        const reader = response.body.getReader();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = new TextDecoder().decode(value);
+          buffer += chunk;
+          const parts = buffer.split('\n');
+          buffer = parts.pop();
+          for (const part of parts) {
+            if (part.trim()) {
+              const json = JSON.parse(part);
+              const token = json.message?.content || '';
+              assistantText += token;
+              textDiv.textContent = assistantText;
+              chatBox.scrollTop = chatBox.scrollHeight;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Stream aborted or failed:', err);
+      } finally {
+        controller = null;
+        isGenerating = false;
+        stopButton?.remove();
+        userInput.disabled = false;
+        sendBtn.disabled = false;
+        chats[currentChatId].push({ role: 'assistant', content: assistantText, timestamp: Date.now(), model: modelSelect.value, history: [assistantText], selected: 0 });
+        saveChats();
+        renderMessages();
+      }
+    }
+
+    async function fetchModels() {
+      try {
+        const res = await fetch(`/api/tags`);
+        const data = await res.json();
+        modelSelect.innerHTML = "";
+        const modelList = document.getElementById('modelList');
+        modelList.innerHTML = '';
+
+        const savedModel = localStorage.getItem('selectedModel');
+        let modelExists = false;
+
+        data.models.forEach(model => {
+          const option = document.createElement("option");
+          option.value = model.name;
+          option.textContent = model.name;
+          if (model.name === savedModel) modelExists = true;
+          modelSelect.appendChild(option);
+
+          const div = document.createElement("div");
+          div.className = 'model-item';
+          div.innerHTML = `<span>${model.name}</span> <button onclick="deleteModel('${model.name}')">🗑</button>`;
+          modelList.appendChild(div);
+        });
+
+        if (modelExists) {
+          modelSelect.value = savedModel;
+        } else if (data.models.length > 0) {
+          modelSelect.value = data.models[0].name;
+        }
+
+        updateModelLabel();
+      } catch (err) {
+        console.error("Failed to fetch models", err);
+      }
+    }
+
+    async function deleteModel(name) {
+      if (!confirm(`Delete model: ${name}?`)) return;
+      try {
+        await fetch(`/api/delete`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name })
+        });
+        fetchModels();
+      } catch (err) {
+        alert("Failed to delete model.");
+      }
+    }
+
+    async function downloadModel() {
+      const name = document.getElementById('modelUrl').value.trim();
+      const progress = document.getElementById('downloadProgress');
+      if (!name) return alert("Enter model name");
+
+      progress.textContent = "Starting model pull...\n";
+      try {
+        const res = await fetch(`/api/pull`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name })
+        });
+        const reader = res.body.getReader();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = new TextDecoder().decode(value);
+          buffer += chunk;
+          const parts = buffer.split('\n');
+          buffer = parts.pop();
+          for (const part of parts) {
+            if (part.trim()) {
+              progress.textContent += part + "\n";
+              progress.scrollTop = progress.scrollHeight;
+            }
+          }
+        }
+        fetchModels();
+      } catch (err) {
+        progress.textContent += `\n❌ Error: ${err.message}`;
+      }
+    }
+
+    function formatTopicTime(ts) {
+      const now = new Date();
+      const date = new Date(ts);
+      const isToday = now.toDateString() === date.toDateString();
+      const isYesterday = new Date(now - 86400000).toDateString() === date.toDateString();
+
+      if (isToday) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      if (isYesterday) return 'Yesterday';
+      return date.toLocaleDateString('sv'); // YYYY/MM/DD
+    }
+
+    function renderChatList() {
+      const list = document.getElementById('chatList');
+      list.innerHTML = '';
+
+      const chatEntries = Object.entries(chats)
+        .map(([id, messages]) => {
+          const msgs = Array.isArray(messages) ? messages : messages.messages || [];
+          const lastMsg = msgs[msgs.length - 1];
+          return {
+            id,
+            time: lastMsg?.timestamp || 0,
+            pinned: pinnedTopics.includes(id)
+          };
+        })
+        .sort((a, b) => {
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
+          return b.time - a.time;
+        });
+
+      chatEntries.forEach(({ id, time }) => {
+        const item = document.createElement('div');
+        item.className = 'chat-item unallow-select';
+
+        const dateTimeLabel = formatRelativeDateTime(time);
+
+        item.innerHTML = `
+  <div style="display:flex; justify-content:space-between; align-items:center;">
+    <span>${extractTopicTitle(id)}</span>
+    ${pinnedTopics.includes(id) ? '<span style="font-size:1rem;">📌</span>' : ''}
+  </div>
+  <div style="font-size: 0.75rem; color: #555;">${dateTimeLabel}</div>
+`;
+        item.onmousedown = item.ontouchstart = (e) => {
+          longPressTriggered = false;
+          pressTimer = setTimeout(() => {
+            longPressTriggered = true;
+            selectedTopicId = id;
+            showModal(id);
+          }, 600);
+        };
+
+        item.onmouseup = item.ontouchend = item.onmouseleave = () => {
+          clearTimeout(pressTimer);
+        };
+        item.onclick = () => {
+          if (!longPressTriggered) selectChat(id);
+        };
+        list.appendChild(item);
+      });
+    }
+
+    function showModal(topicId) {
+      const modal = document.getElementById('chatActionModal');
+      document.getElementById('modalTitle').textContent = `Actions for: ${topicId}`;
+      modal.style.display = 'block';
+    }
+
+    function closeModal() {
+      document.getElementById('chatActionModal').style.display = 'none';
+      selectedTopicId = null;
+    }
+
+    function confirmPinAction() {
+      if (!selectedTopicId) return;
+      togglePin({ stopPropagation: () => { } }, selectedTopicId);
+      closeModal();
+    }
+
+    function confirmDeleteAction() {
+      if (!selectedTopicId) return;
+      if (confirm(`Are you sure to delete topic: ${selectedTopicId}?`)) {
+        delete chats[selectedTopicId];
+        pinnedTopics = pinnedTopics.filter(id => id !== selectedTopicId);
+        saveChats();
+        localStorage.setItem('pinnedTopics', JSON.stringify(pinnedTopics));
+        renderChatList();
+      }
+      closeModal();
+    }
+
+    function formatRelativeDateTime(ts) {
+      const date = new Date(ts);
+      const label = formatDateGroupLabel(date);
+      const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      return `${label} ${time}`;
+    }
+
+    function formatDateGroupLabel(dateInput) {
+      const now = new Date();
+      const date = new Date(dateInput);
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const yesterday = new Date(today);
+      yesterday.setDate(today.getDate() - 1);
+
+      const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+      if (compareDate.getTime() === today.getTime()) return 'Today';
+      if (compareDate.getTime() === yesterday.getTime()) return 'Yesterday';
+
+      return date.toLocaleDateString('sv'); // e.g. 2025/06/01
+    }
+
+    function selectChat(id) {
+      currentChatId = id;
+      showScreen('chat');
+      renderMessages();
+    }
+
+    function generateTopicTitle(message) {
+      const words = message.trim().split(/\s+/);
+      return words.length > 12 ? words.slice(0, 12).join(' ') + ' ...' : message;
+    }
+
+    function startNewTopic(message) {
+      const topic = generateTopicTitle(message || 'New Chat');
+      const id = topic + ' #' + Date.now(); // Unique ID
+      chats[id] = [];
+      currentChatId = id;
+      chatBox.innerHTML = '';
+      showScreen('chat');
+    }
+
+    function extractTopicTitle(id) {
+      return id.split(' #')[0];
+    }
+
+    function formatTime(ts) {
+      const d = new Date(ts);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Update renderMessages to add edit button for user messages
+    function renderMessages(callback = null) {
+      chatBox.innerHTML = '';
+      if (!currentChatId || !chats[currentChatId]) return;
+      let lastDateLabel = '';
+
+      chats[currentChatId].forEach((msg, i) => {
+        const msgDate = new Date(msg.timestamp || Date.now());
+        const dateLabel = formatDateGroupLabel(msgDate);
+
+        if (dateLabel !== lastDateLabel) {
+          const dateDiv = document.createElement('div');
+          dateDiv.textContent = `----- ${dateLabel} -----`;
+          dateDiv.style = 'text-align: center; color: #666; font-size: 0.8rem; margin: 1rem 0;';
+          chatBox.appendChild(dateDiv);
+          lastDateLabel = dateLabel;
+        }
+
+        const div = document.createElement('div');
+        div.className = 'message-wrapper ' + msg.role;
+        div.dataset.index = i;
+
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+
+        const text = document.createElement('div');
+        text.className = 'text';
+        const selected = msg.selected ?? 0;
+        text.textContent = msg.history?.[selected] || msg.content;
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const time = new Date(msg.timestamp || Date.now()).toLocaleTimeString([], {
+          hour: '2-digit', minute: '2-digit',
+        });
+
+        let actualModel = msg.model;
+        if (Array.isArray(msg.history) && msg.history.length > 1 && Array.isArray(msg.historyModels)) {
+          actualModel = msg.historyModels?.[selected] || msg.model;
+        }
+
+        let modelName = actualModel ? `<span class="model-name">| ${actualModel}</span>` : '';
+
+        const historyCount = msg.history?.length > 1
+          ? `<span class="history-nav">
+          <button onclick="navigateHistory(${i}, -1)">⬅️</button>
+          ${selected + 1} / ${msg.history.length}
+          <button onclick="navigateHistory(${i}, 1)">➡️</button>
+        </span>`
+          : '';
+
+        let rightAction = '';
+        if (msg.role === 'assistant') {
+          rightAction = `<span class="model-change-button" onclick="showModelDropdown(${i}, this)">🔁</span>
+      <div class="model-dropdown" id="modelDropdown-${i}" style="display:none;"></div>`;
+        } else if (msg.role === 'user') {
+          rightAction = `<span class="model-change-button" onclick="editMessage(${i})">✏️</span>`;
+        }
+
+        meta.innerHTML = `${time} ${modelName} ${rightAction} ${historyCount}`;
+        bubble.appendChild(text);
+        bubble.appendChild(meta);
+        div.appendChild(bubble);
+        chatBox.appendChild(div);
+
+        if (typeof callback === 'function') callback();
+      });
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function editMessage(index) {
+      const msg = chats[currentChatId][index];
+      if (!msg || msg.role !== 'user') return;
+
+      userInput.value = msg.content;
+      toggleSendButton();
+      editIndex = index;
+    }
+
+    // When appending new history version, store model for each
+    function changeModel(index, newModel) {
+      const msg = chats[currentChatId][index];
+      if (!newModel || newModel === (msg.model || modelSelect.value)) return;
+
+      const messagesUntilNow = chats[currentChatId].slice(0, index);
+      msg.history = msg.history || [msg.content];
+      msg.historyModels = msg.historyModels || [msg.model];
+      msg.history.push('');
+      msg.historyModels.push(newModel);
+      msg.selected = msg.history.length - 1;
+      msg.model = newModel;
+      renderMessages();
+
+      const targetDiv = document.querySelector(`.message-wrapper.assistant[data-index="${index}"]`);
+      const textDiv = targetDiv.querySelector('.text');
+      if (textDiv) textDiv.textContent = '';
+
+      controller = new AbortController();
+      isGenerating = true;
+      const stopButton = appendStopButton(() => controller.abort(), targetDiv);
+
+      fetch(`/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({ model: newModel, messages: messagesUntilNow, stream: true })
+      }).then(res => {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '', assistantText = '';
+
+        return (async () => {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value);
+            buffer += chunk;
+            const parts = buffer.split('\n');
+            buffer = parts.pop();
+            for (const part of parts) {
+              if (part.trim()) {
+                const parsed = JSON.parse(part);
+                const token = parsed.message?.content || '';
+                assistantText += token;
+                msg.history[msg.selected] = assistantText;
+                textDiv.textContent = assistantText;
+                chatBox.scrollTop = chatBox.scrollHeight;
+              }
+            }
+          }
+        })();
+      }).catch(err => {
+        if (err.name !== 'AbortError') console.warn('Model change stream failed:', err);
+      }).finally(() => {
+        controller = null;
+        isGenerating = false;
+        stopButton?.remove();
+        saveChats();
+        renderMessages();
+      });
+    }
+
+    function stopGenerating() {
+      if (controller) {
+        controller.abort();
+        controller = null;
+        isGenerating = false;
+        renderMessages();
+      }
+    }
+
+    function saveChats() {
+      localStorage.setItem('ollamaChats', JSON.stringify(chats));
+    }
+
+    let searchDebounceTimer = null;
+
+    function onSearchInput(inputElem) {
+      const clearBtn = document.getElementById('clearSearchBtn');
+      const value = inputElem.value.trim();
+      clearBtn.style.display = value ? 'block' : 'none';
+      debounceSearch(() => searchChats(value));
+    }
+
+    function clearSearch() {
+      const input = document.getElementById('searchInput');
+      const clearBtn = document.getElementById('clearSearchBtn');
+      input.value = '';
+      clearBtn.style.display = 'none';
+      lastSearchQuery = '';
+      renderChatList(); // restore default
+    }
+
+    function debounceSearch(fn, delay = 300) {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(fn, delay);
+    }
+
+    function searchChats(query) {
+      const list = document.getElementById('chatList');
+      list.innerHTML = '';
+
+      query = query.trim().toLowerCase();
+      lastSearchQuery = query;
+
+      if (!query) {
+        renderChatList(); // fallback to topic list
+        return;
+      }
+
+      const results = [];
+
+      Object.entries(chats).forEach(([chatId, messages]) => {
+        messages.forEach((msg, index) => {
+          if (msg.content?.toLowerCase().includes(query)) {
+            results.push({
+              chatId,
+              index,
+              content: msg.content,
+              timestamp: msg.timestamp || 0,
+            });
+          }
+        });
+      });
+
+      results.sort((a, b) => b.timestamp - a.timestamp);
+
+      results.forEach(res => {
+        const item = document.createElement('div');
+        item.className = 'chat-item unallow-select';
+
+        const preview = res.content.length > 80
+          ? res.content.slice(0, 77) + '...'
+          : res.content;
+
+        item.innerHTML = `
+      <div style="font-weight:500;">${extractTopicTitle(res.chatId)}</div>
+      <div style="font-size:0.85rem; color:#444;">${preview}</div>
+      <div style="font-size:0.7rem; color:#888;">${formatRelativeDateTime(res.timestamp)}</div>
+    `;
+
+        item.onclick = () => {
+          currentChatId = res.chatId;
+          showScreen('chat');
+          renderMessages(() => {
+            setTimeout(() => scrollToMessage(res.index), 100); // ensure DOM is ready
+          });
+        };
+
+        list.appendChild(item);
+      });
+
+      if (results.length === 0) {
+        list.innerHTML = '<div style="padding: 1rem; color: #999;">No matches found</div>';
+      }
+    }
+
+    function scrollToMessage(index) {
+      const msgDiv = chatBox.querySelector(`.message-wrapper[data-index="${index}"]`);
+      if (msgDiv) {
+        msgDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        msgDiv.style.background = '#fffbcc';
+        setTimeout(() => msgDiv.style.background = '', 1500); // highlight briefly
+      }
+    }
+
+    fetchModels();
+    renderChatList();
+
+    function toggleSendButton() {
+      const btn = document.getElementById('sendBtn');
+      btn.style.display = userInput.value.trim() ? 'inline-flex' : 'none';
+    }
+
+    function updateModelLabel() {
+      const select = document.getElementById('modelSelect');
+      const label = document.getElementById('modelNameLabel');
+      if (label) label.textContent = select.value || 'Unknown';
+      localStorage.setItem('selectedModel', select.value);
+    }
+
+    function toggleQuickSend() {
+      const btn = document.getElementById('quickSendBtn');
+      btn.style.display = document.getElementById('quickInput').value.trim() ? 'flex' : 'none';
+    }
+
+    function quickSend() {
+      const input = document.getElementById('quickInput');
+      const message = input.value.trim();
+      if (!message) return;
+
+      startNewTopic(message);
+      input.value = '';
+      toggleQuickSend();
+      saveChats();
+
+      // Copy user message to the main input and trigger send
+      document.getElementById('userInput').value = message;
+      toggleSendButton();
+
+      showScreen('chat');
+      renderMessages();
+      sendMessage(); // only this will push the message
+    }
+
+    function showModelDropdown(index, buttonElem) {
+      const dropdown = document.getElementById(`modelDropdown-${index}`);
+      dropdown.innerHTML = '';
+
+      const models = Array.from(modelSelect.options).map(opt => opt.value);
+
+      models.forEach(model => {
+        const item = document.createElement('div');
+        item.textContent = model;
+        item.onclick = () => {
+          changeModel(index, model);
+          dropdown.style.display = 'none';
+        };
+        dropdown.appendChild(item);
+      });
+
+      const parent = buttonElem.closest('.meta');
+      parent.style.position = 'relative';
+
+      dropdown.style.left = `${buttonElem.offsetLeft}px`;
+      dropdown.style.top = `${buttonElem.offsetTop + buttonElem.offsetHeight + 4}px`;
+      dropdown.style.display = 'block';
+    }
+
+    function navigateHistory(index, direction) {
+      const msg = chats[currentChatId][index];
+      if (!msg.history || msg.history.length < 2) return;
+
+      msg.selected = (msg.selected + direction + msg.history.length) % msg.history.length;
+      saveChats();
+      renderMessages();
+    }
+
+    function togglePin(e, id) {
+      e.stopPropagation();
+      if (pinnedTopics.includes(id)) {
+        pinnedTopics = pinnedTopics.filter(p => p !== id);
+      } else {
+        pinnedTopics.push(id);
+      }
+      localStorage.setItem('pinnedTopics', JSON.stringify(pinnedTopics));
+      renderChatList();
+    }
+
+    function appendStopButton(abortFn, targetDiv = null) {
+      const existing = document.getElementById('stopButton');
+      if (existing) existing.remove();
+
+      const wrapper = targetDiv || [...chatBox.querySelectorAll('.message-wrapper.assistant')].pop();
+      if (!wrapper) return;
+      const bubble = wrapper.querySelector('.bubble');
+      if (!bubble) return;
+
+      const stopButton = document.createElement('button');
+      stopButton.id = 'stopButton';
+      stopButton.className = 'cancel-button';
+      stopButton.textContent = '⛔ Stop';
+      stopButton.onclick = abortFn;
+      bubble.appendChild(stopButton);
+      return stopButton;
+    }
+
+    document.addEventListener('click', function (e) {
+      const allDropdowns = document.querySelectorAll('.model-dropdown');
+      allDropdowns.forEach(dropdown => {
+        const button = dropdown.previousElementSibling; // the 🔁 button
+        if (!dropdown.contains(e.target) && !button.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
