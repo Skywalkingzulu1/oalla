@@ -19,6 +19,12 @@ import (
 const defaultPrivateKey = "id_ed25519"
 
 func keyPath() (string, error) {
+	// Use OLLAMA_MODELS as base if set
+	base := os.Getenv("OLLAMA_MODELS")
+	if base != "" {
+		return filepath.Join(base, defaultPrivateKey), nil
+	}
+
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
