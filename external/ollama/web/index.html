@@ -4,35 +4,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ollama WotsApp Style</title>
+  <title>Oalla Chat</title>
   <style>
+    /* === CSS Variables === */
+    :root {
+      --primary-color: #075e54;
+      --primary-dark: #054d44;
+      --primary-light: #128c7e;
+      --secondary-color: #25d366;
+      --secondary-dark: #1fb855;
+      --danger-color: #ef4444;
+      --warning-color: #f59e0b;
+      --background: #f0f2f5;
+      --surface: #ffffff;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
+      --border-color: #e5e7eb;
+      --user-bubble: #dcf8c6;
+      --assistant-bubble: #ffffff;
+      --chat-background: #e5ddd5;
+    }
+
+    /* === Reset === */
     * {
       box-sizing: border-box;
     }
 
     .unallow-select {
-      /* Prevent text selection */
       -webkit-user-select: none;
-      /* Safari */
       -moz-user-select: none;
-      /* Firefox */
       -ms-user-select: none;
-      /* IE10+/Edge */
       user-select: none;
-      /* Standard */
     }
 
     body {
       margin: 0;
-      font-family: system-ui, sans-serif;
-      background: #f0f2f5;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--background);
       height: 100vh;
       display: flex;
       flex-direction: column;
     }
 
+    /* === Header === */
     header {
-      background: #075e54;
+      background: var(--primary-color);
       color: white;
       padding: 1rem;
       font-size: 1.25rem;
@@ -40,15 +57,27 @@
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
     }
 
     header select {
-      font-size: 1rem;
-      padding: 0.3rem 0.5rem;
+      font-size: 0.875rem;
+      padding: 0.4rem 0.8rem;
       border-radius: 6px;
       border: none;
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--text-primary);
+      cursor: pointer;
     }
 
+    /* === Mobile Wrapper === */
     .mobile-wrapper {
       flex: 1;
       display: flex;
@@ -57,6 +86,7 @@
       overflow: hidden;
     }
 
+    /* === Screens === */
     .screen {
       position: absolute;
       top: 0;
@@ -65,63 +95,131 @@
       height: 100%;
       display: none;
       flex-direction: column;
-      background-color: #f0f2f5;
+      background-color: var(--background);
     }
 
     .screen.active {
       display: flex;
     }
 
+    /* === Search Bar === */
     .search-bar {
-      padding: 0.5rem;
-      background: white;
+      padding: 0.75rem;
+      background: var(--surface);
+      position: relative;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .search-bar input {
       width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 20px;
+      padding: 0.625rem 2.5rem 0.625rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      font-size: 0.875rem;
+      outline: none;
+      transition: all 0.2s;
     }
 
+    .search-bar input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(7, 94, 84, 0.1);
+    }
+
+    #clearSearchBtn {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: none;
+      font-size: 1rem;
+      cursor: pointer;
+      display: none;
+      color: var(--text-tertiary);
+      padding: 0.25rem;
+      border-radius: 50%;
+      transition: all 0.2s;
+    }
+
+    #clearSearchBtn:hover {
+      color: var(--text-secondary);
+      background: var(--background);
+    }
+
+    /* === Chat List === */
     .chat-list {
       flex: 1;
-      background: white;
+      background: var(--surface);
       overflow-y: auto;
-      border-top: 1px solid #ddd;
+      border-top: 1px solid var(--border-color);
     }
 
     .chat-item {
       padding: 1rem;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--border-color);
       cursor: pointer;
+      transition: background 0.2s;
     }
 
     .chat-item:hover {
-      background: #f1f1f1;
+      background: #f8f9fa;
     }
 
-    .start-new {
-      padding: 1rem;
-      text-align: center;
-      font-style: italic;
+    .chat-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+
+    .chat-item-title {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .chat-item-time {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin-top: 0.25rem;
+    }
+
+    /* === Chat Header === */
+    .chat-header {
+      padding: 0.75rem 1rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .back-button {
+      background: none;
+      border: none;
+      color: var(--primary-color);
+      font-size: 1.25rem;
       cursor: pointer;
-      color: #0f766e;
-      background-color: #e0f2f1;
-      margin: 1rem;
-      border-radius: 10px;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: background 0.2s;
     }
 
+    .back-button:hover {
+      background: var(--background);
+    }
+
+    /* === Chat Box === */
     .chat-box {
       flex: 1;
       overflow-y: auto;
       padding: 1rem;
-      background: #ece5dd;
+      background: var(--chat-background);
     }
 
+    /* === Messages === */
     .message-wrapper {
       display: flex;
-      margin: 0.3rem 0.75rem;
+      margin: 0.8rem 0;
     }
 
     .message-wrapper.user {
@@ -140,32 +238,39 @@
       display: flex;
       flex-direction: column;
       word-break: break-word;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
     .message-wrapper.user .bubble {
-      background: #dcf8c6;
-      border-top-right-radius: 0;
+      background: var(--user-bubble);
+      border-bottom-right-radius: 4px;
     }
 
     .message-wrapper.assistant .bubble {
-      background: #ffffff;
-      border-top-left-radius: 0;
+      background: var(--assistant-bubble);
+      border-bottom-left-radius: 4px;
     }
 
     .text {
-      font-size: 0.95rem;
+      font-size: 0.9375rem;
       margin-bottom: 0.3rem;
+      line-height: 1.4;
     }
 
     .meta {
       font-size: 0.7rem;
       text-align: right;
-      color: #555;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
+    /* === Input Area === */
     .input-area {
-      background: #fff;
-      border-top: 1px solid #ccc;
+      background: var(--surface);
+      border-top: 1px solid var(--border-color);
       padding: 0.5rem 0.75rem;
     }
 
@@ -173,10 +278,15 @@
       position: relative;
       display: flex;
       align-items: center;
-      background: #f0f2f5;
+      background: var(--background);
       border-radius: 24px;
       padding-right: 2.5rem;
       width: 100%;
+      border: 1px solid var(--border-color);
+    }
+
+    .input-wrapper:focus-within {
+      border-color: var(--primary-color);
     }
 
     .input-wrapper textarea {
@@ -190,6 +300,7 @@
       min-height: 40px;
       max-height: 100px;
       outline: none;
+      font-family: inherit;
     }
 
     .send-button {
@@ -199,7 +310,7 @@
       width: 36px;
       height: 36px;
       border-radius: 50%;
-      background: #25d366;
+      background: var(--secondary-color);
       color: white;
       border: none;
       font-size: 1.2rem;
@@ -207,79 +318,155 @@
       justify-content: center;
       align-items: center;
       cursor: pointer;
+      transition: all 0.2s;
     }
 
     .send-button:hover {
-      background: #128c7e;
+      background: var(--secondary-dark);
+      transform: scale(1.05);
     }
 
+    /* === Footer === */
     .footer {
       display: flex;
       justify-content: space-around;
       padding: 0.5rem;
-      background: white;
-      border-top: 1px solid #ccc;
+      background: var(--surface);
+      border-top: 1px solid var(--border-color);
     }
 
     .footer button {
       flex: 1;
       margin: 0 0.5rem;
-      border-radius: 6px;
+      border-radius: 8px;
       border: none;
-      background: #128c7e;
-      color: white;
-      font-size: 1rem;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
       padding: 0.75rem;
       cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
     }
 
     .footer button:hover {
-      background: #075e54;
+      background: var(--background);
+      color: var(--primary-color);
     }
 
+    .footer button.active {
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .footer button span:first-child {
+      font-size: 1.25rem;
+    }
+
+    /* === Download Area === */
     .download-area {
       flex: 1;
       display: flex;
       flex-direction: column;
       padding: 1rem;
-      background: #f9fafb;
+      background: var(--surface);
+      overflow-y: auto;
+    }
+
+    .download-area h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .download-area label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .download-area input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      outline: none;
+    }
+
+    .download-area input:focus {
+      border-color: var(--primary-color);
+    }
+
+    .download-area button {
+      padding: 0.75rem;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .download-area button:hover {
+      background: var(--primary-dark);
     }
 
     .progress {
       font-size: 0.8rem;
-      margin-top: 0.5rem;
-      color: #4b5563;
-      background: #f3f4f6;
-      padding: 0.5rem;
-      border-radius: 5px;
-      height: 80px;
+      margin-top: 1rem;
+      color: #0f0;
+      background: #1a1a1a;
+      padding: 1rem;
+      border-radius: 8px;
+      height: 120px;
       overflow-y: auto;
+      font-family: monospace;
+      white-space: pre-wrap;
     }
 
     .model-list {
-      margin-top: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .model-list h3 {
+      margin-bottom: 0.75rem;
+      color: var(--text-primary);
     }
 
     .model-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.5rem 1rem;
-      border-bottom: 1px solid #ccc;
-      background: white;
-      border-radius: 6px;
-      margin-top: 0.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--background);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
     }
 
     .model-item button {
-      background: #f87171;
+      background: var(--danger-color);
       color: white;
       border: none;
-      border-radius: 4px;
-      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      padding: 0.375rem 0.75rem;
       cursor: pointer;
+      font-size: 0.875rem;
+      transition: background 0.2s;
     }
 
+    .model-item button:hover {
+      background: #dc2626;
+    }
+
+    /* === Model & History === */
     .model-name {
       font-size: 0.65rem;
       color: #888;
@@ -290,6 +477,9 @@
     .history-nav {
       font-size: 0.65rem;
       color: #999;
+      background: rgba(0, 0, 0, 0.05);
+      padding: 0.125rem 0.375rem;
+      border-radius: 12px;
     }
 
     .model-change-button {
@@ -299,496 +489,660 @@
       cursor: pointer;
       margin-left: 0.4rem;
       color: #888;
+      padding: 0.125rem;
     }
 
     .model-change-button:hover {
-      color: #075e54;
+      color: var(--primary-color);
     }
 
     .model-dropdown {
       position: absolute;
       background: white;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
       font-size: 0.8rem;
       z-index: 999;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       min-width: 140px;
       white-space: nowrap;
     }
 
     .model-dropdown div {
-      padding: 0.4rem 0.75rem;
+      padding: 0.5rem 0.75rem;
       cursor: pointer;
     }
 
     .model-dropdown div:hover {
-      background-color: #e0f2f1;
+      background-color: #f5f5f5;
+    }
+
+    .model-dropdown div:first-child {
+      border-radius: 8px 8px 0 0;
+    }
+
+    .model-dropdown div:last-child {
+      border-radius: 0 0 8px 8px;
     }
 
     .cancel-button {
       border: none;
-      background: #f87171;
+      background: var(--danger-color);
       color: white;
-      padding: 4px 10px;
+      padding: 0.375rem 0.75rem;
       border-radius: 6px;
       cursor: pointer;
       font-size: 0.75rem;
       align-self: flex-end;
+      margin-top: 0.5rem;
+      width: 100%;
+    }
+
+    /* === Modal === */
+    #chatActionModal {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      padding: 1.5rem 1rem;
+      z-index: 1000;
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    #modalTitle {
+      font-weight: bold;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    #chatActionModal button {
+      width: 100%;
+      padding: 0.875rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    #chatActionModal button:not(:last-child) {
+      margin-bottom: 0.5rem;
+    }
+
+    /* === Date Divider === */
+    .date-divider {
+      text-align: center;
+      color: #666;
+      font-size: 0.8rem;
+      margin: 1rem 0;
+      position: relative;
+    }
+
+    .date-divider::before,
+    .date-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 36%;
+      height: 1px;
+      background: rgba(0, 0, 0, 0.1);
+    }
+
+    .date-divider::before {
+      left: 0;
+    }
+
+    .date-divider::after {
+      right: 0;
+    }
+
+    /* === Empty State === */
+    .empty-state {
+      padding: 3rem 2rem;
+      text-align: center;
+      color: var(--text-tertiary);
+    }
+
+    /* === Scrollbar === */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
     }
   </style>
 </head>
 
 <body>
   <header class="unallow-select">
-    🧠 Ollama
-    <select id="modelSelect" onchange="updateModelLabel()"
-      style="margin-left: 1rem; font-size: 1rem; padding: 0.2rem 0.5rem; border-radius: 6px;">
-    </select>
+    <div class="logo">
+      <span>🤖</span>
+      <span>Oalla</span>
+    </div>
+    <select id="modelSelect" onchange="updateModelLabel()"></select>
   </header>
+
   <div class="mobile-wrapper">
+    <!-- Topic Screen -->
     <div id="topicScreen" class="screen active">
-      <div class="search-bar" style="position: relative;">
-        <input id="searchInput" type="text" placeholder="Search chats..." oninput="onSearchInput(this)">
-        <button id="clearSearchBtn" onclick="clearSearch()" style="
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    border: none;
-    background: none;
-    font-size: 1rem;
-    cursor: pointer;
-    display: none;
-    color: #888;
-  ">❌</button>
+      <div class="search-bar">
+        <input id="searchInput" type="text" placeholder="Search conversations..." oninput="onSearchInput(this)">
+        <button id="clearSearchBtn" onclick="clearSearch()">✕</button>
       </div>
-      <div class="chat-list" id="chatList">
-      </div>
+      <div class="chat-list" id="chatList"></div>
       <div class="input-area">
         <div class="input-wrapper">
-          <textarea id="quickInput" placeholder="Ask AI..." oninput="toggleQuickSend()"></textarea>
-          <button id="quickSendBtn" class="send-button" style="display: none;" onclick="quickSend()">➤</button>
+          <textarea id="quickInput" placeholder="Start a new chat..." oninput="toggleQuickSend()"></textarea>
+          <button id="quickSendBtn" class="send-button" onclick="quickSend()">➤</button>
         </div>
       </div>
     </div>
 
+    <!-- Chat Screen -->
     <div id="chatScreen" class="screen">
-      <div style="padding: 0.5rem; background: #fff; border-bottom: 1px solid #ccc;">
-        <button onclick="showScreen('topic')"
-          style="background:none;border:none;color:#075e54;font-size:1rem;cursor:pointer;">← Back</button>
+      <div class="chat-header">
+        <button class="back-button" onclick="showScreen('topic')">←</button>
+        <span style="flex: 1; font-weight: 500;">Chat</span>
       </div>
       <div class="chat-box" id="chatBox"></div>
       <div class="input-area">
         <div class="input-wrapper">
           <textarea id="userInput" placeholder="Type a message" oninput="toggleSendButton()"></textarea>
-          <button id="sendBtn" onclick="sendMessage()" class="send-button" style="display: none;">➤</button>
+          <button id="sendBtn" onclick="sendMessage()" class="send-button">➤</button>
         </div>
       </div>
     </div>
 
+    <!-- Download Screen -->
     <div id="downloadScreen" class="screen">
       <div class="download-area">
-        <label for="modelUrl">Model Name (e.g., deepseek-r1):</label>
-        <input type="text" id="modelUrl" placeholder="e.g. deepseek-r1">
+        <h2>Model Management</h2>
+        <label for="modelUrl">Model Name</label>
+        <input type="text" id="modelUrl" placeholder="e.g. llama3, deepseek-r1">
         <button onclick="downloadModel()">Pull Model</button>
-        <div class="progress" id="downloadProgress">Progress log will appear here...</div>
-        <div class="model-list" id="modelList"></div>
+        <div class="progress" id="downloadProgress">Ready to download...</div>
+        <div class="model-list">
+          <h3>Installed Models</h3>
+          <div id="modelList"></div>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="footer">
-    <button onclick="showScreen('topic')">💬 Chat</button>
-    <button onclick="showScreen('download')">⬇️ Model Download</button>
+    <button id="navChat" class="active" onclick="showScreen('topic')">
+      <span>💬</span>
+      <span>Chats</span>
+    </button>
+    <button id="navModels" onclick="showScreen('download')">
+      <span>📦</span>
+      <span>Models</span>
+    </button>
   </div>
 
-  <div id="chatActionModal" class="unallow-select" style="
-  display: none;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  padding: 1rem;
-  z-index: 1000;
-">
-    <div id="modalTitle" style="font-weight: bold; margin-bottom: 1rem;"></div>
-    <button onclick="confirmPinAction()"
-      style="width:100%; padding: 0.75rem; margin-bottom: 0.5rem; background:#0f766e; color:white; border:none; border-radius:8px;">📌
-      Pin/Unpin Topic</button>
-    <button onclick="confirmDeleteAction()"
-      style="width:100%; padding: 0.75rem; background:#ef4444; color:white; border:none; border-radius:8px;">🗑 Delete
-      Topic</button>
-    <button onclick="closeModal()"
-      style="width:100%; margin-top:0.5rem; padding: 0.5rem; background:#f3f4f6; border:none; border-radius:8px;">Cancel</button>
+  <!-- Chat Action Modal -->
+  <div id="chatActionModal" class="unallow-select">
+    <div id="modalTitle"></div>
+    <button onclick="confirmPinAction()" style="background:#0f766e; color:white;">
+      📌 Pin/Unpin Topic
+    </button>
+    <button onclick="confirmDeleteAction()" style="background:#ef4444; color:white;">
+      🗑️ Delete Topic
+    </button>
+    <button onclick="closeModal()" style="background:#f3f4f6; color:#333;">
+      Cancel
+    </button>
   </div>
 
   <script>
-    let lastSearchQuery = '';
-    let longPressTriggered = false;
-    let selectedTopicId = null;
-    let pressTimer = null;
-    let pinnedTopics = JSON.parse(localStorage.getItem('pinnedTopics') || '[]');
-    let isGenerating = false;
-    let controller = null;
-    // Add global state to track edit mode
-    let editIndex = null;
+    // === Application State ===
+    const AppState = {
+      currentChatId: null,
+      chats: JSON.parse(localStorage.getItem('oallaChats') || '{}'),
+      pinnedTopics: JSON.parse(localStorage.getItem('pinnedTopics') || '[]'),
+      isGenerating: false,
+      controller: null,
+      editIndex: null,
+      lastSearchQuery: '',
+      selectedTopicId: null,
+      longPressTimer: null,
+      searchDebounceTimer: null
+    };
 
+    // === Configuration ===
+    const Config = {
+      API_ENDPOINTS: {
+        CHAT: '/api/chat',
+        TAGS: '/api/tags',
+        DELETE: '/api/delete',
+        PULL: '/api/pull'
+      },
+      LONG_PRESS_DURATION: 600,
+      SEARCH_DEBOUNCE_DELAY: 300,
+      MESSAGE_PREVIEW_LENGTH: 80,
+      TOPIC_TITLE_MAX_WORDS: 12
+    };
 
-    let currentChatId = null;
-    let chats = JSON.parse(localStorage.getItem('ollamaChats') || '{}');
-    let currentAbortController = null;
-    const modelSelect = document.getElementById('modelSelect');
-    const chatBox = document.getElementById('chatBox');
-    const userInput = document.getElementById('userInput');
-    const sendBtn = document.querySelector('.input-area button');
+    // === DOM Elements Cache ===
+    const DOM = {
+      get modelSelect() { return document.getElementById('modelSelect'); },
+      get chatBox() { return document.getElementById('chatBox'); },
+      get userInput() { return document.getElementById('userInput'); },
+      get sendBtn() { return document.getElementById('sendBtn'); },
+      get searchInput() { return document.getElementById('searchInput'); },
+      get clearSearchBtn() { return document.getElementById('clearSearchBtn'); },
+      get quickInput() { return document.getElementById('quickInput'); },
+      get quickSendBtn() { return document.getElementById('quickSendBtn'); },
+      get chatList() { return document.getElementById('chatList'); },
+      get modelList() { return document.getElementById('modelList'); },
+      get downloadProgress() { return document.getElementById('downloadProgress'); },
+      get modelUrl() { return document.getElementById('modelUrl'); },
+      get modal() { return document.getElementById('chatActionModal'); },
+      get modalTitle() { return document.getElementById('modalTitle'); }
+    };
 
-    function showScreen(name) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    // === API Service ===
+    const API = {
+      async fetchModels() {
+        try {
+          const response = await fetch(Config.API_ENDPOINTS.TAGS);
+          const data = await response.json();
+          return data.models || [];
+        } catch (error) {
+          console.error('Failed to fetch models:', error);
+          return [];
+        }
+      },
 
-      if (name === 'topic') {
-        document.getElementById('topicScreen').classList.add('active');
-        const searchInput = document.querySelector('.search-bar input');
-        if (!lastSearchQuery) {
-          searchInput.value = '';
-          renderChatList();
+      async deleteModel(name) {
+        try {
+          await fetch(Config.API_ENDPOINTS.DELETE, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+          });
+          return true;
+        } catch (error) {
+          console.error('Failed to delete model:', error);
+          return false;
+        }
+      },
+
+      async pullModel(name) {
+        const response = await fetch(Config.API_ENDPOINTS.PULL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+        return response.body.getReader();
+      },
+
+      async createChatStream(model, messages, signal) {
+        const response = await fetch(Config.API_ENDPOINTS.CHAT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model, messages, stream: true }),
+          signal
+        });
+        return response.body.getReader();
+      }
+    };
+
+    // === Storage Manager ===
+    const Storage = {
+      saveChats() {
+        localStorage.setItem('oallaChats', JSON.stringify(AppState.chats));
+      },
+
+      savePinnedTopics() {
+        localStorage.setItem('pinnedTopics', JSON.stringify(AppState.pinnedTopics));
+      },
+
+      saveSelectedModel(model) {
+        localStorage.setItem('selectedModel', model);
+      },
+
+      getSelectedModel() {
+        return localStorage.getItem('selectedModel');
+      }
+    };
+
+    // === Utility Functions ===
+    const Utils = {
+      formatTime(timestamp) {
+        return new Date(timestamp).toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      },
+
+      formatDateLabel(date) {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+
+        const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+        if (compareDate.getTime() === today.getTime()) return 'Today';
+        if (compareDate.getTime() === yesterday.getTime()) return 'Yesterday';
+
+        return date.toLocaleDateString();
+      },
+
+      formatRelativeDateTime(timestamp) {
+        const date = new Date(timestamp);
+        const label = this.formatDateLabel(date);
+        const time = this.formatTime(timestamp);
+        return `${label} ${time}`;
+      },
+
+      generateTopicTitle(message) {
+        const words = message.trim().split(/\s+/);
+        return words.length > Config.TOPIC_TITLE_MAX_WORDS
+          ? words.slice(0, Config.TOPIC_TITLE_MAX_WORDS).join(' ') + '...'
+          : message;
+      },
+
+      extractTopicTitle(id) {
+        return id.split(' #')[0];
+      },
+
+      debounce(func, delay = Config.SEARCH_DEBOUNCE_DELAY) {
+        clearTimeout(AppState.searchDebounceTimer);
+        AppState.searchDebounceTimer = setTimeout(func, delay);
+      },
+
+      async streamToText(reader, onChunk) {
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          buffer += chunk;
+          const parts = buffer.split('\n');
+          buffer = parts.pop();
+
+          for (const part of parts) {
+            if (part.trim()) {
+              try {
+                const json = JSON.parse(part);
+                const token = json.message?.content || '';
+                onChunk(token);
+              } catch (e) {
+                console.error('Failed to parse chunk:', e);
+              }
+            }
+          }
+        }
+      }
+    };
+
+    // === Screen Manager ===
+    const ScreenManager = {
+      show(screenName) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.footer button').forEach(b => b.classList.remove('active'));
+
+        switch (screenName) {
+          case 'topic':
+            document.getElementById('topicScreen').classList.add('active');
+            document.getElementById('navChat').classList.add('active');
+            this.handleTopicScreen();
+            break;
+          case 'chat':
+            document.getElementById('chatScreen').classList.add('active');
+            document.getElementById('navChat').classList.add('active');
+            break;
+          case 'download':
+            document.getElementById('downloadScreen').classList.add('active');
+            document.getElementById('navModels').classList.add('active');
+            break;
+        }
+      },
+
+      handleTopicScreen() {
+        if (!AppState.lastSearchQuery) {
+          DOM.searchInput.value = '';
+          ChatListManager.render();
         } else {
-          searchInput.value = lastSearchQuery;
-          debounceSearch(() => searchChats(lastSearchQuery), 0);
+          DOM.searchInput.value = AppState.lastSearchQuery;
+          SearchManager.search(AppState.lastSearchQuery);
         }
       }
+    };
 
-      if (name === 'chat') document.getElementById('chatScreen').classList.add('active');
-      if (name === 'download') document.getElementById('downloadScreen').classList.add('active');
-    }
+    // === Chat Manager ===
+    const ChatManager = {
+      create(message) {
+        const topic = Utils.generateTopicTitle(message || 'New Chat');
+        const id = `${topic} #${Date.now()}`;
+        AppState.chats[id] = [];
+        AppState.currentChatId = id;
+        Storage.saveChats();
+        return id;
+      },
 
-    // Update sendMessage to support editing
-    async function sendMessage() {
-      const content = userInput.value.trim();
-      if (!content || !currentChatId || isGenerating) return;
+      select(id) {
+        AppState.currentChatId = id;
+        ScreenManager.show('chat');
+        MessageRenderer.render();
+      },
 
-      if (editIndex !== null) {
-        chats[currentChatId][editIndex].content = content;
-        chats[currentChatId][editIndex].timestamp = Date.now();
-        chats[currentChatId] = chats[currentChatId].slice(0, editIndex + 1);
-        editIndex = null;
-      } else {
-        chats[currentChatId].push({ role: 'user', content, timestamp: Date.now() });
+      delete(id) {
+        delete AppState.chats[id];
+        AppState.pinnedTopics = AppState.pinnedTopics.filter(p => p !== id);
+        Storage.saveChats();
+        Storage.savePinnedTopics();
+        ChatListManager.render();
+      },
+
+      togglePin(id) {
+        const index = AppState.pinnedTopics.indexOf(id);
+        if (index > -1) {
+          AppState.pinnedTopics.splice(index, 1);
+        } else {
+          AppState.pinnedTopics.push(id);
+        }
+        Storage.savePinnedTopics();
+        ChatListManager.render();
       }
+    };
 
-      userInput.value = '';
-      userInput.disabled = true;
-      sendBtn.disabled = true;
-      renderMessages();
+    // === Message Manager ===
+    const MessageManager = {
+      async send() {
+        const content = DOM.userInput.value.trim();
+        if (!content || !AppState.currentChatId || AppState.isGenerating) return;
 
-      const assistantDiv = document.createElement('div');
-      assistantDiv.className = 'message-wrapper assistant';
-      assistantDiv.innerHTML = `<div class="bubble"><div class="text"></div><div class="meta unallow-select">...</div></div>`;
-      chatBox.appendChild(assistantDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
+        // Handle edit mode
+        if (AppState.editIndex !== null) {
+          this.updateMessage(AppState.editIndex, content);
+        } else {
+          this.addUserMessage(content);
+        }
 
-      const textDiv = assistantDiv.querySelector('.text');
-      let assistantText = '';
-      controller = new AbortController();
-      isGenerating = true;
-      const stopButton = appendStopButton(() => controller.abort(), assistantDiv);
+        // Reset UI
+        DOM.userInput.value = '';
+        DOM.userInput.disabled = true;
+        DOM.sendBtn.disabled = true;
+        UIManager.toggleSendButton();
 
-      try {
-        const response = await fetch(`/api/chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ model: modelSelect.value, messages: chats[currentChatId], stream: true }),
-          signal: controller.signal
+        MessageRenderer.render();
+
+        // Generate response
+        await this.generateAssistantResponse();
+      },
+
+      addUserMessage(content) {
+        AppState.chats[AppState.currentChatId].push({
+          role: 'user',
+          content,
+          timestamp: Date.now()
         });
+        Storage.saveChats();
+      },
 
-        const reader = response.body.getReader();
-        let buffer = '';
+      updateMessage(index, content) {
+        const messages = AppState.chats[AppState.currentChatId];
+        messages[index].content = content;
+        messages[index].timestamp = Date.now();
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = new TextDecoder().decode(value);
-          buffer += chunk;
-          const parts = buffer.split('\n');
-          buffer = parts.pop();
-          for (const part of parts) {
-            if (part.trim()) {
-              const json = JSON.parse(part);
-              const token = json.message?.content || '';
-              assistantText += token;
-              textDiv.textContent = assistantText;
-              chatBox.scrollTop = chatBox.scrollHeight;
-            }
+        // Remove messages after the edited one
+        AppState.chats[AppState.currentChatId] = messages.slice(0, index + 1);
+        AppState.editIndex = null;
+        Storage.saveChats();
+      },
+
+      async generateAssistantResponse() {
+        const tempDiv = this.createPendingMessage();
+        const textDiv = tempDiv.querySelector('.text');
+        let assistantText = '';
+
+        AppState.controller = new AbortController();
+        AppState.isGenerating = true;
+
+        const stopButton = UIManager.createStopButton(
+          () => AppState.controller.abort(),
+          tempDiv
+        );
+
+        try {
+          const reader = await API.createChatStream(
+            DOM.modelSelect.value,
+            AppState.chats[AppState.currentChatId],
+            AppState.controller.signal
+          );
+
+          await Utils.streamToText(reader, (token) => {
+            assistantText += token;
+            textDiv.textContent = assistantText;
+            DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+          });
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.error('Stream failed:', err);
+            textDiv.textContent = 'Error generating response. Please try again.';
           }
-        }
-      } catch (err) {
-        console.warn('Stream aborted or failed:', err);
-      } finally {
-        controller = null;
-        isGenerating = false;
-        stopButton?.remove();
-        userInput.disabled = false;
-        sendBtn.disabled = false;
-        chats[currentChatId].push({ role: 'assistant', content: assistantText, timestamp: Date.now(), model: modelSelect.value, history: [assistantText], selected: 0 });
-        saveChats();
-        renderMessages();
-      }
-    }
+        } finally {
+          this.cleanup(stopButton);
 
-    async function fetchModels() {
-      try {
-        const res = await fetch(`/api/tags`);
-        const data = await res.json();
-        modelSelect.innerHTML = "";
-        const modelList = document.getElementById('modelList');
-        modelList.innerHTML = '';
-
-        const savedModel = localStorage.getItem('selectedModel');
-        let modelExists = false;
-
-        data.models.forEach(model => {
-          const option = document.createElement("option");
-          option.value = model.name;
-          option.textContent = model.name;
-          if (model.name === savedModel) modelExists = true;
-          modelSelect.appendChild(option);
-
-          const div = document.createElement("div");
-          div.className = 'model-item';
-          div.innerHTML = `<span>${model.name}</span> <button onclick="deleteModel('${model.name}')">🗑</button>`;
-          modelList.appendChild(div);
-        });
-
-        if (modelExists) {
-          modelSelect.value = savedModel;
-        } else if (data.models.length > 0) {
-          modelSelect.value = data.models[0].name;
-        }
-
-        updateModelLabel();
-      } catch (err) {
-        console.error("Failed to fetch models", err);
-      }
-    }
-
-    async function deleteModel(name) {
-      if (!confirm(`Delete model: ${name}?`)) return;
-      try {
-        await fetch(`/api/delete`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name })
-        });
-        fetchModels();
-      } catch (err) {
-        alert("Failed to delete model.");
-      }
-    }
-
-    async function downloadModel() {
-      const name = document.getElementById('modelUrl').value.trim();
-      const progress = document.getElementById('downloadProgress');
-      if (!name) return alert("Enter model name");
-
-      progress.textContent = "Starting model pull...\n";
-      try {
-        const res = await fetch(`/api/pull`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name })
-        });
-        const reader = res.body.getReader();
-        let buffer = '';
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = new TextDecoder().decode(value);
-          buffer += chunk;
-          const parts = buffer.split('\n');
-          buffer = parts.pop();
-          for (const part of parts) {
-            if (part.trim()) {
-              progress.textContent += part + "\n";
-              progress.scrollTop = progress.scrollHeight;
-            }
+          if (assistantText) {
+            this.addAssistantMessage(assistantText);
           }
+
+          MessageRenderer.render();
         }
-        fetchModels();
-      } catch (err) {
-        progress.textContent += `\n❌ Error: ${err.message}`;
-      }
-    }
+      },
 
-    function formatTopicTime(ts) {
-      const now = new Date();
-      const date = new Date(ts);
-      const isToday = now.toDateString() === date.toDateString();
-      const isYesterday = new Date(now - 86400000).toDateString() === date.toDateString();
-
-      if (isToday) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      if (isYesterday) return 'Yesterday';
-      return date.toLocaleDateString('sv'); // YYYY/MM/DD
-    }
-
-    function renderChatList() {
-      const list = document.getElementById('chatList');
-      list.innerHTML = '';
-
-      const chatEntries = Object.entries(chats)
-        .map(([id, messages]) => {
-          const msgs = Array.isArray(messages) ? messages : messages.messages || [];
-          const lastMsg = msgs[msgs.length - 1];
-          return {
-            id,
-            time: lastMsg?.timestamp || 0,
-            pinned: pinnedTopics.includes(id)
-          };
-        })
-        .sort((a, b) => {
-          if (a.pinned && !b.pinned) return -1;
-          if (!a.pinned && b.pinned) return 1;
-          return b.time - a.time;
+      addAssistantMessage(content) {
+        AppState.chats[AppState.currentChatId].push({
+          role: 'assistant',
+          content,
+          timestamp: Date.now(),
+          model: DOM.modelSelect.value,
+          history: [content],
+          selected: 0
         });
+        Storage.saveChats();
+      },
 
-      chatEntries.forEach(({ id, time }) => {
-        const item = document.createElement('div');
-        item.className = 'chat-item unallow-select';
-
-        const dateTimeLabel = formatRelativeDateTime(time);
-
-        item.innerHTML = `
-  <div style="display:flex; justify-content:space-between; align-items:center;">
-    <span>${extractTopicTitle(id)}</span>
-    ${pinnedTopics.includes(id) ? '<span style="font-size:1rem;">📌</span>' : ''}
-  </div>
-  <div style="font-size: 0.75rem; color: #555;">${dateTimeLabel}</div>
-`;
-        item.onmousedown = item.ontouchstart = (e) => {
-          longPressTriggered = false;
-          pressTimer = setTimeout(() => {
-            longPressTriggered = true;
-            selectedTopicId = id;
-            showModal(id);
-          }, 600);
-        };
-
-        item.onmouseup = item.ontouchend = item.onmouseleave = () => {
-          clearTimeout(pressTimer);
-        };
-        item.onclick = () => {
-          if (!longPressTriggered) selectChat(id);
-        };
-        list.appendChild(item);
-      });
-    }
-
-    function showModal(topicId) {
-      const modal = document.getElementById('chatActionModal');
-      document.getElementById('modalTitle').textContent = `Actions for: ${topicId}`;
-      modal.style.display = 'block';
-    }
-
-    function closeModal() {
-      document.getElementById('chatActionModal').style.display = 'none';
-      selectedTopicId = null;
-    }
-
-    function confirmPinAction() {
-      if (!selectedTopicId) return;
-      togglePin({ stopPropagation: () => { } }, selectedTopicId);
-      closeModal();
-    }
-
-    function confirmDeleteAction() {
-      if (!selectedTopicId) return;
-      if (confirm(`Are you sure to delete topic: ${selectedTopicId}?`)) {
-        delete chats[selectedTopicId];
-        pinnedTopics = pinnedTopics.filter(id => id !== selectedTopicId);
-        saveChats();
-        localStorage.setItem('pinnedTopics', JSON.stringify(pinnedTopics));
-        renderChatList();
-      }
-      closeModal();
-    }
-
-    function formatRelativeDateTime(ts) {
-      const date = new Date(ts);
-      const label = formatDateGroupLabel(date);
-      const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      return `${label} ${time}`;
-    }
-
-    function formatDateGroupLabel(dateInput) {
-      const now = new Date();
-      const date = new Date(dateInput);
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const yesterday = new Date(today);
-      yesterday.setDate(today.getDate() - 1);
-
-      const compareDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-      if (compareDate.getTime() === today.getTime()) return 'Today';
-      if (compareDate.getTime() === yesterday.getTime()) return 'Yesterday';
-
-      return date.toLocaleDateString('sv'); // e.g. 2025/06/01
-    }
-
-    function selectChat(id) {
-      currentChatId = id;
-      showScreen('chat');
-      renderMessages();
-    }
-
-    function generateTopicTitle(message) {
-      const words = message.trim().split(/\s+/);
-      return words.length > 12 ? words.slice(0, 12).join(' ') + ' ...' : message;
-    }
-
-    function startNewTopic(message) {
-      const topic = generateTopicTitle(message || 'New Chat');
-      const id = topic + ' #' + Date.now(); // Unique ID
-      chats[id] = [];
-      currentChatId = id;
-      chatBox.innerHTML = '';
-      showScreen('chat');
-    }
-
-    function extractTopicTitle(id) {
-      return id.split(' #')[0];
-    }
-
-    function formatTime(ts) {
-      const d = new Date(ts);
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // Update renderMessages to add edit button for user messages
-    function renderMessages(callback = null) {
-      chatBox.innerHTML = '';
-      if (!currentChatId || !chats[currentChatId]) return;
-      let lastDateLabel = '';
-
-      chats[currentChatId].forEach((msg, i) => {
-        const msgDate = new Date(msg.timestamp || Date.now());
-        const dateLabel = formatDateGroupLabel(msgDate);
-
-        if (dateLabel !== lastDateLabel) {
-          const dateDiv = document.createElement('div');
-          dateDiv.textContent = `----- ${dateLabel} -----`;
-          dateDiv.style = 'text-align: center; color: #666; font-size: 0.8rem; margin: 1rem 0;';
-          chatBox.appendChild(dateDiv);
-          lastDateLabel = dateLabel;
-        }
-
+      createPendingMessage() {
         const div = document.createElement('div');
-        div.className = 'message-wrapper ' + msg.role;
-        div.dataset.index = i;
+        div.className = 'message-wrapper assistant';
+        div.innerHTML = `
+          <div class="bubble">
+            <div class="text"></div>
+            <div class="meta unallow-select">...</div>
+          </div>
+        `;
+        DOM.chatBox.appendChild(div);
+        DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+        return div;
+      },
+
+      cleanup(stopButton) {
+        AppState.controller = null;
+        AppState.isGenerating = false;
+        stopButton?.remove();
+        DOM.userInput.disabled = false;
+        DOM.sendBtn.disabled = false;
+      },
+
+      editMessage(index) {
+        const msg = AppState.chats[AppState.currentChatId][index];
+        if (!msg || msg.role !== 'user') return;
+
+        DOM.userInput.value = msg.content;
+        UIManager.toggleSendButton();
+        AppState.editIndex = index;
+        DOM.userInput.focus();
+      }
+    };
+
+    // === Message Renderer ===
+    const MessageRenderer = {
+      render(callback) {
+        DOM.chatBox.innerHTML = '';
+
+        if (!AppState.currentChatId || !AppState.chats[AppState.currentChatId]) return;
+
+        let lastDateLabel = '';
+        const messages = AppState.chats[AppState.currentChatId];
+
+        messages.forEach((msg, index) => {
+          const msgDate = new Date(msg.timestamp || Date.now());
+          const dateLabel = Utils.formatDateLabel(msgDate);
+
+          if (dateLabel !== lastDateLabel) {
+            this.renderDateDivider(dateLabel);
+            lastDateLabel = dateLabel;
+          }
+
+          this.renderMessage(msg, index);
+        });
+
+        DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+        if (callback) callback();
+      },
+
+      renderDateDivider(label) {
+        const div = document.createElement('div');
+        div.className = 'date-divider';
+        div.textContent = `${label}`;
+        DOM.chatBox.appendChild(div);
+      },
+
+      renderMessage(msg, index) {
+        const wrapper = document.createElement('div');
+        wrapper.className = `message-wrapper ${msg.role}`;
+        wrapper.dataset.index = index;
 
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
@@ -798,333 +1152,571 @@
         const selected = msg.selected ?? 0;
         text.textContent = msg.history?.[selected] || msg.content;
 
-        const meta = document.createElement('div');
-        meta.className = 'meta';
-        const time = new Date(msg.timestamp || Date.now()).toLocaleTimeString([], {
-          hour: '2-digit', minute: '2-digit',
-        });
+        const meta = this.createMetaElement(msg, index);
 
-        let actualModel = msg.model;
-        if (Array.isArray(msg.history) && msg.history.length > 1 && Array.isArray(msg.historyModels)) {
-          actualModel = msg.historyModels?.[selected] || msg.model;
-        }
-
-        let modelName = actualModel ? `<span class="model-name">| ${actualModel}</span>` : '';
-
-        const historyCount = msg.history?.length > 1
-          ? `<span class="history-nav">
-          <button onclick="navigateHistory(${i}, -1)">⬅️</button>
-          ${selected + 1} / ${msg.history.length}
-          <button onclick="navigateHistory(${i}, 1)">➡️</button>
-        </span>`
-          : '';
-
-        let rightAction = '';
-        if (msg.role === 'assistant') {
-          rightAction = `<span class="model-change-button" onclick="showModelDropdown(${i}, this)">🔁</span>
-      <div class="model-dropdown" id="modelDropdown-${i}" style="display:none;"></div>`;
-        } else if (msg.role === 'user') {
-          rightAction = `<span class="model-change-button" onclick="editMessage(${i})">✏️</span>`;
-        }
-
-        meta.innerHTML = `${time} ${modelName} ${rightAction} ${historyCount}`;
         bubble.appendChild(text);
         bubble.appendChild(meta);
-        div.appendChild(bubble);
-        chatBox.appendChild(div);
+        wrapper.appendChild(bubble);
+        DOM.chatBox.appendChild(wrapper);
+      },
 
-        if (typeof callback === 'function') callback();
-      });
+      createMetaElement(msg, index) {
+        const meta = document.createElement('div');
+        meta.className = 'meta';
 
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
+        const time = Utils.formatTime(msg.timestamp || Date.now());
+        const selected = msg.selected ?? 0;
 
-    function editMessage(index) {
-      const msg = chats[currentChatId][index];
-      if (!msg || msg.role !== 'user') return;
+        let actualModel = msg.model;
+        if (msg.history?.length > 1 && msg.historyModels) {
+          actualModel = msg.historyModels[selected] || msg.model;
+        }
 
-      userInput.value = msg.content;
-      toggleSendButton();
-      editIndex = index;
-    }
+        const parts = [time];
 
-    // When appending new history version, store model for each
-    function changeModel(index, newModel) {
-      const msg = chats[currentChatId][index];
-      if (!newModel || newModel === (msg.model || modelSelect.value)) return;
+        if (actualModel) {
+          parts.push(`<span class="model-name">| ${actualModel}</span>`);
+        }
 
-      const messagesUntilNow = chats[currentChatId].slice(0, index);
-      msg.history = msg.history || [msg.content];
-      msg.historyModels = msg.historyModels || [msg.model];
-      msg.history.push('');
-      msg.historyModels.push(newModel);
-      msg.selected = msg.history.length - 1;
-      msg.model = newModel;
-      renderMessages();
+        if (msg.role === 'assistant') {
+          parts.push(`<span class="model-change-button" onclick="ModelManager.showDropdown(${index}, this)">🔄</span>`);
+          parts.push(`<div class="model-dropdown" id="modelDropdown-${index}" style="display:none;"></div>`);
+        } else if (msg.role === 'user') {
+          parts.push(`<span class="model-change-button" onclick="MessageManager.editMessage(${index})">✏️</span>`);
+        }
 
-      const targetDiv = document.querySelector(`.message-wrapper.assistant[data-index="${index}"]`);
-      const textDiv = targetDiv.querySelector('.text');
-      if (textDiv) textDiv.textContent = '';
+        if (msg.history?.length > 1) {
+          parts.push(`
+            <span class="history-nav">
+              <button onclick="HistoryManager.navigate(${index}, -1)">⬅️</button>
+              ${selected + 1} / ${msg.history.length}
+              <button onclick="HistoryManager.navigate(${index}, 1)">➡️</button>
+            </span>
+          `);
+        }
 
-      controller = new AbortController();
-      isGenerating = true;
-      const stopButton = appendStopButton(() => controller.abort(), targetDiv);
-
-      fetch(`/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal: controller.signal,
-        body: JSON.stringify({ model: newModel, messages: messagesUntilNow, stream: true })
-      }).then(res => {
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '', assistantText = '';
-
-        return (async () => {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            const chunk = decoder.decode(value);
-            buffer += chunk;
-            const parts = buffer.split('\n');
-            buffer = parts.pop();
-            for (const part of parts) {
-              if (part.trim()) {
-                const parsed = JSON.parse(part);
-                const token = parsed.message?.content || '';
-                assistantText += token;
-                msg.history[msg.selected] = assistantText;
-                textDiv.textContent = assistantText;
-                chatBox.scrollTop = chatBox.scrollHeight;
-              }
-            }
-          }
-        })();
-      }).catch(err => {
-        if (err.name !== 'AbortError') console.warn('Model change stream failed:', err);
-      }).finally(() => {
-        controller = null;
-        isGenerating = false;
-        stopButton?.remove();
-        saveChats();
-        renderMessages();
-      });
-    }
-
-    function stopGenerating() {
-      if (controller) {
-        controller.abort();
-        controller = null;
-        isGenerating = false;
-        renderMessages();
+        meta.innerHTML = parts.join(' ');
+        return meta;
       }
-    }
+    };
 
-    function saveChats() {
-      localStorage.setItem('ollamaChats', JSON.stringify(chats));
-    }
+    // === Model Manager ===
+    const ModelManager = {
+      async load() {
+        const models = await API.fetchModels();
+        this.populateSelect(models);
+        this.populateList(models);
+      },
 
-    let searchDebounceTimer = null;
+      populateSelect(models) {
+        DOM.modelSelect.innerHTML = '';
+        const savedModel = Storage.getSelectedModel();
+        let modelExists = false;
 
-    function onSearchInput(inputElem) {
-      const clearBtn = document.getElementById('clearSearchBtn');
-      const value = inputElem.value.trim();
-      clearBtn.style.display = value ? 'block' : 'none';
-      debounceSearch(() => searchChats(value));
-    }
+        models.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model.name;
+          option.textContent = model.name;
 
-    function clearSearch() {
-      const input = document.getElementById('searchInput');
-      const clearBtn = document.getElementById('clearSearchBtn');
-      input.value = '';
-      clearBtn.style.display = 'none';
-      lastSearchQuery = '';
-      renderChatList(); // restore default
-    }
-
-    function debounceSearch(fn, delay = 300) {
-      clearTimeout(searchDebounceTimer);
-      searchDebounceTimer = setTimeout(fn, delay);
-    }
-
-    function searchChats(query) {
-      const list = document.getElementById('chatList');
-      list.innerHTML = '';
-
-      query = query.trim().toLowerCase();
-      lastSearchQuery = query;
-
-      if (!query) {
-        renderChatList(); // fallback to topic list
-        return;
-      }
-
-      const results = [];
-
-      Object.entries(chats).forEach(([chatId, messages]) => {
-        messages.forEach((msg, index) => {
-          if (msg.content?.toLowerCase().includes(query)) {
-            results.push({
-              chatId,
-              index,
-              content: msg.content,
-              timestamp: msg.timestamp || 0,
-            });
+          if (model.name === savedModel) {
+            modelExists = true;
           }
+
+          DOM.modelSelect.appendChild(option);
         });
-      });
 
-      results.sort((a, b) => b.timestamp - a.timestamp);
+        if (modelExists) {
+          DOM.modelSelect.value = savedModel;
+        } else if (models.length > 0) {
+          DOM.modelSelect.value = models[0].name;
+          this.updateLabel();
+        }
+      },
 
-      results.forEach(res => {
+      populateList(models) {
+        DOM.modelList.innerHTML = '';
+
+        if (models.length === 0) {
+          DOM.modelList.innerHTML = '<div class="empty-state">No models installed yet.</div>';
+          return;
+        }
+
+        models.forEach(model => {
+          const item = document.createElement('div');
+          item.className = 'model-item';
+          item.innerHTML = `
+            <span>${model.name}</span>
+            <button onclick="ModelManager.delete('${model.name}')">🗑️ Delete</button>
+          `;
+          DOM.modelList.appendChild(item);
+        });
+      },
+
+      async delete(name) {
+        if (!confirm(`Delete model: ${name}?`)) return;
+
+        const success = await API.deleteModel(name);
+        if (success) {
+          await this.load();
+        } else {
+          alert('Failed to delete model');
+        }
+      },
+
+      async download() {
+        const name = DOM.modelUrl.value.trim();
+        if (!name) {
+          alert('Please enter a model name');
+          return;
+        }
+
+        DOM.downloadProgress.textContent = 'Starting model pull...\n';
+
+        try {
+          const reader = await API.pullModel(name);
+
+          await Utils.streamToText(reader, (chunk) => {
+            DOM.downloadProgress.textContent += chunk + '\n';
+            DOM.downloadProgress.scrollTop = DOM.downloadProgress.scrollHeight;
+          });
+
+          DOM.downloadProgress.textContent += '\n✅ Download complete!';
+          DOM.modelUrl.value = '';
+          await this.load();
+        } catch (err) {
+          DOM.downloadProgress.textContent += `\n❌ Error: ${err.message}`;
+        }
+      },
+
+      updateLabel() {
+        Storage.saveSelectedModel(DOM.modelSelect.value);
+      },
+
+      showDropdown(index, buttonElem) {
+        const dropdown = document.getElementById(`modelDropdown-${index}`);
+        dropdown.innerHTML = '';
+
+        const models = Array.from(DOM.modelSelect.options).map(opt => opt.value);
+
+        models.forEach(model => {
+          const item = document.createElement('div');
+          item.textContent = model;
+          item.onclick = () => {
+            this.changeForMessage(index, model);
+            dropdown.style.display = 'none';
+          };
+          dropdown.appendChild(item);
+        });
+
+        // Position dropdown
+        const parent = buttonElem.closest('.meta');
+        parent.style.position = 'relative';
+        dropdown.style.left = `${buttonElem.offsetLeft}px`;
+        dropdown.style.top = `${buttonElem.offsetTop + buttonElem.offsetHeight + 4}px`;
+        dropdown.style.display = 'block';
+      },
+
+      async changeForMessage(index, newModel) {
+        const msg = AppState.chats[AppState.currentChatId][index];
+        if (!newModel || newModel === msg.model) return;
+
+        // Initialize history
+        msg.history = msg.history || [msg.content];
+        msg.historyModels = msg.historyModels || [msg.model];
+        msg.history.push('');
+        msg.historyModels.push(newModel);
+        msg.selected = msg.history.length - 1;
+        msg.model = newModel;
+
+        MessageRenderer.render();
+
+        // Generate new response
+        await this.regenerateWithModel(index, newModel);
+      },
+
+      async regenerateWithModel(index, model) {
+        const targetDiv = document.querySelector(`.message-wrapper.assistant[data-index="${index}"]`);
+        const textDiv = targetDiv.querySelector('.text');
+        const msg = AppState.chats[AppState.currentChatId][index];
+
+        textDiv.textContent = '';
+
+        AppState.controller = new AbortController();
+        AppState.isGenerating = true;
+
+        const stopButton = UIManager.createStopButton(
+          () => AppState.controller.abort(),
+          targetDiv
+        );
+
+        try {
+          const messagesUntilNow = AppState.chats[AppState.currentChatId].slice(0, index);
+          const reader = await API.createChatStream(model, messagesUntilNow, AppState.controller.signal);
+
+          let assistantText = '';
+          await Utils.streamToText(reader, (token) => {
+            assistantText += token;
+            msg.history[msg.selected] = assistantText;
+            textDiv.textContent = assistantText;
+            DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+          });
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.error('Model change failed:', err);
+          }
+        } finally {
+          AppState.controller = null;
+          AppState.isGenerating = false;
+          stopButton?.remove();
+          Storage.saveChats();
+          MessageRenderer.render();
+        }
+      }
+    };
+
+    // === History Manager ===
+    const HistoryManager = {
+      navigate(index, direction) {
+        const msg = AppState.chats[AppState.currentChatId][index];
+        if (!msg.history || msg.history.length < 2) return;
+
+        msg.selected = (msg.selected + direction + msg.history.length) % msg.history.length;
+        Storage.saveChats();
+        MessageRenderer.render();
+      }
+    };
+
+    // === Search Manager ===
+    const SearchManager = {
+      onInput(input) {
+        const value = input.value.trim();
+        DOM.clearSearchBtn.style.display = value ? 'block' : 'none';
+        Utils.debounce(() => this.search(value));
+      },
+
+      clear() {
+        DOM.searchInput.value = '';
+        DOM.clearSearchBtn.style.display = 'none';
+        AppState.lastSearchQuery = '';
+        ChatListManager.render();
+      },
+
+      search(query) {
+        DOM.chatList.innerHTML = '';
+
+        query = query.trim().toLowerCase();
+        AppState.lastSearchQuery = query;
+
+        if (!query) {
+          ChatListManager.render();
+          return;
+        }
+
+        const results = this.findMessages(query);
+
+        if (results.length === 0) {
+          DOM.chatList.innerHTML = '<div class="empty-state">No messages found</div>';
+          return;
+        }
+
+        this.renderResults(results);
+      },
+
+      findMessages(query) {
+        const results = [];
+
+        Object.entries(AppState.chats).forEach(([chatId, messages]) => {
+          messages.forEach((msg, index) => {
+            if (msg.content?.toLowerCase().includes(query)) {
+              results.push({
+                chatId,
+                index,
+                content: msg.content,
+                timestamp: msg.timestamp || 0,
+                role: msg.role
+              });
+            }
+          });
+        });
+
+        return results.sort((a, b) => b.timestamp - a.timestamp);
+      },
+
+      renderResults(results) {
+        results.forEach(result => {
+          const item = this.createResultItem(result);
+          DOM.chatList.appendChild(item);
+        });
+      },
+
+      createResultItem(result) {
         const item = document.createElement('div');
         item.className = 'chat-item unallow-select';
 
-        const preview = res.content.length > 80
-          ? res.content.slice(0, 77) + '...'
-          : res.content;
+        const preview = result.content.length > Config.MESSAGE_PREVIEW_LENGTH
+          ? result.content.slice(0, Config.MESSAGE_PREVIEW_LENGTH - 3) + '...'
+          : result.content;
 
         item.innerHTML = `
-      <div style="font-weight:500;">${extractTopicTitle(res.chatId)}</div>
-      <div style="font-size:0.85rem; color:#444;">${preview}</div>
-      <div style="font-size:0.7rem; color:#888;">${formatRelativeDateTime(res.timestamp)}</div>
-    `;
+          <div class="chat-item-header">
+            <span class="chat-item-title">${Utils.extractTopicTitle(result.chatId)}</span>
+            <span style="font-size: 0.75rem; color: #888;">${result.role}</span>
+          </div>
+          <div style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;">${preview}</div>
+          <div class="chat-item-time">${Utils.formatRelativeDateTime(result.timestamp)}</div>
+        `;
 
         item.onclick = () => {
-          currentChatId = res.chatId;
-          showScreen('chat');
-          renderMessages(() => {
-            setTimeout(() => scrollToMessage(res.index), 100); // ensure DOM is ready
+          AppState.currentChatId = result.chatId;
+          ScreenManager.show('chat');
+          MessageRenderer.render(() => {
+            setTimeout(() => this.scrollToMessage(result.index), 100);
           });
         };
 
-        list.appendChild(item);
-      });
+        return item;
+      },
 
-      if (results.length === 0) {
-        list.innerHTML = '<div style="padding: 1rem; color: #999;">No matches found</div>';
-      }
-    }
-
-    function scrollToMessage(index) {
-      const msgDiv = chatBox.querySelector(`.message-wrapper[data-index="${index}"]`);
-      if (msgDiv) {
-        msgDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        msgDiv.style.background = '#fffbcc';
-        setTimeout(() => msgDiv.style.background = '', 1500); // highlight briefly
-      }
-    }
-
-    fetchModels();
-    renderChatList();
-
-    function toggleSendButton() {
-      const btn = document.getElementById('sendBtn');
-      btn.style.display = userInput.value.trim() ? 'inline-flex' : 'none';
-    }
-
-    function updateModelLabel() {
-      const select = document.getElementById('modelSelect');
-      const label = document.getElementById('modelNameLabel');
-      if (label) label.textContent = select.value || 'Unknown';
-      localStorage.setItem('selectedModel', select.value);
-    }
-
-    function toggleQuickSend() {
-      const btn = document.getElementById('quickSendBtn');
-      btn.style.display = document.getElementById('quickInput').value.trim() ? 'flex' : 'none';
-    }
-
-    function quickSend() {
-      const input = document.getElementById('quickInput');
-      const message = input.value.trim();
-      if (!message) return;
-
-      startNewTopic(message);
-      input.value = '';
-      toggleQuickSend();
-      saveChats();
-
-      // Copy user message to the main input and trigger send
-      document.getElementById('userInput').value = message;
-      toggleSendButton();
-
-      showScreen('chat');
-      renderMessages();
-      sendMessage(); // only this will push the message
-    }
-
-    function showModelDropdown(index, buttonElem) {
-      const dropdown = document.getElementById(`modelDropdown-${index}`);
-      dropdown.innerHTML = '';
-
-      const models = Array.from(modelSelect.options).map(opt => opt.value);
-
-      models.forEach(model => {
-        const item = document.createElement('div');
-        item.textContent = model;
-        item.onclick = () => {
-          changeModel(index, model);
-          dropdown.style.display = 'none';
-        };
-        dropdown.appendChild(item);
-      });
-
-      const parent = buttonElem.closest('.meta');
-      parent.style.position = 'relative';
-
-      dropdown.style.left = `${buttonElem.offsetLeft}px`;
-      dropdown.style.top = `${buttonElem.offsetTop + buttonElem.offsetHeight + 4}px`;
-      dropdown.style.display = 'block';
-    }
-
-    function navigateHistory(index, direction) {
-      const msg = chats[currentChatId][index];
-      if (!msg.history || msg.history.length < 2) return;
-
-      msg.selected = (msg.selected + direction + msg.history.length) % msg.history.length;
-      saveChats();
-      renderMessages();
-    }
-
-    function togglePin(e, id) {
-      e.stopPropagation();
-      if (pinnedTopics.includes(id)) {
-        pinnedTopics = pinnedTopics.filter(p => p !== id);
-      } else {
-        pinnedTopics.push(id);
-      }
-      localStorage.setItem('pinnedTopics', JSON.stringify(pinnedTopics));
-      renderChatList();
-    }
-
-    function appendStopButton(abortFn, targetDiv = null) {
-      const existing = document.getElementById('stopButton');
-      if (existing) existing.remove();
-
-      const wrapper = targetDiv || [...chatBox.querySelectorAll('.message-wrapper.assistant')].pop();
-      if (!wrapper) return;
-      const bubble = wrapper.querySelector('.bubble');
-      if (!bubble) return;
-
-      const stopButton = document.createElement('button');
-      stopButton.id = 'stopButton';
-      stopButton.className = 'cancel-button';
-      stopButton.textContent = '⛔ Stop';
-      stopButton.onclick = abortFn;
-      bubble.appendChild(stopButton);
-      return stopButton;
-    }
-
-    document.addEventListener('click', function (e) {
-      const allDropdowns = document.querySelectorAll('.model-dropdown');
-      allDropdowns.forEach(dropdown => {
-        const button = dropdown.previousElementSibling; // the 🔁 button
-        if (!dropdown.contains(e.target) && !button.contains(e.target)) {
-          dropdown.style.display = 'none';
+      scrollToMessage(index) {
+        const msgDiv = DOM.chatBox.querySelector(`.message-wrapper[data-index="${index}"]`);
+        if (msgDiv) {
+          msgDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          msgDiv.style.background = '#fffbcc';
+          setTimeout(() => msgDiv.style.background = '', 1500);
         }
-      });
-    });
+      }
+    };
+
+    // === Chat List Manager ===
+    const ChatListManager = {
+      render() {
+        DOM.chatList.innerHTML = '';
+
+        const sortedChats = this.getSortedChats();
+
+        if (sortedChats.length === 0) {
+          DOM.chatList.innerHTML = '<div class="empty-state">No chats yet. Start a new conversation!</div>';
+          return;
+        }
+
+        sortedChats.forEach(({ id, time }) => {
+          const item = this.createChatItem(id, time);
+          DOM.chatList.appendChild(item);
+        });
+      },
+
+      getSortedChats() {
+        return Object.entries(AppState.chats)
+          .map(([id, messages]) => {
+            const lastMsg = messages[messages.length - 1];
+            return {
+              id,
+              time: lastMsg?.timestamp || 0,
+              pinned: AppState.pinnedTopics.includes(id)
+            };
+          })
+          .sort((a, b) => {
+            if (a.pinned && !b.pinned) return -1;
+            if (!a.pinned && b.pinned) return 1;
+            return b.time - a.time;
+          });
+      },
+
+      createChatItem(id, timestamp) {
+        const item = document.createElement('div');
+        item.className = 'chat-item unallow-select';
+
+        const isPinned = AppState.pinnedTopics.includes(id);
+        const title = Utils.extractTopicTitle(id);
+        const time = Utils.formatRelativeDateTime(timestamp);
+
+        item.innerHTML = `
+          <div class="chat-item-header">
+            <span class="chat-item-title">${title}</span>
+            ${isPinned ? '<span style="font-size: 1rem;">📌</span>' : ''}
+          </div>
+          <div class="chat-item-time">${time}</div>
+        `;
+
+        this.attachEventHandlers(item, id);
+        return item;
+      },
+
+      attachEventHandlers(item, id) {
+        let longPressTriggered = false;
+
+        const startLongPress = () => {
+          longPressTriggered = false;
+          AppState.longPressTimer = setTimeout(() => {
+            longPressTriggered = true;
+            AppState.selectedTopicId = id;
+            ModalManager.show(id);
+          }, Config.LONG_PRESS_DURATION);
+        };
+
+        const cancelLongPress = () => {
+          clearTimeout(AppState.longPressTimer);
+        };
+
+        const handleClick = () => {
+          if (!longPressTriggered) {
+            ChatManager.select(id);
+          }
+        };
+
+        item.onmousedown = item.ontouchstart = startLongPress;
+        item.onmouseup = item.ontouchend = item.onmouseleave = cancelLongPress;
+        item.onclick = handleClick;
+      }
+    };
+
+    // === Modal Manager ===
+    const ModalManager = {
+      show(topicId) {
+        DOM.modalTitle.textContent = `Actions for: ${Utils.extractTopicTitle(topicId)}`;
+        DOM.modal.style.display = 'block';
+      },
+
+      close() {
+        DOM.modal.style.display = 'none';
+        AppState.selectedTopicId = null;
+      },
+
+      confirmPin() {
+        if (!AppState.selectedTopicId) return;
+        ChatManager.togglePin(AppState.selectedTopicId);
+        this.close();
+      },
+
+      confirmDelete() {
+        if (!AppState.selectedTopicId) return;
+
+        if (confirm(`Delete topic: ${Utils.extractTopicTitle(AppState.selectedTopicId)}?`)) {
+          ChatManager.delete(AppState.selectedTopicId);
+        }
+
+        this.close();
+      }
+    };
+
+    // === UI Manager ===
+    const UIManager = {
+      toggleSendButton() {
+        DOM.sendBtn.style.display = DOM.userInput.value.trim() ? 'inline-flex' : 'none';
+      },
+
+      toggleQuickSend() {
+        DOM.quickSendBtn.style.display = DOM.quickInput.value.trim() ? 'flex' : 'none';
+      },
+
+      createStopButton(onStop, targetDiv) {
+        const existing = document.getElementById('stopButton');
+        if (existing) existing.remove();
+
+        const wrapper = targetDiv || [...DOM.chatBox.querySelectorAll('.message-wrapper.assistant')].pop();
+        if (!wrapper) return null;
+
+        const bubble = wrapper.querySelector('.bubble');
+        if (!bubble) return null;
+
+        const stopButton = document.createElement('button');
+        stopButton.id = 'stopButton';
+        stopButton.className = 'cancel-button';
+        stopButton.textContent = '⏹ Stop';
+        stopButton.onclick = onStop;
+        bubble.appendChild(stopButton);
+
+        return stopButton;
+      }
+    };
+
+    // === Quick Send Manager ===
+    const QuickSendManager = {
+      send() {
+        const message = DOM.quickInput.value.trim();
+        if (!message) return;
+
+        const chatId = ChatManager.create(message);
+        DOM.quickInput.value = '';
+        UIManager.toggleQuickSend();
+
+        // Copy message to main input and send
+        DOM.userInput.value = message;
+        UIManager.toggleSendButton();
+
+        ScreenManager.show('chat');
+        MessageRenderer.render();
+        MessageManager.send();
+      }
+    };
+
+    // === Event Handlers ===
+    const EventHandlers = {
+      init() {
+        // Global click handler for dropdowns
+        document.addEventListener('click', (e) => {
+          const dropdowns = document.querySelectorAll('.model-dropdown');
+          dropdowns.forEach(dropdown => {
+            const button = dropdown.previousElementSibling;
+            if (!dropdown.contains(e.target) && !button?.contains(e.target)) {
+              dropdown.style.display = 'none';
+            }
+          });
+        });
+
+        // Keyboard shortcuts
+        DOM.userInput?.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            MessageManager.send();
+          }
+        });
+
+        DOM.quickInput?.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            QuickSendManager.send();
+          }
+        });
+      }
+    };
+
+    // === Initialize Application ===
+    async function initializeApp() {
+      await ModelManager.load();
+      ChatListManager.render();
+      EventHandlers.init();
+    }
+
+    // === Public API (for onclick handlers in HTML) ===
+    window.showScreen = (name) => ScreenManager.show(name);
+    window.sendMessage = () => MessageManager.send();
+    window.toggleSendButton = () => UIManager.toggleSendButton();
+    window.toggleQuickSend = () => UIManager.toggleQuickSend();
+    window.quickSend = () => QuickSendManager.send();
+    window.onSearchInput = (input) => SearchManager.onInput(input);
+    window.clearSearch = () => SearchManager.clear();
+    window.updateModelLabel = () => ModelManager.updateLabel();
+    window.deleteModel = (name) => ModelManager.delete(name);
+    window.downloadModel = () => ModelManager.download();
+    window.showModelDropdown = (index, elem) => ModelManager.showDropdown(index, elem);
+    window.editMessage = (index) => MessageManager.editMessage(index);
+    window.navigateHistory = (index, dir) => HistoryManager.navigate(index, dir);
+    window.confirmPinAction = () => ModalManager.confirmPin();
+    window.confirmDeleteAction = () => ModalManager.confirmDelete();
+    window.closeModal = () => ModalManager.close();
+    
+    window.ModelManager = ModelManager;
+    window.MessageManager = MessageManager;
+    window.HistoryManager = HistoryManager;
+    window.ScreenManager = ScreenManager;
+    window.ChatManager = ChatManager;
+    window.UIManager = UIManager;
+    window.QuickSendManager = QuickSendManager;
+    window.SearchManager = SearchManager;
+
+    // Start the application
+    initializeApp();
   </script>
 </body>
 
