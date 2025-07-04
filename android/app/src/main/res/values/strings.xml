@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Oalla</string>
+    <string name="app_tagline">On-device AIs.\nAll yours. Just don’t ask about speed.</string>
 </resources>

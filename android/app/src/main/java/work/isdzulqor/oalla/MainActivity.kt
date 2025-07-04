@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var logOutput: TextView
     private lateinit var binding: ActivityMainBinding
 
-    private val ollamaPort = 8080
+    private val ollamaPort = 9090
     external fun runOllamaWithArgs(args: Array<String>)
 
     companion object {
@@ -24,36 +24,8 @@ class MainActivity : AppCompatActivity() {
             try {
                 System.loadLibrary("bridgeollama")
             } catch (e: UnsatisfiedLinkError) {
-                Log.e("JNI", "Library load failed: ${e.message}")
+                Log.e("JNI", "Failed to load native library: ${e.message}", e)
             }
-        }
-    }
-
-    private fun copyAssetsToInternalStorage() {
-        val assetManager = assets
-        val publicDir = File(filesDir, "public")
-        if (!publicDir.exists()) {
-            val created = publicDir.mkdirs()
-            Log.d("AssetCopy", "Created public dir: $created at ${publicDir.absolutePath}")
-        } else {
-            Log.d("AssetCopy", "Public dir already exists at ${publicDir.absolutePath}")
-        }
-
-        val files = assetManager.list("public") ?: run {
-            Log.w("AssetCopy", "No files found under assets/public")
-            return
-        }
-
-        for (filename in files) {
-            val inStream = assetManager.open("public/$filename")
-            val outFile = File(publicDir, filename)
-            val outStream = FileOutputStream(outFile)
-
-            inStream.copyTo(outStream)
-            inStream.close()
-            outStream.close()
-
-            Log.d("AssetCopy", "Copied file: $filename to ${outFile.absolutePath}")
         }
     }
 
@@ -62,54 +34,82 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        copyAssetsToInternalStorage()
-
-        startOllamaWithArgs()
-
         webView = binding.webview
         logOutput = binding.logOutput
 
-        webView.webViewClient = WebViewClient()
-        webView.settings.javaScriptEnabled = true
-        webView.settings.domStorageEnabled = true
-
-        webView.loadUrl("http://localhost:$ollamaPort/web")
+        setupWebView()
+        copyAssetsToInternalStorage()
+        startOllamaWithArgs()
     }
 
-    fun startOllamaWithArgs() {
-        // Start the Go Ollama runner in a background thread
+    private fun setupWebView() {
+        webView.apply {
+            webViewClient = WebViewClient()
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            loadUrl("http://localhost:$ollamaPort/web")
+        }
+    }
+
+    private fun copyAssetsToInternalStorage() {
+        val assetManager = assets
+        val publicDir = File(filesDir, "public").apply {
+            if (!exists()) {
+                val created = mkdirs()
+                Log.d("AssetCopy", "Created public dir: $created at $absolutePath")
+            } else {
+                Log.d("AssetCopy", "Public dir already exists at $absolutePath")
+            }
+        }
+
+        val assetFiles = assetManager.list("public") ?: run {
+            Log.w("AssetCopy", "No files found under assets/public")
+            return
+        }
+
+        assetFiles.forEach { filename ->
+            val outFile = File(publicDir, filename)
+            assetManager.open("public/$filename").use { inStream ->
+                FileOutputStream(outFile).use { outStream ->
+                    inStream.copyTo(outStream)
+                }
+            }
+            Log.d("AssetCopy", "Copied: $filename to ${outFile.absolutePath}")
+        }
+    }
+
+    private fun startOllamaWithArgs() {
         Thread {
             try {
                 val ollamaDir = File(filesDir, ".ollama")
                 val blobsDir = File(ollamaDir, "blobs")
                 val shaFile = blobsDir.listFiles()?.firstOrNull { it.name.startsWith("sha256-") }
 
-                if (shaFile == null) {
-                    Log.e("MainActivity", "No model file found in blobs directory.")
-                    return@Thread
-                }
-
-                val modelPath = shaFile.absolutePath
                 System.setProperty("OLLAMA_MODELS", ollamaDir.absolutePath)
-                Log.d("MainActivity", "OLLAMA_MODELS = ${ollamaDir.absolutePath}")
-                Log.d("MainActivity", "Using model = $modelPath")
+                Log.d("Ollama", "OLLAMA_MODELS = ${ollamaDir.absolutePath}")
+
+                if (shaFile != null) {
+                    Log.d("Ollama", "Using model: ${shaFile.absolutePath}")
+                } else {
+                    Log.w("Ollama", "No model found in blobs dir. Proceeding anyway.")
+                }
 
                 val args = arrayOf(
                     "serve",
-                    "--host", "127.0.0.1:8080",
+                    "--host", "localhost:$ollamaPort"
                 )
+
                 runOllamaWithArgs(args)
             } catch (e: Exception) {
-                Log.e("MainActivity", "Crash in startOllamaWithArgs: ${e.message}", e)
+                Log.e("Ollama", "Failed to start Ollama: ${e.message}", e)
             }
         }.start()
     }
 
-    // Called from native C++ code to append logs to the UI
+    // Called from native C++ to append logs to the UI
     fun logFromNative(msg: String) {
         runOnUiThread {
             logOutput.append("$msg\n")
         }
     }
-
 }
