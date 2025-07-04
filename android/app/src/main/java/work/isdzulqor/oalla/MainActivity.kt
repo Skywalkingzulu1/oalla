@@ -2,8 +2,13 @@ package work.isdzulqor.oalla
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import work.isdzulqor.oalla.databinding.ActivityMainBinding
@@ -31,13 +36,51 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_main)
 
-        webView = binding.webview
-        logOutput = binding.logOutput
+        val webView = findViewById<WebView>(R.id.webview)
+        val logOutput = findViewById<TextView>(R.id.log_output)
+        val placeholderImage = findViewById<ImageView>(R.id.placeholder_image)
+        val toggleLogButton = findViewById<Button>(R.id.toggleLogButton)
+        val logScroll = findViewById<ScrollView>(R.id.logScroll)
 
-        setupWebView()
+        // Setup WebView
+        webView.apply {
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    // Hide the placeholder and show the WebView
+                    placeholderImage.visibility = View.GONE
+                    webView.visibility = View.VISIBLE
+                }
+            }
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            loadUrl("http://localhost:$ollamaPort/web")
+        }
+
+        // Setup log toggle button
+        toggleLogButton.setOnClickListener {
+            val layoutParams = logScroll.layoutParams as LinearLayout.LayoutParams
+
+            if (logScroll.visibility == View.GONE || layoutParams.weight == 0f) {
+                // Expand to 30% height
+                layoutParams.weight = 0.3f
+                logScroll.layoutParams = layoutParams
+                logScroll.visibility = View.VISIBLE
+                toggleLogButton.text = "Hide Logs"
+            } else {
+                // Collapse to 0 height
+                layoutParams.weight = 0f
+                logScroll.layoutParams = layoutParams
+                logScroll.visibility = View.GONE
+                toggleLogButton.text = "Show Logs"
+            }
+        }
+
+        // Save for native access
+        this.webView = webView
+        this.logOutput = logOutput
+
         copyAssetsToInternalStorage()
         startOllamaWithArgs()
     }

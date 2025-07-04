@@ -5,17 +5,38 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- Default image shown while WebView is loading -->
+    <ImageView
+        android:id="@+id/placeholder_image"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.7"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bunga_palette_optimized" />
+
+    <!-- WebView to load content -->
     <WebView
         android:id="@+id/webview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.7" />
+        android:layout_weight="0.7"
+        android:visibility="gone" />
 
+    <!-- Toggle Button -->
+    <Button
+        android:id="@+id/toggleLogButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Show Logs" />
+
+    <!-- Terminal Log Viewer -->
     <ScrollView
+        android:id="@+id/logScroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="0.3"
-        android:background="#000000">
+        android:layout_weight="0"
+        android:background="#000000"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/log_output"
@@ -27,5 +48,4 @@
             android:padding="8dp"
             android:typeface="monospace" />
     </ScrollView>
-
 </LinearLayout>
