@@ -1,5 +1,7 @@
 package work.isdzulqor.oalla
 
+import android.app.ComponentCaller
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View

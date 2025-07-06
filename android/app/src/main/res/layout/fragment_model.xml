@@ -1,15 +1,157 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/model_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ModelFragment">
+    android:background="@color/blue_dark_a_bit"
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <!-- TODO: Update blank fragment layout -->
+    <!-- App Logo -->
+    <ImageView
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="28dp"
+        android:layout_gravity="center_horizontal"
+        android:adjustViewBounds="true"
+        android:src="@drawable/oalla_logo_new_min"
+        android:contentDescription="@string/app_name"/>
+
+<!--    <View-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="1dp"-->
+<!--        android:layout_marginVertical="8dp"-->
+<!--        android:background="@color/border_color" />-->
+
+    <!-- Section: Storage selection -->
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textColor="@color/white"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:text="Select where the model will be stored:"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp" />
 
-</FrameLayout>
+    <RadioGroup
+        android:id="@+id/storage_toggle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/storage_internal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:checked="true"
+            android:paddingEnd="8dp"
+            android:text="Internal (App only)"
+            android:textColor="@color/white" />
+
+        <RadioButton
+            android:id="@+id/storage_external"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingStart="8dp"
+            android:text="External (Shared SD or Files)"
+            android:textColor="@color/white" />
+    </RadioGroup>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="8dp"
+        android:background="@color/border_color" />
+
+    <!-- Section: Download input -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:layout_marginTop="12dp"
+        android:text="Download a new model:"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:orientation="horizontal">
+
+        <AutoCompleteTextView
+            android:id="@+id/model_input"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@drawable/input_background"
+            android:backgroundTint="@color/text_primary"
+            android:hint="e.g. llama3:latest or hf.co/..."
+            android:inputType="text"
+            android:padding="10dp"
+            android:textColor="@color/black"
+            android:textColorHint="@color/text_tertiary" />
+
+        <ImageButton
+            android:id="@+id/download_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="@color/secondary_color"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Download model"
+            android:src="@drawable/ic_download"/>
+    </LinearLayout>
+
+    <!-- Progress feedback -->
+    <ProgressBar
+        android:id="@+id/download_progress_bar"
+        style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:indeterminate="false"
+        android:max="100"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/download_log"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="4dp"
+        android:background="@color/surface"
+        android:overScrollMode="always"
+        android:padding="8dp"
+        android:scrollbars="vertical"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:visibility="gone" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/border_color" />
+
+    <!-- Section: Installed models -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        android:text="Installed Models"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/model_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical" />
+</LinearLayout>
