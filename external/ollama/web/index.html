@@ -777,7 +777,7 @@
 <body>
   <header class="unallow-select">
     <div class="logo">
-      <img src="./oala-logo-flat-horizontal.svg" alt="Ollama Logo" style="height: 34px;" />
+      <img src="./oala-logo-flat-horizontal.svg" alt="Ollama Logo" style="height: 26px;" />
     </div>
     <div class="model-selector-wrapper">
       <select id="modelSelect" onchange="updateModelLabel()">
@@ -857,7 +857,7 @@
     </div>
   </div>
 
-  <div class="footer">
+  <!-- <div class="footer">
     <button id="navChat" class="active" onclick="showScreen('topic')">
       <span>💬</span>
       <span>Chats</span>
@@ -866,7 +866,7 @@
       <span>📦</span>
       <span>Models</span>
     </button>
-  </div>
+  </div> -->
 
   <!-- Chat Action Modal -->
   <div id="chatActionModal" class="unallow-select">
@@ -1078,16 +1078,12 @@
         switch (screenName) {
           case 'topic':
             document.getElementById('topicScreen').classList.add('active');
-            document.getElementById('navChat').classList.add('active');
+            // document.getElementById('navChat').classList.add('active');
             this.handleTopicScreen();
             break;
           case 'chat':
             document.getElementById('chatScreen').classList.add('active');
-            document.getElementById('navChat').classList.add('active');
-            break;
-          case 'download':
-            document.getElementById('downloadScreen').classList.add('active');
-            document.getElementById('navModels').classList.add('active');
+            // document.getElementById('navChat').classList.add('active');
             break;
         }
       },
@@ -1725,30 +1721,150 @@
       },
 
       attachEventHandlers(item, id) {
-        let longPressTriggered = false;
-
-        const startLongPress = () => {
-          longPressTriggered = false;
-          AppState.longPressTimer = setTimeout(() => {
-            longPressTriggered = true;
-            AppState.selectedTopicId = id;
-            ModalManager.show(id);
-          }, Config.LONG_PRESS_DURATION);
+        // Enhanced long press state management
+        let pressState = {
+          timer: null,
+          startX: 0,
+          startY: 0,
+          isPressed: false,
+          longPressTriggered: false,
+          touchIdentifier: null,
+          scrollDetected: false,
+          initialScroll: 0
         };
 
-        const cancelLongPress = () => {
-          clearTimeout(AppState.longPressTimer);
+        const MOVEMENT_THRESHOLD = 10; // pixels
+        const LONG_PRESS_DURATION = 600; // ms (reduced for better UX)
+        const SCROLL_LOCK_DELAY = 150; // ms before we decide it's not a scroll
+
+        const startLongPress = (e) => {
+          pressState.isPressed = true;
+          pressState.longPressTriggered = false;
+          pressState.scrollDetected = false;
+
+          // Store initial position and scroll
+          if (e.type === 'touchstart') {
+            const touch = e.touches[0];
+            pressState.startX = touch.clientX;
+            pressState.startY = touch.clientY;
+            pressState.touchIdentifier = touch.identifier;
+            pressState.initialScroll = DOM.chatList.scrollTop;
+          } else {
+            pressState.startX = e.clientX;
+            pressState.startY = e.clientY;
+            pressState.initialScroll = DOM.chatList.scrollTop;
+          }
+
+          // Start a timer to check if this is a scroll or long press
+          setTimeout(() => {
+            if (pressState.isPressed && !pressState.scrollDetected) {
+              // Only prevent default after we're sure it's not a scroll
+              item.style.opacity = '0.8';
+              item.style.transform = 'scale(0.98)';
+              item.style.transition = 'all 0.1s ease';
+            }
+          }, SCROLL_LOCK_DELAY);
+
+          // Start the long press timer
+          pressState.timer = setTimeout(() => {
+            if (pressState.isPressed && !pressState.scrollDetected) {
+              pressState.longPressTriggered = true;
+
+              // Haptic feedback if available
+              if (navigator.vibrate) {
+                navigator.vibrate(50);
+              }
+
+              // Show modal
+              AppState.selectedTopicId = id;
+              ModalManager.show(id);
+
+              // Reset visual state
+              resetVisualState();
+            }
+          }, LONG_PRESS_DURATION);
         };
 
-        const handleClick = () => {
-          if (!longPressTriggered) {
-            ChatManager.select(id);
+        const checkMovement = (e) => {
+          if (!pressState.isPressed) return;
+
+          let currentX, currentY;
+
+          if (e.type === 'touchmove') {
+            const touch = Array.from(e.touches).find(t => t.identifier === pressState.touchIdentifier);
+            if (!touch) {
+              cancelLongPress();
+              return;
+            }
+            currentX = touch.clientX;
+            currentY = touch.clientY;
+          } else {
+            currentX = e.clientX;
+            currentY = e.clientY;
+          }
+
+          // Calculate movement distance
+          const deltaX = Math.abs(currentX - pressState.startX);
+          const deltaY = Math.abs(currentY - pressState.startY);
+
+          // Check if scrolling
+          const scrollDelta = Math.abs(DOM.chatList.scrollTop - pressState.initialScroll);
+
+          // If significant movement or scroll detected, cancel long press
+          if (deltaX > MOVEMENT_THRESHOLD || deltaY > MOVEMENT_THRESHOLD || scrollDelta > 5) {
+            pressState.scrollDetected = true;
+            cancelLongPress();
           }
         };
 
-        item.onmousedown = item.ontouchstart = startLongPress;
-        item.onmouseup = item.ontouchend = item.onmouseleave = cancelLongPress;
-        item.onclick = handleClick;
+        const cancelLongPress = () => {
+          if (pressState.timer) {
+            clearTimeout(pressState.timer);
+            pressState.timer = null;
+          }
+          pressState.isPressed = false;
+          resetVisualState();
+        };
+
+        const resetVisualState = () => {
+          item.style.opacity = '';
+          item.style.transform = '';
+          item.style.transition = '';
+        };
+
+        const handleEnd = (e) => {
+          const wasPressed = pressState.isPressed;
+          const wasLongPress = pressState.longPressTriggered;
+          const wasScroll = pressState.scrollDetected;
+
+          cancelLongPress();
+
+          // Handle regular click only if it wasn't a long press or scroll
+          if (wasPressed && !wasLongPress && !wasScroll) {
+            // Small delay to ensure this isn't part of a scroll gesture
+            setTimeout(() => {
+              ChatManager.select(id);
+            }, 50);
+          }
+        };
+
+        // Touch events - using passive for better scroll performance
+        item.addEventListener('touchstart', startLongPress, { passive: true });
+        item.addEventListener('touchmove', checkMovement, { passive: true });
+        item.addEventListener('touchend', handleEnd, { passive: true });
+        item.addEventListener('touchcancel', cancelLongPress, { passive: true });
+
+        // Mouse events (for desktop)
+        item.addEventListener('mousedown', startLongPress);
+        item.addEventListener('mousemove', checkMovement);
+        item.addEventListener('mouseup', handleEnd);
+        item.addEventListener('mouseleave', cancelLongPress);
+
+        // Prevent context menu on long press (desktop)
+        item.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          return false;
+        });
       }
     };
 

@@ -3,23 +3,23 @@ package work.isdzulqor.oalla
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.webkit.WebView
-import android.webkit.WebViewClient
 import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import work.isdzulqor.oalla.databinding.ActivityMainBinding
+import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.io.File
 import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var webView: WebView
+    private lateinit var viewPager: ViewPager2
+    private lateinit var bottomNav: BottomNavigationView
     private lateinit var logOutput: TextView
-    private lateinit var binding: ActivityMainBinding
+    private lateinit var logScroll: ScrollView
+    private lateinit var logToggleButton: Button
+    private val DEBUG_MODE = true // Set to false to hide log area and log button
 
     private val ollamaPort = 9090
     external fun runOllamaWithArgs(args: Array<String>)
@@ -38,86 +38,72 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val webView = findViewById<WebView>(R.id.webview)
-        val logOutput = findViewById<TextView>(R.id.log_output)
-        val placeholderImage = findViewById<ImageView>(R.id.placeholder_image)
-        val toggleLogButton = findViewById<Button>(R.id.toggleLogButton)
-        val logScroll = findViewById<ScrollView>(R.id.logScroll)
+        viewPager = findViewById(R.id.view_pager)
+        bottomNav = findViewById(R.id.bottom_navigation)
+        logOutput = findViewById(R.id.log_output)
+        logScroll = findViewById(R.id.logScroll)
+        logToggleButton = findViewById(R.id.log_toggle_button)
 
-        // Setup WebView
-        webView.apply {
-            webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    // Hide the placeholder and show the WebView
-                    placeholderImage.visibility = View.GONE
-                    webView.visibility = View.VISIBLE
+        // ViewPager adapter
+        viewPager.adapter = MainPagerAdapter(this)
+        viewPager.reduceSwipeSensitivity(factor = 3) // 2–5 is usually a good range
+
+        // BottomNav → ViewPager
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_chat -> viewPager.currentItem = 0
+                R.id.nav_model -> viewPager.currentItem = 1
+                R.id.nav_about -> viewPager.currentItem = 2
+            }
+            true
+        }
+
+        // ViewPager → BottomNav
+        viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                bottomNav.menu.getItem(position).isChecked = true
+            }
+        })
+
+        // Default tab
+        bottomNav.selectedItemId = R.id.nav_chat
+
+        if (DEBUG_MODE) {
+            logToggleButton.visibility = View.VISIBLE
+            logScroll.visibility = View.GONE // Start collapsed
+            logToggleButton.setOnClickListener {
+                if (logScroll.visibility == View.VISIBLE) {
+                    logScroll.visibility = View.GONE
+                    logToggleButton.text = "LOG"
+                } else {
+                    logScroll.visibility = View.VISIBLE
+                    logToggleButton.text = "HIDE"
                 }
             }
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            loadUrl("http://localhost:$ollamaPort/web")
+        } else {
+            logToggleButton.visibility = View.GONE
+            logScroll.visibility = View.GONE
         }
 
-        // Setup log toggle button
-        toggleLogButton.setOnClickListener {
-            val layoutParams = logScroll.layoutParams as LinearLayout.LayoutParams
-
-            if (logScroll.visibility == View.GONE || layoutParams.weight == 0f) {
-                // Expand to 30% height
-                layoutParams.weight = 0.3f
-                logScroll.layoutParams = layoutParams
-                logScroll.visibility = View.VISIBLE
-                toggleLogButton.text = "Hide Logs"
-            } else {
-                // Collapse to 0 height
-                layoutParams.weight = 0f
-                logScroll.layoutParams = layoutParams
-                logScroll.visibility = View.GONE
-                toggleLogButton.text = "Show Logs"
-            }
-        }
-
-        // Save for native access
-        this.webView = webView
-        this.logOutput = logOutput
-
+        // Ollama init
         copyAssetsToInternalStorage()
         startOllamaWithArgs()
-    }
-
-    private fun setupWebView() {
-        webView.apply {
-            webViewClient = WebViewClient()
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            loadUrl("http://localhost:$ollamaPort/web")
-        }
     }
 
     private fun copyAssetsToInternalStorage() {
         val assetManager = assets
         val publicDir = File(filesDir, "public").apply {
-            if (!exists()) {
-                val created = mkdirs()
-                Log.d("AssetCopy", "Created public dir: $created at $absolutePath")
-            } else {
-                Log.d("AssetCopy", "Public dir already exists at $absolutePath")
-            }
+            if (!exists()) mkdirs()
         }
 
-        val assetFiles = assetManager.list("public") ?: run {
-            Log.w("AssetCopy", "No files found under assets/public")
-            return
-        }
-
+        val assetFiles = assetManager.list("public") ?: return
         assetFiles.forEach { filename ->
             val outFile = File(publicDir, filename)
-            assetManager.open("public/$filename").use { inStream ->
-                FileOutputStream(outFile).use { outStream ->
-                    inStream.copyTo(outStream)
+            assetManager.open("public/$filename").use { input ->
+                FileOutputStream(outFile).use { output ->
+                    input.copyTo(output)
                 }
             }
-            Log.d("AssetCopy", "Copied: $filename to ${outFile.absolutePath}")
         }
     }
 
@@ -129,19 +115,13 @@ class MainActivity : AppCompatActivity() {
                 val shaFile = blobsDir.listFiles()?.firstOrNull { it.name.startsWith("sha256-") }
 
                 System.setProperty("OLLAMA_MODELS", ollamaDir.absolutePath)
-                Log.d("Ollama", "OLLAMA_MODELS = ${ollamaDir.absolutePath}")
-
                 if (shaFile != null) {
                     Log.d("Ollama", "Using model: ${shaFile.absolutePath}")
                 } else {
                     Log.w("Ollama", "No model found in blobs dir. Proceeding anyway.")
                 }
 
-                val args = arrayOf(
-                    "serve",
-                    "--host", "localhost:$ollamaPort"
-                )
-
+                val args = arrayOf("serve", "--host", "localhost:$ollamaPort")
                 runOllamaWithArgs(args)
             } catch (e: Exception) {
                 Log.e("Ollama", "Failed to start Ollama: ${e.message}", e)
@@ -149,10 +129,17 @@ class MainActivity : AppCompatActivity() {
         }.start()
     }
 
-    // Called from native C++ to append logs to the UI
     fun logFromNative(msg: String) {
         runOnUiThread {
             logOutput.append("$msg\n")
+        }
+    }
+
+    fun hideSplash() {
+        runOnUiThread {
+            findViewById<View>(R.id.splash_overlay).visibility = View.GONE
+            bottomNav.visibility = View.VISIBLE
+            logToggleButton.visibility = if (DEBUG_MODE) View.VISIBLE else View.GONE
         }
     }
 }
