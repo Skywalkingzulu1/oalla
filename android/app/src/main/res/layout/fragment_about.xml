@@ -1,15 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/about_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AboutFragment">
+    android:background="@color/blue_dark">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:id="@+id/about_scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textColor="@color/white"
-        android:text="@string/hello_blank_fragment" />
+        android:padding="24dp">
 
+        <LinearLayout
+            android:id="@+id/about_container"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/about_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:lineSpacingExtra="6dp"
+                android:textIsSelectable="true"
+                android:text="Loading..." />
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Version Label at Bottom Center -->
+    <TextView
+        android:id="@+id/version_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="v1.0.0"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="12dp" />
 </FrameLayout>

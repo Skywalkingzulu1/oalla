@@ -8,7 +8,7 @@
   <style>
     /* === CSS Variables === */
     :root {
-      --primary-color: #001a2e;
+      --primary-color: #062944;
       /* dark header/nav */
       --primary-dark: #0b141a;
       /* darker background shade */
@@ -23,7 +23,7 @@
       --background: #0b141a;
       /* main app background */
       /* --surface: #202c33; */
-      --surface: #001a2e;
+      --surface: #062944;
       /* chat/message box */
       --text-primary: #e9edef;
       /* primary white-ish text */
@@ -32,7 +32,7 @@
       --text-tertiary: #667781;
       /* tertiary lighter gray */
       /* --border-color: #2a3942; */
-      --border-color: #001a2e;
+      --border-color: #062944;
       /* subtle border lines */
       --user-bubble: #005c4b;
       /* dark green for user message */
@@ -223,7 +223,8 @@
     }
 
     .chat-item:hover {
-      background: var(--background);
+      /* disable this since hover can get stuck on webview */
+      /* background: var(--background);  */
     }
 
     .chat-item-header {
@@ -242,6 +243,40 @@
       font-size: 0.75rem;
       color: var(--text-tertiary);
       margin-top: 0.25rem;
+    }
+
+    /* === Highlight selected topic during modal === */
+    .chat-item.active-highlight {
+      background-color: #031b2e;
+      pointer-events: none;
+    }
+
+    /* === Prevent clicking other topics when modal is open === */
+    .chat-list.modal-open .chat-item:not(.active-highlight) {
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* === Modal button icon-only styling === */
+    #chatActionModal button {
+      background: transparent;
+      border: none;
+      padding: 1rem;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background 0.3s;
+    }
+
+    #chatActionModal button:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    #chatActionModal button svg {
+      width: 28px;
+      height: 28px;
+      stroke: white;
     }
 
     /* === Chat Header === */
@@ -727,29 +762,20 @@
     /* === Date Divider === */
     .date-divider {
       text-align: center;
-      color: #666;
+      color: var(--text-secondary);
+      text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);  /* <- shadow */
       font-size: 0.8rem;
       margin: 1rem 0;
       position: relative;
     }
 
-    .date-divider::before,
-    .date-divider::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      width: 36%;
-      height: 1px;
-      background: #ffffff1a;
-    }
-
-    .date-divider::before {
+    /* .date-divider::before {
       left: 0;
     }
 
     .date-divider::after {
       right: 0;
-    }
+    } */
 
     /* === Empty State === */
     .empty-state {
@@ -876,10 +902,10 @@
   <div id="chatActionModal" class="unallow-select">
     <div id="modalTitle"></div>
     <button onclick="confirmPinAction()" style="background:#0f766e; color:white;">
-      📌 Pin/Unpin
+      Pin/Unpin
     </button>
     <button onclick="confirmDeleteAction()" style="background:#ef4444; color:white;">
-      🗑️ Delete
+      Delete
     </button>
     <button onclick="closeModal()" style="background:#f3f4f6; color:#333;">
       Cancel
@@ -1643,6 +1669,7 @@
           <div class="chat-item-header">
             <span class="chat-item-title">${Utils.extractTopicTitle(result.chatId)}</span>
             <span style="font-size: 0.75rem; color: #888;">${result.role}</span>
+            <span class="chat-item-topic-id">${Utils.formatRelativeDateTime(result.timestamp)}</span>
           </div>
           <div style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;">${preview}</div>
           <div class="chat-item-time">${Utils.formatRelativeDateTime(result.timestamp)}</div>
@@ -1714,6 +1741,7 @@
 
         item.innerHTML = `
           <div class="chat-item-header">
+            <span class="chat-item-topic-id" style="display:none">${id}</span>
             <span class="chat-item-title">${title}</span>
             ${isPinned ? '<span style="font-size: 1rem;">📌</span>' : ''}
           </div>
@@ -1875,13 +1903,37 @@
     // === Modal Manager ===
     const ModalManager = {
       show(topicId) {
-        DOM.modalTitle.textContent = `Actions for: ${Utils.extractTopicTitle(topicId)}`;
+        DOM.modalTitle.textContent = `Conversation: ${Utils.extractTopicTitle(topicId)}`;
         DOM.modal.style.display = 'block';
+        AppState.selectedTopicId = topicId;
+
+        // Set Pin/Unpin button label
+        const pinBtn = DOM.modal.querySelector('button[onclick="confirmPinAction()"]');
+        const isPinned = AppState.pinnedTopics.includes(topicId);
+        pinBtn.textContent = isPinned ? 'Unpin' : 'Pin';
+
+        // Highlight the topic visually
+        const chatItems = document.querySelectorAll('.chat-item');
+        chatItems.forEach(item => {
+          const topicIdSpan = item.querySelector('.chat-item-topic-id');
+          if (topicIdSpan && topicIdSpan.textContent === topicId) {
+            item.classList.add('active-highlight');
+          }
+        });
+
+        // Prevent clicking other topics
+        DOM.chatList.classList.add('modal-open');
       },
 
       close() {
         DOM.modal.style.display = 'none';
         AppState.selectedTopicId = null;
+
+        // Remove highlight and unlock interaction
+        document.querySelectorAll('.chat-item.active-highlight').forEach(item =>
+          item.classList.remove('active-highlight')
+        );
+        DOM.chatList.classList.remove('modal-open');
       },
 
       confirmPin() {

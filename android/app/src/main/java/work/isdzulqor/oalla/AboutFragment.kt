@@ -1,10 +1,21 @@
 package work.isdzulqor.oalla
 
+import android.content.Intent
+import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.TextPaint
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -55,5 +66,68 @@ class AboutFragment : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val textView = view.findViewById<TextView>(R.id.about_content)
+
+        val fullText = """
+        ABOUT OALLA
+
+        OALLA is our small experiment to make AI run directly on your device — kept offline, kept private.
+
+        Thanks to open-source projects like llama.cpp, Ollama, and many others contributing amazing models, this is finally possible.
+
+        Is it fast? On high-spec devices, sure. On most phones... it's getting there.
+        But it works — and it's private, local, and evolving fast.
+
+        We’re building:
+        – Document AI
+        – Local GPT-style chat
+        – Other stuff we’re still testing at 2AM
+
+        Have feedback or ideas?
+        Drop us a line: contact@oalla.isdzulqor.work
+
+        — The OALLA Team
+    """.trimIndent()
+
+        val spannable = SpannableString(fullText)
+
+        val links = mapOf(
+            "llama.cpp" to "https://github.com/ggml-org/llama.cpp",
+            "Ollama" to "https://github.com/ollama/ollama",
+            "contact@oalla.isdzulqor.work" to "mailto:contact@oalla.isdzulqor.work"
+        )
+
+        links.forEach { (text, url) ->
+            val index = fullText.indexOf(text)
+            if (index >= 0) {
+                spannable.setSpan(object : ClickableSpan() {
+                    override fun onClick(widget: View) {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        startActivity(intent)
+                    }
+
+                    override fun updateDrawState(ds: TextPaint) {
+                        super.updateDrawState(ds)
+                        ds.color = ContextCompat.getColor(requireContext(), R.color.teal_200)
+                        ds.isUnderlineText = false
+                    }
+                }, index, index + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            }
+        }
+
+        textView.text = spannable
+        textView.movementMethod = LinkMovementMethod.getInstance()
+        textView.highlightColor = Color.TRANSPARENT
+    }
+
+    private fun openUrl(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.data = Uri.parse(url)
+        startActivity(intent)
     }
 }
