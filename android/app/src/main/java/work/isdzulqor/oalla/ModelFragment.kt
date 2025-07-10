@@ -103,18 +103,20 @@ class ModelFragment : Fragment() {
     }
 
     private fun showStorageSwitchConfirmation(checkedId: Int) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Change Storage Location")
-            .setMessage("Changing the storage location won't move your existing downloaded models. They will remain in the currently selected storage.")
-            .setPositiveButton("Continue") { _, _ ->
+        showCustomDialog(
+            title = "Change Storage Location",
+            message = "Changing the storage location won't move your existing downloaded models. They will remain in the currently selected storage.",
+            positiveText = "Continue",
+            negativeText = "Cancel",
+            onPositive = {
                 lastCheckedStorageId = checkedId
                 if (checkedId == R.id.storage_external) {
                     openExternalStoragePicker.launch(null)
                 } else {
                     selectedExternalUri = null
                 }
-            }
-            .setNegativeButton("Cancel") { _, _ ->
+            },
+            onNegative = {
                 storageToggle.setOnCheckedChangeListener(null)
                 storageToggle.check(lastCheckedStorageId)
                 storageToggle.setOnCheckedChangeListener { _, id ->
@@ -123,7 +125,7 @@ class ModelFragment : Fragment() {
                     }
                 }
             }
-            .show()
+        )
     }
 
     private fun restoreExternalUri() {
@@ -158,12 +160,14 @@ class ModelFragment : Fragment() {
     }
 
     private fun confirmDeleteModel(name: String) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Delete Model")
-            .setMessage("Are you sure you want to delete \"$name\"?")
-            .setPositiveButton("Delete") { _, _ -> deleteModel(name) }
-            .setNegativeButton("Cancel", null)
-            .show()
+        showCustomDialog(
+            title = "Delete Model",
+            message = "Are you sure you want to delete \"$name\"?",
+            positiveText = "Delete",
+            negativeText = "Cancel",
+            onPositive = { deleteModel(name) },
+            onNegative = {}
+        )
     }
 
     private fun deleteModel(name: String) {
@@ -325,23 +329,27 @@ class ModelFragment : Fragment() {
         Also, avoid closing or force-stopping the app during the download, as it may cancel the process.
     """.trimIndent()
 
-        AlertDialog.Builder(requireContext())
-            .setTitle("Download Confirmation")
-            .setMessage(message)
-            .setPositiveButton("Download") { _, _ ->
+        showCustomDialog(
+            title = "Download Confirmation",
+            message = message,
+            positiveText = "Download",
+            negativeText = "Cancel",
+            onPositive = {
                 if (!isNotificationEnabled(requireContext())) {
-                    AlertDialog.Builder(requireContext())
-                        .setTitle("Enable Notifications")
-                        .setMessage("To track download progress, please enable notifications for this app.")
-                        .setPositiveButton("Open Settings") { _, _ -> openNotificationSettings() }
-                        .setNegativeButton("Cancel", null)
-                        .show()
+                    showCustomDialog(
+                        title = "Enable Notifications",
+                        message = "To track download progress, please enable notifications for this app.",
+                        positiveText = "Open Settings",
+                        negativeText = "Cancel",
+                        onPositive = { openNotificationSettings() },
+                        onNegative = {}
+                    )
                 } else {
                     downloadModel(modelName)
                 }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+            },
+            onNegative = {}
+        )
     }
 
     private fun isNotificationEnabled(context: Context): Boolean {
@@ -366,5 +374,28 @@ class ModelFragment : Fragment() {
         } else {
             Toast.makeText(requireContext(), "Unable to open settings", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showCustomDialog(
+        title: String,
+        message: String,
+        positiveText: String,
+        negativeText: String?,
+        onPositive: () -> Unit,
+        onNegative: (() -> Unit)? = null
+    ) {
+        val view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_custom, null)
+        view.findViewById<TextView>(R.id.customTitle).text = title
+        view.findViewById<TextView>(R.id.customMessage).text = message
+
+        val builder = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
+            .setView(view)
+            .setPositiveButton(positiveText) { _, _ -> onPositive() }
+
+        if (negativeText != null && onNegative != null) {
+            builder.setNegativeButton(negativeText) { _, _ -> onNegative() }
+        }
+
+        builder.show()
     }
 }

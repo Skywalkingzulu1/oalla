@@ -10,7 +10,7 @@
     :root {
       --primary-color: #062944;
       /* dark header/nav */
-      --primary-dark: #0b141a;
+      --primary-dark: #031d31;
       /* darker background shade */
       --primary-light: #202c33;
       /* lighter panel background */
@@ -20,7 +20,7 @@
       /* darker green hover */
       --danger-color: #e35454;
       --warning-color: #fbbf24;
-      --background: #0b141a;
+      --background: #031d31;
       /* main app background */
       /* --surface: #202c33; */
       --surface: #062944;
@@ -68,17 +68,23 @@
     header {
       background: var(--primary-color);
       color: white;
-      padding: 1rem 1.5rem;
+      padding: 0.6rem 1.5rem;
       font-size: 1.25rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
-      border-bottom: 1px solid var(--border-color);
       position: sticky;
       top: 0;
       z-index: 50;
+    }
+
+    header.hidden {
+      transform: translateY(-100%);
+      height: 0;
+      padding: 0;
+      overflow: hidden;
+      border: none;
     }
 
     .logo {
@@ -90,6 +96,10 @@
       text-shadow: 0 0 4px rgba(0, 168, 132, 0.25);
     }
 
+    .model-selector-wrapper {
+      position: relative;
+    }
+
     .model-selector-wrapper select {
       font-size: 0.875rem;
       padding: 0.45rem 1rem;
@@ -98,7 +108,8 @@
       background: var(--primary-light);
       color: var(--text-primary);
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.1s ease;
+      min-width: 150px;
     }
 
     .model-selector-wrapper select:hover {
@@ -147,18 +158,80 @@
       display: none;
       flex-direction: column;
       background-color: var(--background);
+
+      /* transition animation */
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
+      pointer-events: none;
     }
 
     .screen.active {
       display: flex;
+
+      /* transition animation */
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+      display: flex;
+    }
+
+    /* === Chat History Toggle Button === */
+    .chat-history-toggle {
+      width: 100%;
+      height: 5px;
+      /* As thin as a shadow */
+      /* background: var(--primary-dark); */
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      /* subtle edge */
+
+      will-change: transform;
+      transition: transform 0.2s ease;
+      z-index: 10;
+    }
+
+    .chat-history-button {
+      background: #fff;
+      border: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .chat-history-button svg {
+      width: 66px;
+      height: 66px;
+      stroke: #fff;
+      opacity: 1;
+      z-index: 1;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .chat-history-button:hover svg {
+      transform: scale(1.2);
+      opacity: 0.9;
     }
 
     /* === Search Bar === */
     .search-bar {
-      padding: 0.75rem;
+      padding: 0.25rem 0.75rem;
       background: var(--surface);
       position: relative;
       border-bottom: 1px solid var(--border-color);
+      display: none;
+    }
+
+    .search-bar.visible {
+      display: block;
     }
 
     .search-bar input {
@@ -169,6 +242,8 @@
       font-size: 0.875rem;
       outline: none;
       transition: all 0.2s;
+      background: var(--input-text-background);
+      color: var(--text-primary);
     }
 
     .search-bar input:focus {
@@ -208,11 +283,22 @@
     }
 
     /* === Chat List === */
-    .chat-list {
+    .chat-list-container {
       flex: 1;
       background: var(--surface);
-      overflow-y: auto;
+      overflow: hidden;
       border-top: 1px solid var(--border-color);
+      display: none;
+      flex-direction: column;
+    }
+
+    .chat-list-container.visible {
+      display: flex;
+    }
+
+    .chat-list {
+      flex: 1;
+      overflow-y: auto;
     }
 
     .chat-item {
@@ -245,6 +331,83 @@
       margin-top: 0.25rem;
     }
 
+    /* === Welcome Screen === */
+    .welcome-screen {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+      background: var(--surface);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .welcome-screen.hidden {
+      display: none;
+    }
+
+    .welcome-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--secondary-color) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome-subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      max-width: 300px;
+      line-height: 1.5;
+    }
+
+    .feature-list {
+      text-align: left;
+      margin-bottom: 2.5rem;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    .feature-item svg {
+      width: 20px;
+      height: 20px;
+      color: var(--secondary-color);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .privacy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(0, 168, 132, 0.1);
+      border: 1px solid rgba(0, 168, 132, 0.3);
+      border-radius: 20px;
+      color: var(--secondary-color);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-top: 1rem;
+    }
+
+    .privacy-badge svg {
+      width: 16px;
+      height: 16px;
+    }
+
     /* === Highlight selected topic during modal === */
     .chat-item.active-highlight {
       background-color: #031b2e;
@@ -258,7 +421,78 @@
     }
 
     /* === Modal button icon-only styling === */
-    #chatActionModal button {
+    #chatActionModal {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+      border-top-left-radius: 16px;
+      border-top-right-radius: 16px;
+      padding: 1.5rem 1rem;
+      z-index: 1000;
+      animation: slideUp 0.1s ease-out;
+    }
+
+    .chat-modal-dragbar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .chat-modal-dragbar div {
+      width: 40px;
+      height: 4px;
+      background: gray;
+      border-radius: 2px;
+    }
+
+    #modalTitle {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .chat-modal-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .chat-modal-button {
+      width: 100%;
+      background: none;
+      border: none;
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-weight: 500;
+      font-size: 1rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .chat-modal-button svg {
+      width: 24px;
+      height: 24px;
+      color: var(--secondary-color);
+    }
+
+    .chat-modal-button.delete {
+      color: var(--danger-color);
+    }
+
+    .chat-modal-button.delete svg {
+      color: var(--danger-color);
+    }
+
+    /* #chatActionModal button {
       background: transparent;
       border: none;
       padding: 1rem;
@@ -266,7 +500,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      transition: background 0.3s;
+      transition: background 0.1s;
     }
 
     #chatActionModal button:hover {
@@ -277,7 +511,7 @@
       width: 28px;
       height: 28px;
       stroke: white;
-    }
+    } */
 
     /* === Chat Header === */
     .chat-header {
@@ -288,6 +522,49 @@
       display: flex;
       align-items: center;
       gap: 1rem;
+    }
+
+    .chat-header-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .chat-header-title {
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-header-model {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-model-selector {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: var(--background);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .header-model-selector:hover {
+      border-color: var(--secondary-color);
+      color: var(--text-primary);
+    }
+
+    .header-model-selector:focus {
+      outline: none;
+      border-color: var(--secondary-color);
     }
 
     .back-button {
@@ -311,6 +588,30 @@
     .back-button svg {
       width: 24px;
       height: 24px;
+    }
+
+    .config-button {
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+    }
+
+    .config-button:hover {
+      background: var(--background);
+    }
+
+    .config-button svg {
+      width: 20px;
+      height: 20px;
     }
 
     /* === Chat Box === */
@@ -377,6 +678,137 @@
       flex-wrap: wrap;
     }
 
+    /* === Enhanced Quick Send Area === */
+    .quick-send-container {
+      position: sticky;
+      bottom: 0;
+      z-index: 20;
+      /* higher than welcome screen if needed */
+      background: linear-gradient(180deg, var(--primary-dark) 0%, var(--surface) 100%);
+      border-top: 2px solid var(--secondary-color);
+      padding: 1.5rem 1rem 1rem;
+    }
+
+    .quick-send-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--secondary-color), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    .quick-send-header {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .quick-send-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 0.25rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .quick-send-title svg {
+      width: 24px;
+      height: 24px;
+      color: var(--secondary-color);
+    }
+
+    .quick-send-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .quick-send-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: var(--input-text-background);
+      border-radius: 28px;
+      padding-right: 3rem;
+      width: 100%;
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .quick-send-wrapper:focus-within,
+    .input-wrapper:focus-within {
+      border-color: var(--secondary-color);
+      box-shadow: 0 0 20px rgba(0, 168, 132, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .quick-send-wrapper textarea {
+      flex: 1;
+      border: none;
+      line-height: 1.4;
+      background: transparent;
+      color: var(--text-primary);
+      resize: none;
+      padding: 0.8rem 1.2rem;
+      font-size: 1rem;
+      border-radius: 28px;
+      min-height: 44px;
+      max-height: 120px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .quick-send-button {
+      position: absolute;
+      right: 0.4rem;
+      bottom: 0.4rem;
+      top: 0.9rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+      color: white;
+      border: none;
+      font-size: 1.2rem;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 168, 132, 0.3);
+    }
+
+    .quick-send-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 16px rgba(0, 168, 132, 0.4);
+    }
+
+    .quick-send-button:active {
+      transform: scale(0.95);
+    }
+
+    .quick-send-button svg {
+      width: 22px;
+      height: 22px;
+      transform: rotate(45deg);
+    }
+
     /* === Input Area === */
     #searchInput {
       background: var(--input-text-background);
@@ -384,9 +816,20 @@
     }
 
     .input-area {
-      background: var(--surface);
-      border-top: 1px solid var(--border-color);
-      padding: 0.5rem 0.75rem;
+      background: linear-gradient(180deg, var(--primary-dark) 0%, var(--surface) 100%);
+      padding: 1rem;
+      position: sticky;
+    }
+
+    .input-area::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--secondary-color), transparent);
+      animation: shimmer 2s infinite;
     }
 
     .input-wrapper {
@@ -400,13 +843,10 @@
       border: 1px solid var(--border-color);
     }
 
-    .input-wrapper:focus-within {
-      border-color: var(--primary-color);
-    }
-
     .input-wrapper textarea {
       flex: 1;
       border: none;
+      line-height: 1;
       background: transparent;
       color: var(--text-primary);
       resize: none;
@@ -423,7 +863,7 @@
       position: absolute;
       right: 0.3rem;
       bottom: 0.3rem;
-      top: 0.7rem;
+      top: 0.5rem;
       width: 36px;
       height: 36px;
       border-radius: 50%;
@@ -520,6 +960,8 @@
       font-size: 1rem;
       margin-bottom: 1rem;
       outline: none;
+      background: var(--input-text-background);
+      color: var(--text-primary);
     }
 
     .download-area input:focus {
@@ -712,7 +1154,7 @@
     }
 
     /* === Modal === */
-    #chatActionModal {
+    /* #chatActionModal {
       display: none;
       position: fixed;
       bottom: 0;
@@ -724,8 +1166,8 @@
       border-top-right-radius: 16px;
       padding: 1.5rem 1rem;
       z-index: 1000;
-      animation: slideUp 0.3s ease-out;
-    }
+      animation: slideUp 0.1s ease-out;
+    } */
 
     @keyframes slideUp {
       from {
@@ -744,7 +1186,7 @@
       color: var(--text-primary);
     }
 
-    #chatActionModal button {
+    /* #chatActionModal button {
       width: 100%;
       padding: 0.875rem;
       border: none;
@@ -757,25 +1199,26 @@
 
     #chatActionModal button:not(:last-child) {
       margin-bottom: 0.5rem;
-    }
+    } */
 
     /* === Date Divider === */
     .date-divider {
       text-align: center;
       color: var(--text-secondary);
-      text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);  /* <- shadow */
+      text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
+      /* <- shadow */
       font-size: 0.8rem;
       margin: 1rem 0;
       position: relative;
     }
 
     /* .date-divider::before {
-      left: 0;
-    }
+        left: 0;
+      }
 
-    .date-divider::after {
-      right: 0;
-    } */
+      .date-divider::after {
+        right: 0;
+      } */
 
     /* === Empty State === */
     .empty-state {
@@ -784,7 +1227,282 @@
       color: var(--text-tertiary);
     }
 
-    /* === Scrollbar === */
+    /* === No Models State === */
+    .no-models-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .no-models-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      opacity: 0.5;
+    }
+
+    .no-models-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+
+    .no-models-description {
+      font-size: 0.875rem;
+      margin-bottom: 2rem;
+      max-width: 300px;
+    }
+
+    .no-models-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .no-models-actions button {
+      padding: 0.875rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .primary-action-button {
+      background: var(--secondary-color);
+      color: white;
+    }
+
+    .primary-action-button:hover {
+      background: var(--secondary-dark);
+    }
+
+    .secondary-action-button {
+      background: var(--background);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .secondary-action-button:hover {
+      background: var(--primary-light);
+    }
+
+    /* === Config Modal === */
+    #configModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.1s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .config-modal-content {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.25rem;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      animation: scaleIn 0.1s ease-out;
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0.9);
+        opacity: 0;
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .config-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .config-modal-header h3 {
+      margin: 0;
+      color: var(--text-primary);
+      font-size: 1.25rem;
+    }
+
+    .config-close-button {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 50%;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+    }
+
+    .config-close-button:hover {
+      background: var(--background);
+      color: var(--text-primary);
+    }
+
+    .config-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .config-section label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .config-section textarea {
+      width: 100%;
+      min-height: 80px;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--input-text-background);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.875rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .config-section textarea:focus {
+      border-color: var(--secondary-color);
+    }
+
+    .config-description {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      margin-top: 0.25rem;
+    }
+
+    .config-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+
+    .config-actions button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .config-save-button {
+      background: var(--secondary-color);
+      color: white;
+    }
+
+    .config-save-button:hover {
+      background: var(--secondary-dark);
+    }
+
+    .config-cancel-button {
+      background: var(--background);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .config-cancel-button:hover {
+      background: var(--primary-light);
+    }
+
+    /* === Generating Indicator === */
+    .generating-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      padding: 0.5rem 0;
+    }
+
+    .typing-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .typing-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--secondary-color);
+      animation: typing 1.4s infinite ease-in-out;
+    }
+
+    .typing-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typing {
+
+      0%,
+      60%,
+      100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+
+      30% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .generating-text {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-left: 0.25rem;
+    }
+
     ::-webkit-scrollbar {
       width: 6px;
     }
@@ -801,11 +1519,11 @@
 </head>
 
 <body>
-  <header class="unallow-select">
+  <header class="unallow-select" id="mainHeader">
     <div class="logo">
       <img src="./oala-logo-flat-horizontal.svg" alt="Ollama Logo" style="height: 26px;" />
     </div>
-    <div class="model-selector-wrapper">
+    <div class="model-selector-wrapper" id="headerModelSelector">
       <select id="modelSelect" onchange="updateModelLabel()">
         <!-- Models will be populated dynamically -->
       </select>
@@ -815,7 +1533,15 @@
   <div class="mobile-wrapper">
     <!-- Topic Screen -->
     <div id="topicScreen" class="screen active">
-      <div class="search-bar">
+      <div class="chat-history-toggle" id="chatHistoryToggle">
+        <button class="chat-history-button" id="chatHistoryButton" onclick="toggleChatHistory()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="currentColor" stroke-width="2">
+            <polygon points="12,16 6,8 18,8"></polygon>
+          </svg>
+        </button>
+      </div>
+
+      <div class="search-bar" id="searchBar">
         <input id="searchInput" type="text" placeholder="Search conversations..." oninput="onSearchInput(this)">
         <button id="clearSearchBtn" onclick="clearSearch()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"
@@ -825,12 +1551,52 @@
           </svg>
         </button>
       </div>
-      <div class="chat-list" id="chatList"></div>
-      <div class="input-area">
-        <div class="input-wrapper">
-          <textarea id="quickInput" placeholder="Ask me anything…" oninput="toggleQuickSend()"></textarea>
-          <button id="quickSendBtn" class="send-button" onclick="quickSend()">
+
+      <div class="chat-list-container" id="chatListContainer">
+        <div class="chat-list" id="chatList"></div>
+      </div>
+
+      <div class="welcome-screen unallow-select" id="welcomeScreen">
+        <h1 class="welcome-title">Your Private AI Assistant</h1>
+        <p class="welcome-subtitle">Experience the power of AI, completely offline and secure</p>
+
+        <div class="feature-list">
+          <div class="feature-item">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+            <span>100% Offline - Your data never leaves your device</span>
+          </div>
+          <div class="feature-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="10" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <span>Complete Privacy - No tracking, no cloud storage</span>
+          </div>
+          <div class="feature-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+            <span>Multiple AI Models - Choose the best for your needs</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="quick-send-container">
+        <div class="quick-send-header unallow-select">
+          <h3 class="quick-send-title">
+            Start a New Conversation
+          </h3>
+          <p class="quick-send-subtitle">Ask me anything and I'll help you out!</p>
+        </div>
+        <div class="quick-send-wrapper">
+          <textarea id="quickInput" placeholder="What's on your mind today?" oninput="toggleQuickSend()"></textarea>
+          <button id="quickSendBtn" class="quick-send-button" onclick="quickSend()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <g transform="translate(-2, 0)">
                 <line x1="22" y1="2" x2="11" y2="13" />
@@ -852,12 +1618,29 @@
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
         </button>
-        <span style="flex: 1; font-weight: 500;">Chat</span>
+        <div class="chat-header-content">
+          <span class="chat-header-title" id="chatHeaderTitle">Chat</span>
+          <div class="chat-header-model">
+            <span>Model:</span>
+            <select id="chatHeaderModelSelect" class="header-model-selector" onchange="updateHeaderModelLabel()">
+              <!-- Models will be populated dynamically -->
+            </select>
+          </div>
+        </div>
+        <button class="config-button" onclick="openConfigModal()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M12 1v6m0 6v6m4.22-10.22l1.42-1.42m-1.42 8.86l1.42 1.42M20 12h-6m-6 0H2m4.22-4.22L4.8 6.36m1.42 8.86L4.8 17.64">
+            </path>
+          </svg>
+        </button>
       </div>
       <div class="chat-box" id="chatBox"></div>
       <div class="input-area">
         <div class="input-wrapper">
-          <textarea id="userInput" placeholder="Ask anything" oninput="toggleSendButton()"></textarea>
+          <textarea id="userInput" placeholder="Ask me anything..." oninput="toggleSendButton()"></textarea>
           <button id="sendBtn" onclick="sendMessage()" class="send-button">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
@@ -888,18 +1671,21 @@
   </div>
 
   <!-- <div class="footer">
-    <button id="navChat" class="active" onclick="showScreen('topic')">
-      <span>💬</span>
-      <span>Chats</span>
-    </button>
-    <button id="navModels" onclick="showScreen('download')">
-      <span>📦</span>
-      <span>Models</span>
-    </button>
-  </div> -->
+      <button id="navChat" class="active" onclick="showScreen('topic')">
+        <span>💬</span>
+        <span>Chats</span>
+      </button>
+      <button id="navModels" onclick="showScreen('download')">
+        <span>📦</span>
+        <span>Models</span>
+      </button>
+    </div> -->
 
   <!-- Chat Action Modal -->
-  <div id="chatActionModal" class="unallow-select">
+  <!-- <div id="chatActionModal" class="unallow-select">
+    <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
+      <div style="width: 40px; height: 4px; background: gray; border-radius: 2px;"></div>
+    </div>
     <div id="modalTitle"></div>
     <button onclick="confirmPinAction()" style="background:#0f766e; color:white;">
       Pin/Unpin
@@ -910,6 +1696,62 @@
     <button onclick="closeModal()" style="background:#f3f4f6; color:#333;">
       Cancel
     </button>
+  </div> -->
+
+  <div id="chatActionModal" class="unallow-select"
+    style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary-dark); box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1); border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 1.5rem 1rem; z-index: 1000; animation: slideUp 0.1s ease-out;">
+    <div onclick="closeModal()" style="display: flex; justify-content: center; margin-bottom: 1rem;">
+      <div style="width: 40px; height: 4px; background: gray; border-radius: 2px;"></div>
+    </div>
+    <div id="modalTitle" onclick="closeModal()"
+      style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1.5rem; text-align: center;"></div>
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+      <button onclick="confirmPinAction()"
+        style="width: 100%; background: none; border: none; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 1rem; font-weight: 500; font-size: 1rem; color: var(--text-primary); cursor: pointer; transition: background 0.2s;">
+        <svg style="width: 24px; height: 24px; color: var(--secondary-color);" xmlns="http://www.w3.org/2000/svg"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M16 7V3m0 0l4 4m-4-4L12 7m4-4v14m0 0v4m0-4l4-4m-4 4l-4-4" />
+        </svg>
+        Pin / Unpin
+      </button>
+      <button onclick="confirmDeleteAction()"
+        style="width: 100%; background: none; border: none; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 1rem; font-weight: 500; font-size: 1rem; color: var(--danger-color); cursor: pointer; transition: background 0.2s;">
+        <svg style="width: 24px; height: 24px; color: var(--danger-color);" xmlns="http://www.w3.org/2000/svg"
+          fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        Delete
+      </button>
+    </div>
+  </div>
+
+  <!-- Config Modal -->
+  <div id="configModal" onclick="closeConfigModalOnOverlay(event)">
+    <div class="config-modal-content" onclick="event.stopPropagation()">
+      <div class="config-modal-header">
+        <h3>Chat Configuration</h3>
+        <button class="config-close-button" onclick="closeConfigModal()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="config-section">
+        <label for="systemPrompt">System Prompt</label>
+        <textarea id="systemPrompt" placeholder="Enter a system prompt to guide the assistant's behavior..."></textarea>
+        <div class="config-description">
+          This prompt will be sent with every message in this conversation to guide the assistant's behavior and
+          responses.
+        </div>
+      </div>
+      <div class="config-actions">
+        <button class="config-cancel-button" onclick="closeConfigModal()">Cancel</button>
+        <button class="config-save-button" onclick="saveConfig()">Apply</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -917,6 +1759,7 @@
     const AppState = {
       currentChatId: null,
       chats: JSON.parse(localStorage.getItem('ollamaChats') || '{}'),
+      chatConfigs: JSON.parse(localStorage.getItem('ollmaChatConfigs') || '{}'),
       pinnedTopics: JSON.parse(localStorage.getItem('pinnedTopics') || '[]'),
       isGenerating: false,
       controller: null,
@@ -924,7 +1767,10 @@
       lastSearchQuery: '',
       selectedTopicId: null,
       longPressTimer: null,
-      searchDebounceTimer: null
+      searchDebounceTimer: null,
+      hasModels: false,
+      userHasScrolled: false,
+      chatHistoryVisible: false,
     };
 
     // === Configuration ===
@@ -938,12 +1784,15 @@
       LONG_PRESS_DURATION: 600,
       SEARCH_DEBOUNCE_DELAY: 300,
       MESSAGE_PREVIEW_LENGTH: 80,
-      TOPIC_TITLE_MAX_WORDS: 12
+      TOPIC_TITLE_MAX_WORDS: 12,
+      DEFAULT_SYSTEM_PROMPT: 'You are a helpful assistant. Answer questions concisely and accurately.',
     };
 
     // === DOM Elements Cache ===
     const DOM = {
+      get mainHeader() { return document.getElementById('mainHeader'); },
       get modelSelect() { return document.getElementById('modelSelect'); },
+      get chatHeaderModelSelect() { return document.getElementById('chatHeaderModelSelect'); },
       get chatBox() { return document.getElementById('chatBox'); },
       get userInput() { return document.getElementById('userInput'); },
       get sendBtn() { return document.getElementById('sendBtn'); },
@@ -956,7 +1805,15 @@
       get downloadProgress() { return document.getElementById('downloadProgress'); },
       get modelUrl() { return document.getElementById('modelUrl'); },
       get modal() { return document.getElementById('chatActionModal'); },
-      get modalTitle() { return document.getElementById('modalTitle'); }
+      get modalTitle() { return document.getElementById('modalTitle'); },
+      get configModal() { return document.getElementById('configModal'); },
+      get systemPrompt() { return document.getElementById('systemPrompt'); },
+      get chatHeaderTitle() { return document.getElementById('chatHeaderTitle'); },
+      get headerModelSelector() { return document.getElementById('headerModelSelector'); },
+      get chatHistoryButton() { return document.getElementById('chatHistoryButton'); },
+      get searchBar() { return document.getElementById('searchBar'); },
+      get chatListContainer() { return document.getElementById('chatListContainer'); },
+      get welcomeScreen() { return document.getElementById('welcomeScreen'); }
     };
 
     // === API Service ===
@@ -1022,7 +1879,19 @@
 
       getSelectedModel() {
         return localStorage.getItem('selectedModel');
-      }
+      },
+
+      saveChatConfigs() {
+        localStorage.setItem('ollmaChatConfigs', JSON.stringify(AppState.chatConfigs));
+      },
+
+      // saveChatHistoryState(visible) {
+      //   localStorage.setItem('chatHistoryVisible', visible);
+      // },
+
+      // getChatHistoryState() {
+      //   return localStorage.getItem('chatHistoryVisible') === 'true';
+      // }
     };
 
     // === Utility Functions ===
@@ -1066,6 +1935,22 @@
         return id.split(' #')[0];
       },
 
+      generateChatHeaderTitle(chatId) {
+        if (!chatId || !AppState.chats[chatId] || AppState.chats[chatId].length === 0) {
+          return 'Chat';
+        }
+
+        const firstMessage = AppState.chats[chatId][0];
+        if (firstMessage.role === 'user') {
+          const words = firstMessage.content.trim().split(/\s+/);
+          // Take first 1-2 words
+          const titleWords = words.slice(0, 2).join(' ');
+          return titleWords.length > 20 ? titleWords.substring(0, 20) + '...' : titleWords + '...';
+        }
+
+        return 'Chat';
+      },
+
       debounce(func, delay = Config.SEARCH_DEBOUNCE_DELAY) {
         clearTimeout(AppState.searchDebounceTimer);
         AppState.searchDebounceTimer = setTimeout(func, delay);
@@ -1096,6 +1981,40 @@
             }
           }
         }
+      },
+    };
+
+    // === Config Manager ===
+    const ConfigManager = {
+      open() {
+        if (!AppState.currentChatId) return;
+
+        const config = AppState.chatConfigs[AppState.currentChatId] || {};
+        DOM.systemPrompt.value = config.systemPrompt || Config.DEFAULT_SYSTEM_PROMPT;
+        DOM.configModal.style.display = 'flex';
+      },
+
+      close() {
+        DOM.configModal.style.display = 'none';
+      },
+
+      save() {
+        if (!AppState.currentChatId) return;
+
+        const systemPrompt = DOM.systemPrompt.value.trim();
+
+        if (!AppState.chatConfigs[AppState.currentChatId]) {
+          AppState.chatConfigs[AppState.currentChatId] = {};
+        }
+
+        AppState.chatConfigs[AppState.currentChatId].systemPrompt = systemPrompt;
+        Storage.saveChatConfigs();
+
+        this.close();
+      },
+
+      getSystemPrompt(chatId) {
+        return AppState.chatConfigs[chatId]?.systemPrompt || '';
       }
     };
 
@@ -1105,20 +2024,45 @@
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.footer button').forEach(b => b.classList.remove('active'));
 
+        // Push history state
+        if (screenName === 'chat') {
+          // Hide bottom nav from native
+          safeCallAndroidBridge('hideBottomNav');
+        } else {
+          // Show bottom nav from native
+          safeCallAndroidBridge('showBottomNav');
+        }
+
         switch (screenName) {
           case 'topic':
+            window.location.hash = '#topic';
+            AppState.currentChatId = null; // Optionally clear selected chat
             document.getElementById('topicScreen').classList.add('active');
-            // document.getElementById('navChat').classList.add('active');
+            DOM.mainHeader.classList.remove('hidden');
             this.handleTopicScreen();
             break;
           case 'chat':
+            window.location.hash = '#chat';
             document.getElementById('chatScreen').classList.add('active');
-            // document.getElementById('navChat').classList.add('active');
+            DOM.mainHeader.classList.add('hidden');
+            this.updateChatHeader();
+            break;
+          case 'download':
+            window.location.hash = '#download';
+            document.getElementById('downloadScreen').classList.add('active');
+            DOM.mainHeader.classList.remove('hidden');
             break;
         }
       },
 
       handleTopicScreen() {
+        ChatListManager.render(); // Always refresh
+
+        if (AppState.chatHistoryVisible) {
+          ChatHistoryManager.show();
+        } else {
+          ChatHistoryManager.hide();
+        }
         if (!AppState.lastSearchQuery) {
           DOM.searchInput.value = '';
           ChatListManager.render();
@@ -1126,6 +2070,45 @@
           DOM.searchInput.value = AppState.lastSearchQuery;
           SearchManager.search(AppState.lastSearchQuery);
         }
+      },
+
+      updateChatHeader() {
+        // Update title
+        DOM.chatHeaderTitle.textContent = Utils.generateChatHeaderTitle(AppState.currentChatId);
+
+        // Sync header model selector with main selector
+        DOM.chatHeaderModelSelect.value = DOM.modelSelect.value;
+      }
+    };
+
+    // === Chat History Manager ===
+    const ChatHistoryManager = {
+      toggle() {
+        if (AppState.chatHistoryVisible) return;
+
+        AppState.chatHistoryVisible = true;
+        ChatHistoryManager.show(); // or whatever method you're using to reveal it
+        // Storage.saveChatHistoryState(true);
+
+        // Remove the toggle element after showing
+        const toggleElement = document.getElementById('chatHistoryToggle');
+        if (toggleElement) toggleElement.remove();
+      },
+
+      show() {
+        DOM.chatHistoryButton.classList.add('active');
+        DOM.searchBar.classList.add('visible');
+        DOM.chatListContainer.classList.add('visible');
+        DOM.welcomeScreen.classList.add('hidden');
+        AppState.chatHistoryVisible = true;
+      },
+
+      hide() {
+        DOM.chatHistoryButton.classList.remove('active');
+        DOM.searchBar.classList.remove('visible');
+        DOM.chatListContainer.classList.remove('visible');
+        DOM.welcomeScreen.classList.remove('hidden');
+        AppState.chatHistoryVisible = false;
       }
     };
 
@@ -1148,8 +2131,10 @@
 
       delete(id) {
         delete AppState.chats[id];
+        delete AppState.chatConfigs[id];
         AppState.pinnedTopics = AppState.pinnedTopics.filter(p => p !== id);
         Storage.saveChats();
+        Storage.saveChatConfigs();
         Storage.savePinnedTopics();
         ChatListManager.render();
       },
@@ -1187,6 +2172,9 @@
 
         MessageRenderer.render();
 
+        // Update chat header after adding message
+        ScreenManager.updateChatHeader();
+
         // Generate response
         await this.generateAssistantResponse();
       },
@@ -1211,6 +2199,23 @@
         Storage.saveChats();
       },
 
+      buildMessagesWithSystemPrompt() {
+        const systemPrompt = ConfigManager.getSystemPrompt(AppState.currentChatId) || Config.DEFAULT_SYSTEM_PROMPT;
+        const messages = [];
+
+        if (systemPrompt) {
+          messages.push({
+            role: 'system',
+            content: systemPrompt
+          });
+        }
+
+        // Add conversation messages
+        messages.push(...AppState.chats[AppState.currentChatId]);
+
+        return messages;
+      },
+
       async generateAssistantResponse() {
         const tempDiv = this.createPendingMessage();
         const textDiv = tempDiv.querySelector('.text');
@@ -1225,16 +2230,26 @@
         );
 
         try {
+          const messages = this.buildMessagesWithSystemPrompt();
           const reader = await API.createChatStream(
             DOM.modelSelect.value,
-            AppState.chats[AppState.currentChatId],
+            messages,
             AppState.controller.signal
           );
+          AppState.userHasScrolled = false; // Reset scroll state
+          safeCallAndroidBridge('keepScreenOnFor', 15000); // Keep android screen on for 15 seconds
 
           await Utils.streamToText(reader, (token) => {
             assistantText += token;
             textDiv.textContent = assistantText;
-            DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+            // DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+            // Auto-scroll only if user hasn't scrolled manually
+            console.log('User scrolled:', AppState.userHasScrolled);
+            if (!AppState.userHasScrolled) {
+              DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+            }
+
+            safeCallAndroidBridge('keepScreenOnFor', 5000); // Keep android screen on for 5 seconds
           });
         } catch (err) {
           if (err.name !== 'AbortError') {
@@ -1268,11 +2283,20 @@
         const div = document.createElement('div');
         div.className = 'message-wrapper assistant';
         div.innerHTML = `
-          <div class="bubble">
-            <div class="text"></div>
-            <div class="meta unallow-select">...</div>
-          </div>
-        `;
+            <div class="bubble">
+              <div class="text"></div>
+              <div class="meta unallow-select">
+                <div class="generating-indicator">
+                  <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <span class="generating-text">Generating response...</span>
+                </div>
+              </div>
+            </div>
+          `;
         DOM.chatBox.appendChild(div);
         DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
         return div;
@@ -1319,7 +2343,6 @@
           this.renderMessage(msg, index);
         });
 
-        DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
         if (callback) callback();
       },
 
@@ -1353,7 +2376,7 @@
 
       createMetaElement(msg, index) {
         const meta = document.createElement('div');
-        meta.className = 'meta';
+        meta.className = 'meta unallow-select';
 
         const time = Utils.formatTime(msg.timestamp || Date.now());
         const selected = msg.selected ?? 0;
@@ -1371,36 +2394,36 @@
 
         if (msg.role === 'assistant') {
           parts.push(`<span class="model-change-button" onclick="ModelManager.showDropdown(${index}, this)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
-            </svg>
-          </span>`);
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>
+              </svg>
+            </span>`);
           parts.push(`<div class="model-dropdown" id="modelDropdown-${index}" style="display:none;"></div>`);
         } else if (msg.role === 'user') {
           parts.push(`<span class="model-change-button" onclick="MessageManager.editMessage(${index})">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-          </span>`);
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </span>`);
         }
 
         if (msg.history?.length > 1) {
           parts.push(`
-            <span class="history-nav">
-              <button onclick="HistoryManager.navigate(${index}, -1)">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="15 18 9 12 15 6"/>
-                </svg>
-              </button>
-              ${selected + 1} / ${msg.history.length}
-              <button onclick="HistoryManager.navigate(${index}, 1)">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
-              </button>
-            </span>
-          `);
+              <span class="history-nav">
+                <button onclick="HistoryManager.navigate(${index}, -1)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                  </svg>
+                </button>
+                ${selected + 1} / ${msg.history.length}
+                <button onclick="HistoryManager.navigate(${index}, 1)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </button>
+              </span>
+            `);
         }
 
         meta.innerHTML = parts.join(' ');
@@ -1412,33 +2435,48 @@
     const ModelManager = {
       async load() {
         const models = await API.fetchModels();
-        this.populateSelect(models);
-        this.populateList(models);
+        AppState.hasModels = models.length > 0;
+
+        if (AppState.hasModels) {
+          DOM.headerModelSelector.style.display = 'block';
+          this.populateSelect(models);
+          this.populateList(models);
+          ChatListManager.render();
+        } else {
+          DOM.headerModelSelector.style.display = 'none';
+          ChatListManager.renderNoModelsState();
+          this.populateList(models);
+        }
       },
 
       populateSelect(models) {
-        DOM.modelSelect.innerHTML = '';
-        const savedModel = Storage.getSelectedModel();
-        let modelExists = false;
+        // Populate both selectors
+        [DOM.modelSelect, DOM.chatHeaderModelSelect].forEach(select => {
+          select.innerHTML = '';
+          const savedModel = Storage.getSelectedModel();
+          let modelExists = false;
 
-        models.forEach(model => {
-          const option = document.createElement('option');
-          option.value = model.name;
-          option.textContent = model.name;
+          models.forEach(model => {
+            const option = document.createElement('option');
+            option.value = model.name;
+            option.textContent = model.name;
 
-          if (model.name === savedModel) {
-            modelExists = true;
+            if (model.name === savedModel) {
+              modelExists = true;
+            }
+
+            select.appendChild(option);
+          });
+
+          if (modelExists) {
+            select.value = savedModel;
+          } else if (models.length > 0) {
+            select.value = models[0].name;
+            if (select === DOM.modelSelect) {
+              this.updateLabel();
+            }
           }
-
-          DOM.modelSelect.appendChild(option);
         });
-
-        if (modelExists) {
-          DOM.modelSelect.value = savedModel;
-        } else if (models.length > 0) {
-          DOM.modelSelect.value = models[0].name;
-          this.updateLabel();
-        }
       },
 
       populateList(models) {
@@ -1453,9 +2491,9 @@
           const item = document.createElement('div');
           item.className = 'model-item';
           item.innerHTML = `
-            <span>${model.name}</span>
-            <button onclick="ModelManager.delete('${model.name}')">🗑️ Delete</button>
-          `;
+              <span>${model.name}</span>
+              <button onclick="ModelManager.delete('${model.name}')">🗑️ Delete</button>
+            `;
           DOM.modelList.appendChild(item);
         });
       },
@@ -1498,6 +2536,15 @@
 
       updateLabel() {
         Storage.saveSelectedModel(DOM.modelSelect.value);
+        // Sync with header model selector
+        DOM.chatHeaderModelSelect.value = DOM.modelSelect.value;
+      },
+
+      updateHeaderLabel() {
+        const value = DOM.chatHeaderModelSelect.value;
+        Storage.saveSelectedModel(value);
+        // Sync with main model selector
+        DOM.modelSelect.value = value;
       },
 
       showDropdown(index, buttonElem) {
@@ -1544,10 +2591,23 @@
 
       async regenerateWithModel(index, model) {
         const targetDiv = document.querySelector(`.message-wrapper.assistant[data-index="${index}"]`);
-        const textDiv = targetDiv.querySelector('.text');
         const msg = AppState.chats[AppState.currentChatId][index];
 
-        textDiv.textContent = '';
+        const bubble = targetDiv.querySelector('.bubble');
+        bubble.innerHTML = `
+    <div class="text"></div>
+    <div class="meta unallow-select">
+      <div class="generating-indicator">
+        <div class="typing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <span class="generating-text">Generating response...</span>
+      </div>
+    </div>
+  `;
+        const textDiv = bubble.querySelector('.text');
 
         AppState.controller = new AbortController();
         AppState.isGenerating = true;
@@ -1559,14 +2619,36 @@
 
         try {
           const messagesUntilNow = AppState.chats[AppState.currentChatId].slice(0, index);
-          const reader = await API.createChatStream(model, messagesUntilNow, AppState.controller.signal);
+          const systemPrompt = ConfigManager.getSystemPrompt(AppState.currentChatId);
+          const messages = [];
 
+          if (systemPrompt) {
+            messages.push({
+              role: 'system',
+              content: systemPrompt
+            });
+          }
+
+          messages.push(...messagesUntilNow);
+
+          const reader = await API.createChatStream(model, messages, AppState.controller.signal);
+          AppState.userHasScrolled = false; // Reset scroll state
           let assistantText = '';
+          safeCallAndroidBridge('keepScreenOnFor', 15000); // Keep android screen on for 15 seconds
+
+
           await Utils.streamToText(reader, (token) => {
             assistantText += token;
             msg.history[msg.selected] = assistantText;
             textDiv.textContent = assistantText;
-            DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+            // DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+            // Auto-scroll only if user hasn't scrolled manually
+            console.log('User scrolled:', AppState.userHasScrolled);
+            if (!AppState.userHasScrolled) {
+              DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+            }
+
+            safeCallAndroidBridge('keepScreenOnFor', 5000); // Keep android screen on for 5 seconds
           });
         } catch (err) {
           if (err.name !== 'AbortError') {
@@ -1579,6 +2661,10 @@
           Storage.saveChats();
           MessageRenderer.render();
         }
+      },
+
+      async retryFetchModels() {
+        await this.load();
       }
     };
 
@@ -1635,14 +2721,18 @@
 
         Object.entries(AppState.chats).forEach(([chatId, messages]) => {
           messages.forEach((msg, index) => {
-            if (msg.content?.toLowerCase().includes(query)) {
-              results.push({
-                chatId,
-                index,
-                content: msg.content,
-                timestamp: msg.timestamp || 0,
-                role: msg.role
-              });
+            const contentsToSearch = msg.role === 'assistant' && msg.history ? msg.history : [msg.content];
+            for (const content of contentsToSearch) {
+              if (content?.toLowerCase().includes(query)) {
+                results.push({
+                  chatId,
+                  index,
+                  content,
+                  timestamp: msg.timestamp || 0,
+                  role: msg.role
+                });
+                break;
+              }
             }
           });
         });
@@ -1666,14 +2756,12 @@
           : result.content;
 
         item.innerHTML = `
-          <div class="chat-item-header">
-            <span class="chat-item-title">${Utils.extractTopicTitle(result.chatId)}</span>
-            <span style="font-size: 0.75rem; color: #888;">${result.role}</span>
-            <span class="chat-item-topic-id">${Utils.formatRelativeDateTime(result.timestamp)}</span>
-          </div>
-          <div style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;">${preview}</div>
-          <div class="chat-item-time">${Utils.formatRelativeDateTime(result.timestamp)}</div>
-        `;
+            <div class="chat-item-header">
+              <span class="chat-item-title">${preview}</span>
+              <span style="font-size: 0.75rem; color: #888;">${result.role}</span>
+            </div>
+            <div class="chat-item-time">${Utils.formatRelativeDateTime(result.timestamp)}</div>
+          `;
 
         item.onclick = () => {
           AppState.currentChatId = result.chatId;
@@ -1699,6 +2787,11 @@
     // === Chat List Manager ===
     const ChatListManager = {
       render() {
+        if (!AppState.hasModels) {
+          this.renderNoModelsState();
+          return;
+        }
+
         DOM.chatList.innerHTML = '';
 
         const sortedChats = this.getSortedChats();
@@ -1712,6 +2805,26 @@
           const item = this.createChatItem(id, time);
           DOM.chatList.appendChild(item);
         });
+      },
+
+      renderNoModelsState() {
+        DOM.chatList.innerHTML = `
+            <div class="no-models-state">
+              <div class="no-models-icon">📦</div>
+              <div class="no-models-title">No Models Installed</div>
+              <div class="no-models-description">
+                To start chatting, you need to download at least one model.
+              </div>
+              <div class="no-models-actions">
+                <button class="primary-action-button" onclick="showScreen('download')">
+                  Download Models
+                </button>
+                <button class="secondary-action-button" onclick="ModelManager.retryFetchModels()">
+                  I Already Have Models
+                </button>
+              </div>
+            </div>
+          `;
       },
 
       getSortedChats() {
@@ -1740,13 +2853,13 @@
         const time = Utils.formatRelativeDateTime(timestamp);
 
         item.innerHTML = `
-          <div class="chat-item-header">
-            <span class="chat-item-topic-id" style="display:none">${id}</span>
-            <span class="chat-item-title">${title}</span>
-            ${isPinned ? '<span style="font-size: 1rem;">📌</span>' : ''}
-          </div>
-          <div class="chat-item-time">${time}</div>
-        `;
+            <div class="chat-item-header">
+              <span class="chat-item-topic-id" style="display:none">${id}</span>
+              <span class="chat-item-title">${title}</span>
+              ${isPinned ? '<span style="font-size: 1rem;">📌</span>' : ''}
+            </div>
+            <div class="chat-item-time">${time}</div>
+          `;
 
         this.attachEventHandlers(item, id);
         return item;
@@ -1977,11 +3090,11 @@
         stopButton.id = 'stopButton';
         stopButton.className = 'cancel-button';
         stopButton.innerHTML = `
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-          </svg>
-          <span style="margin-left: 0.375rem;">Stop</span>
-        `;
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            </svg>
+            <span style="margin-left: 0.375rem;">Stop</span>
+          `;
         stopButton.onclick = onStop;
         bubble.appendChild(stopButton);
 
@@ -1993,7 +3106,7 @@
     const QuickSendManager = {
       send() {
         const message = DOM.quickInput.value.trim();
-        if (!message) return;
+        if (!message || !AppState.hasModels) return;
 
         const chatId = ChatManager.create(message);
         DOM.quickInput.value = '';
@@ -2037,14 +3150,33 @@
             QuickSendManager.send();
           }
         });
+
+        DOM.chatBox.addEventListener('scroll', () => {
+          // If the user scrolls manually, stop auto scroll
+          const nearBottom = DOM.chatBox.scrollHeight - DOM.chatBox.scrollTop - DOM.chatBox.clientHeight < 30;
+          AppState.userHasScrolled = !nearBottom;
+        });
+
+        DOM.chatBox.addEventListener('touchstart', () => {
+          AppState.userHasScrolled = true;
+        });
+
+        DOM.chatBox.addEventListener('wheel', () => {
+          AppState.userHasScrolled = true;
+        });
       }
     };
 
     // === Initialize Application ===
     async function initializeApp() {
       await ModelManager.load();
-      ChatListManager.render();
       EventHandlers.init();
+
+      if (!window.location.hash) {
+        window.location.hash = '#topic';
+      } else {
+        handleBackNavigation(); // In case user reloaded on a chat screen
+      }
     }
 
     // === Public API (for onclick handlers in HTML) ===
@@ -2056,6 +3188,7 @@
     window.onSearchInput = (input) => SearchManager.onInput(input);
     window.clearSearch = () => SearchManager.clear();
     window.updateModelLabel = () => ModelManager.updateLabel();
+    window.updateHeaderModelLabel = () => ModelManager.updateHeaderLabel();
     window.deleteModel = (name) => ModelManager.delete(name);
     window.downloadModel = () => ModelManager.download();
     window.showModelDropdown = (index, elem) => ModelManager.showDropdown(index, elem);
@@ -2064,9 +3197,109 @@
     window.confirmPinAction = () => ModalManager.confirmPin();
     window.confirmDeleteAction = () => ModalManager.confirmDelete();
     window.closeModal = () => ModalManager.close();
+    window.openConfigModal = () => ConfigManager.open();
+    window.closeConfigModal = () => ConfigManager.close();
+    window.closeConfigModalOnOverlay = (event) => {
+      if (event.target === DOM.configModal) {
+        ConfigManager.close();
+      }
+    };
+    window.saveConfig = () => ConfigManager.save();
     window.ModelManager = ModelManager;
     window.MessageManager = MessageManager;
     window.HistoryManager = HistoryManager;
+    window.toggleChatHistory = () => ChatHistoryManager.toggle();
+
+    function handleBackNavigation() {
+      const hash = window.location.hash;
+
+      if (hash === '#chat' && AppState.currentChatId) {
+        ScreenManager.show('chat');
+      } else {
+        ScreenManager.show('topic');
+      }
+    }
+
+    window.addEventListener('popstate', handleBackNavigation);
+    window.addEventListener('hashchange', handleBackNavigation);
+    window.onNativeBackPressed = function () {
+      console.log('[WebView] Android back pressed');
+      const chatScreen = document.getElementById('chatScreen');
+      if (chatScreen.classList.contains('active')) {
+        ScreenManager.show('topic');
+      }
+    };
+
+    function safeCallAndroidBridge(methodName, ...args) {
+      if (
+        typeof AndroidBridge !== 'undefined' &&
+        typeof AndroidBridge[methodName] === 'function'
+      ) {
+        AndroidBridge[methodName](...args);
+      }
+    }
+
+    function enableChatToggleDrag() {
+      const toggleBtn = document.getElementById('chatHistoryButton');
+      const toggleContainer = document.getElementById('chatHistoryToggle');
+      const threshold = 60;
+      let startY = 0;
+      let isDragging = false;
+
+      toggleBtn.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startY = e.clientY;
+        toggleContainer.style.transition = 'none';
+      });
+
+      toggleBtn.addEventListener('touchstart', (e) => {
+        isDragging = true;
+        startY = e.touches[0].clientY;
+        toggleContainer.style.transition = 'none';
+      }, { passive: true });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dy = e.clientY - startY;
+        if (dy > 0) {
+          toggleContainer.style.transform = `translateY(${dy}px)`;
+        }
+      });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        const dy = e.touches[0].clientY - startY;
+        if (dy > 0) {
+          toggleContainer.style.transform = `translateY(${dy}px)`;
+        }
+      }, { passive: true });
+
+      function endDrag(dy) {
+        isDragging = false;
+        toggleContainer.style.transition = 'transform 0.2s ease';
+
+        if (dy > threshold) {
+          toggleContainer.style.transform = `translateY(100%)`;
+          setTimeout(() => {
+            ChatHistoryManager.toggle(); // triggers `show()` and hides the button
+          }, 150);
+        } else {
+          toggleContainer.style.transform = 'translateY(0)';
+        }
+      }
+
+      window.addEventListener('mouseup', (e) => {
+        if (!isDragging) return;
+        const dy = e.clientY - startY;
+        endDrag(dy);
+      });
+
+      window.addEventListener('touchend', (e) => {
+        if (!isDragging) return;
+        const dy = e.changedTouches[0].clientY - startY;
+        endDrag(dy);
+      });
+    }
 
     // Start the application
     initializeApp();

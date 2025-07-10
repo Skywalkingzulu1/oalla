@@ -47,7 +47,7 @@
                 android:layout_weight="1"
                 android:checked="true"
                 android:paddingEnd="8dp"
-                android:text="Internal (App only)"
+                android:text="Internal"
                 android:textColor="@color/white" />
 
             <RadioButton
@@ -56,7 +56,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:paddingStart="8dp"
-                android:text="External (Custom Folder)"
+                android:text="External"
                 android:textColor="@color/white" />
         </RadioGroup>
 

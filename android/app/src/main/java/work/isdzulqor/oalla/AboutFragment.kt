@@ -74,8 +74,6 @@ class AboutFragment : Fragment() {
         val textView = view.findViewById<TextView>(R.id.about_content)
 
         val fullText = """
-        ABOUT OALLA
-
         OALLA is our small experiment to make AI run directly on your device — kept offline, kept private.
 
         Thanks to open-source projects like llama.cpp, Ollama, and many others contributing amazing models, this is finally possible.
@@ -84,8 +82,8 @@ class AboutFragment : Fragment() {
         But it works — and it's private, local, and evolving fast.
 
         We’re building:
-        – Document AI
-        – Local GPT-style chat
+        – MCP Integration
+        – Custom GPT
         – Other stuff we’re still testing at 2AM
 
         Have feedback or ideas?

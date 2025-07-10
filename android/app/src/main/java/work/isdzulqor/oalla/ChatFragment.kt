@@ -16,6 +16,9 @@ class ChatFragment : Fragment() {
     private val ollamaPort = 9090
     private var splashStartTime: Long = 0
 
+    // Expose webView so MainActivity can access it for back press
+    var webView: WebView? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -24,9 +27,9 @@ class ChatFragment : Fragment() {
         splashStartTime = System.currentTimeMillis()
 
         val root = inflater.inflate(R.layout.fragment_chat, container, false)
-        val webView = root.findViewById<WebView>(R.id.webview)
+        webView = root.findViewById(R.id.webview)
 
-        webView.apply {
+        webView?.apply {
             visibility = View.GONE
 
             webViewClient = object : WebViewClient() {
@@ -67,10 +70,34 @@ class ChatFragment : Fragment() {
             }
 
             settings.javaScriptEnabled = true
+            addJavascriptInterface(JSBridge(),"AndroidBridge")
             settings.domStorageEnabled = true
             loadUrl("http://localhost:$ollamaPort/web")
         }
-
         return root
+    }
+
+    inner class JSBridge {
+        @android.webkit.JavascriptInterface
+        fun onBackPressed() {
+            activity?.runOnUiThread {
+                webView?.evaluateJavascript("window.onNativeBackPressed && window.onNativeBackPressed()", null)
+            }
+        }
+
+        @android.webkit.JavascriptInterface
+        fun hideBottomNav() {
+            (activity as? MainActivity)?.hideBottomNav()
+        }
+
+        @android.webkit.JavascriptInterface
+        fun showBottomNav() {
+            (activity as? MainActivity)?.showBottomNav()
+        }
+
+        @android.webkit.JavascriptInterface
+        fun keepScreenOnFor(ms: Int) {
+            (activity as? MainActivity)?.keepScreenOnFor(ms.toLong())
+        }
     }
 }

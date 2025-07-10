@@ -5,13 +5,13 @@ import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 
 class MainPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
-    override fun getItemCount(): Int = 3
-    override fun createFragment(position: Int): Fragment {
-        return when (position) {
-            0 -> ChatFragment()
-            1 -> ModelFragment()
-            2 -> AboutFragment()
-            else -> throw IllegalArgumentException("Invalid position $position")
-        }
-    }
+    private val fragments = listOf(
+        ChatFragment(),
+        ModelFragment(),
+        AboutFragment()
+    )
+
+    override fun getItemCount(): Int = fragments.size
+    override fun createFragment(position: Int): Fragment = fragments[position]
+    fun getFragment(position: Int): Fragment = fragments[position]
 }
