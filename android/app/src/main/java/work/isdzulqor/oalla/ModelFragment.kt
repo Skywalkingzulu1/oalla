@@ -34,7 +34,7 @@ class ModelFragment : Fragment() {
     private lateinit var adapter: ModelAdapter
     private lateinit var storageToggle: RadioGroup
 
-    private var selectedExternalUri: Uri? = null
+    private var selectedStorageType: String = "internal"
     private var lastLogTime = 0L
     private var lastCheckedStorageId: Int = R.id.storage_internal
 
@@ -50,25 +50,6 @@ class ModelFragment : Fragment() {
         "smollm2:135m" to 65
     )
 
-    private val openExternalStoragePicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
-        if (uri != null) {
-            requireContext().contentResolver.takePersistableUriPermission(
-                uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-            )
-            selectedExternalUri = uri
-
-            requireContext().getSharedPreferences("model_prefs", 0).edit()
-                .putString("external_uri", uri.toString())
-                .apply()
-
-            Toast.makeText(requireContext(), "External directory selected", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(requireContext(), "No folder selected", Toast.LENGTH_SHORT).show()
-            storageToggle.check(R.id.storage_internal)
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = inflater.inflate(R.layout.fragment_model, container, false)
 
@@ -79,7 +60,7 @@ class ModelFragment : Fragment() {
         modelList = view.findViewById(R.id.model_list)
         storageToggle = view.findViewById(R.id.storage_toggle)
 
-        restoreExternalUri()
+        restoreStoragePreference()
         setupAutocomplete()
         setupRecyclerView()
         fetchModelList()
@@ -103,47 +84,59 @@ class ModelFragment : Fragment() {
     }
 
     private fun showStorageSwitchConfirmation(checkedId: Int) {
-        showCustomDialog(
-            title = "Change Storage Location",
-            message = "Changing the storage location won't move your existing downloaded models. They will remain in the currently selected storage.",
-            positiveText = "Continue",
-            negativeText = "Cancel",
-            onPositive = {
+        val view = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_custom, null)
+        view.findViewById<TextView>(R.id.customTitle).text = "Change Storage Location"
+        view.findViewById<TextView>(R.id.customMessage).text =
+            "Changing the storage location won't move your existing downloaded models. They will remain in the currently selected storage."
+
+        val dialog = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
+            .setView(view)
+            .setPositiveButton("Continue") { _, _ ->
                 lastCheckedStorageId = checkedId
-                if (checkedId == R.id.storage_external) {
-                    openExternalStoragePicker.launch(null)
-                } else {
-                    selectedExternalUri = null
-                }
-            },
-            onNegative = {
-                storageToggle.setOnCheckedChangeListener(null)
-                storageToggle.check(lastCheckedStorageId)
-                storageToggle.setOnCheckedChangeListener { _, id ->
-                    if (id != lastCheckedStorageId) {
-                        showStorageSwitchConfirmation(id)
-                    }
-                }
+
+                val newStorage = if (checkedId == R.id.storage_external) "external" else "internal"
+                selectedStorageType = newStorage
+
+                requireContext().getSharedPreferences("model_prefs", 0)
+                    .edit()
+                    .putString("storage_model", newStorage)
+                    .commit()
+
+                Toast.makeText(requireContext(), "Storage set to $newStorage", Toast.LENGTH_SHORT).show()
+                restartApp()
             }
-        )
+            .setNegativeButton("Cancel") { _, _ ->
+                revertStorageToggle()
+            }
+            .setOnCancelListener {
+                revertStorageToggle()
+            }
+            .create()
+
+        dialog.show()
     }
 
-    private fun restoreExternalUri() {
-        val savedUri = requireContext().getSharedPreferences("model_prefs", 0)
-            .getString("external_uri", null)
-
-        savedUri?.let {
-            try {
-                val uri = Uri.parse(it)
-                val docFile = DocumentFile.fromTreeUri(requireContext(), uri)
-                if (docFile != null && docFile.canWrite()) {
-                    selectedExternalUri = uri
-                    storageToggle.check(R.id.storage_external)
-                    lastCheckedStorageId = R.id.storage_external
-                }
-            } catch (e: Exception) {
-                Log.w("StorageRestore", "Invalid saved external URI")
+    private fun revertStorageToggle() {
+        storageToggle.setOnCheckedChangeListener(null)
+        storageToggle.check(lastCheckedStorageId)
+        storageToggle.setOnCheckedChangeListener { _, id ->
+            if (id != lastCheckedStorageId) {
+                showStorageSwitchConfirmation(id)
             }
+        }
+    }
+
+    private fun restoreStoragePreference() {
+        selectedStorageType = requireContext()
+            .getSharedPreferences("model_prefs", 0)
+            .getString("storage_model", "internal") ?: "internal"
+
+        if (selectedStorageType == "external") {
+            storageToggle.check(R.id.storage_external)
+            lastCheckedStorageId = R.id.storage_external
+        } else {
+            storageToggle.check(R.id.storage_internal)
+            lastCheckedStorageId = R.id.storage_internal
         }
     }
 
@@ -398,4 +391,14 @@ class ModelFragment : Fragment() {
 
         builder.show()
     }
+
+    private fun restartApp() {
+        val intent = requireActivity().baseContext.packageManager
+            .getLaunchIntentForPackage(requireActivity().baseContext.packageName)
+        intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+        requireActivity().finish()
+        Runtime.getRuntime().exit(0)
+    }
+
 }

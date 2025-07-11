@@ -1,7 +1,9 @@
 package work.isdzulqor.oalla
 
+import android.R.attr.path
 import android.app.ComponentCaller
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -17,6 +19,9 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.io.File
 import java.io.FileOutputStream
 import androidx.activity.addCallback
+import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
+import java.nio.file.Files.exists
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,7 +32,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var logToggleButton: Button
     private lateinit var mainPagerAdapter: MainPagerAdapter
 
-    private val DEBUG_MODE = false // Set to false to hide log area and log button
+    private val DEBUG_MODE = true // Set to false to hide log area and log button
 
     private val ollamaPort = 9090
     external fun runOllamaWithArgs(args: Array<String>)
@@ -135,19 +140,19 @@ class MainActivity : AppCompatActivity() {
     private fun startOllamaWithArgs() {
         Thread {
             try {
-                val ollamaDir = File(filesDir, ".ollama")
-                val blobsDir = File(ollamaDir, "blobs")
-                val shaFile = blobsDir.listFiles()?.firstOrNull { it.name.startsWith("sha256-") }
-
-                System.setProperty("OLLAMA_MODELS", ollamaDir.absolutePath)
-                if (shaFile != null) {
-                    Log.d("Ollama", "Using model: ${shaFile.absolutePath}")
+                val args = mutableListOf("serve", "--host", "localhost:$ollamaPort")
+                val storagePref = getSharedPreferences("model_prefs", 0).getString("storage_model", "internal")
+                val modelPath = if (storagePref == "external") {
+                    getExternalFilesDir("ollama_models")?.absolutePath
                 } else {
-                    Log.w("Ollama", "No model found in blobs dir. Proceeding anyway.")
+                    File(filesDir, ".ollama").absolutePath
                 }
 
-                val args = arrayOf("serve", "--host", "localhost:$ollamaPort")
-                runOllamaWithArgs(args)
+                Log.d("Ollama", "Using model path: $modelPath")
+                args.add("--models")
+                args.add(modelPath.toString())
+
+                runOllamaWithArgs(args.toTypedArray())
             } catch (e: Exception) {
                 Log.e("Ollama", "Failed to start Ollama: ${e.message}", e)
             }

@@ -492,27 +492,6 @@
       color: var(--danger-color);
     }
 
-    /* #chatActionModal button {
-      background: transparent;
-      border: none;
-      padding: 1rem;
-      border-radius: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: background 0.1s;
-    }
-
-    #chatActionModal button:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    #chatActionModal button svg {
-      width: 28px;
-      height: 28px;
-      stroke: white;
-    } */
-
     /* === Chat Header === */
     .chat-header {
       padding: 0.75rem 1rem;
@@ -1179,27 +1158,24 @@
       }
     }
 
+    @keyframes slideDown {
+      from {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      to {
+        transform: translateY(100%);
+        opacity: 0;
+      }
+    }
+
     #modalTitle {
       font-weight: bold;
       margin-bottom: 1rem;
       font-size: 1rem;
       color: var(--text-primary);
     }
-
-    /* #chatActionModal button {
-      width: 100%;
-      padding: 0.875rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: all 0.2s;
-      font-weight: 500;
-    }
-
-    #chatActionModal button:not(:last-child) {
-      margin-bottom: 0.5rem;
-    } */
 
     /* === Date Divider === */
     .date-divider {
@@ -1211,14 +1187,6 @@
       margin: 1rem 0;
       position: relative;
     }
-
-    /* .date-divider::before {
-        left: 0;
-      }
-
-      .date-divider::after {
-        right: 0;
-      } */
 
     /* === Empty State === */
     .empty-state {
@@ -1579,7 +1547,8 @@
           <div class="feature-item">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              <rect x="8" y="8" width="8" height="8" rx="1" />
+              <path d="M3 9h2M3 15h2M19 9h2M19 15h2M9 3v2M15 3v2M9 19v2M15 19v2M8 12h.01M12 12h.01M16 12h.01" />
             </svg>
             <span>Multiple AI Models - Choose the best for your needs</span>
           </div>
@@ -1630,10 +1599,9 @@
         <button class="config-button" onclick="openConfigModal()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path
-              d="M12 1v6m0 6v6m4.22-10.22l1.42-1.42m-1.42 8.86l1.42 1.42M20 12h-6m-6 0H2m4.22-4.22L4.8 6.36m1.42 8.86L4.8 17.64">
-            </path>
+            <circle cx="12" cy="5" r="1.5"></circle>
+            <circle cx="12" cy="12" r="1.5"></circle>
+            <circle cx="12" cy="19" r="1.5"></circle>
           </svg>
         </button>
       </div>
@@ -1670,34 +1638,6 @@
     </div>
   </div>
 
-  <!-- <div class="footer">
-      <button id="navChat" class="active" onclick="showScreen('topic')">
-        <span>💬</span>
-        <span>Chats</span>
-      </button>
-      <button id="navModels" onclick="showScreen('download')">
-        <span>📦</span>
-        <span>Models</span>
-      </button>
-    </div> -->
-
-  <!-- Chat Action Modal -->
-  <!-- <div id="chatActionModal" class="unallow-select">
-    <div style="display: flex; justify-content: center; margin-bottom: 1rem;">
-      <div style="width: 40px; height: 4px; background: gray; border-radius: 2px;"></div>
-    </div>
-    <div id="modalTitle"></div>
-    <button onclick="confirmPinAction()" style="background:#0f766e; color:white;">
-      Pin/Unpin
-    </button>
-    <button onclick="confirmDeleteAction()" style="background:#ef4444; color:white;">
-      Delete
-    </button>
-    <button onclick="closeModal()" style="background:#f3f4f6; color:#333;">
-      Cancel
-    </button>
-  </div> -->
-
   <div id="chatActionModal" class="unallow-select"
     style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary-dark); box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1); border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 1.5rem 1rem; z-index: 1000; animation: slideUp 0.1s ease-out;">
     <div onclick="closeModal()" style="display: flex; justify-content: center; margin-bottom: 1rem;">
@@ -1708,12 +1648,12 @@
     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
       <button onclick="confirmPinAction()"
         style="width: 100%; background: none; border: none; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 1rem; font-weight: 500; font-size: 1rem; color: var(--text-primary); cursor: pointer; transition: background 0.2s;">
-        <svg style="width: 24px; height: 24px; color: var(--secondary-color);" xmlns="http://www.w3.org/2000/svg"
-          fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M16 7V3m0 0l4 4m-4-4L12 7m4-4v14m0 0v4m0-4l4-4m-4 4l-4-4" />
+        <svg xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px; color: var(--secondary-color);"
+          fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.518 4.674a1 1 0 00.95.69h4.916c.969 0 1.371 1.24.588 1.81l-3.974 2.888a1 1 0 00-.364 1.118l1.518 4.674c.3.921-.755 1.688-1.538 1.118L10 15.347l-3.547 2.554c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118l-3.974-2.888c-.783-.57-.38-1.81.588-1.81h4.916a1 1 0 00.95-.69l1.518-4.674z" />
         </svg>
-        Pin / Unpin
+        <span id="pinLabel">Pin</span>
       </button>
       <button onclick="confirmDeleteAction()"
         style="width: 100%; background: none; border: none; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 1rem; font-weight: 500; font-size: 1rem; color: var(--danger-color); cursor: pointer; transition: background 0.2s;">
@@ -1771,6 +1711,7 @@
       hasModels: false,
       userHasScrolled: false,
       chatHistoryVisible: false,
+      pendingAssistant: {}, // chatId -> { text, timestamp, model }
     };
 
     // === Configuration ===
@@ -1975,13 +1916,19 @@
                 const json = JSON.parse(part);
                 const token = json.message?.content || '';
                 onChunk(token);
+
+                // 🔁 Re-attach to text DOM if needed
+                const textDiv = document.getElementById('pending-assistant-text');
+                if (textDiv) {
+                  textDiv.textContent = AppState.pendingAssistant[AppState.currentChatId].text;
+                }
               } catch (e) {
                 console.error('Failed to parse chunk:', e);
               }
             }
           }
         }
-      },
+      }
     };
 
     // === Config Manager ===
@@ -2220,6 +2167,11 @@
         const tempDiv = this.createPendingMessage();
         const textDiv = tempDiv.querySelector('.text');
         let assistantText = '';
+        AppState.pendingAssistant[AppState.currentChatId] = {
+          text: '',
+          timestamp: Date.now(),
+          model: DOM.modelSelect.value,
+        };
 
         AppState.controller = new AbortController();
         AppState.isGenerating = true;
@@ -2241,8 +2193,8 @@
 
           await Utils.streamToText(reader, (token) => {
             assistantText += token;
+            AppState.pendingAssistant[AppState.currentChatId].text = assistantText;
             textDiv.textContent = assistantText;
-            // DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
             // Auto-scroll only if user hasn't scrolled manually
             console.log('User scrolled:', AppState.userHasScrolled);
             if (!AppState.userHasScrolled) {
@@ -2263,6 +2215,7 @@
             this.addAssistantMessage(assistantText);
           }
 
+          delete AppState.pendingAssistant[AppState.currentChatId];
           MessageRenderer.render();
         }
       },
@@ -2342,6 +2295,41 @@
 
           this.renderMessage(msg, index);
         });
+
+        const pending = AppState.pendingAssistant[AppState.currentChatId];
+        if (pending) {
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'message-wrapper assistant';
+
+          const bubble = document.createElement('div');
+          bubble.className = 'bubble';
+
+          const text = document.createElement('div');
+          text.className = 'text';
+          text.id = 'pending-assistant-text';
+          text.textContent = pending.text;
+
+          const meta = document.createElement('div');
+          meta.className = 'meta unallow-select';
+          meta.innerHTML = `
+    <div class="generating-indicator">
+      <div class="typing-dots">
+        <span></span><span></span><span></span>
+      </div>
+      <span class="generating-text">Generating response...</span>
+    </div>
+  `;
+
+          bubble.appendChild(text);
+          bubble.appendChild(meta);
+          wrapper.appendChild(bubble);
+          DOM.chatBox.appendChild(wrapper);
+
+          if (AppState.isGenerating && AppState.controller) {
+            UIManager.createStopButton(() => AppState.controller.abort(), wrapper);
+          }
+        }
 
         if (callback) callback();
       },
@@ -2634,14 +2622,19 @@
           const reader = await API.createChatStream(model, messages, AppState.controller.signal);
           AppState.userHasScrolled = false; // Reset scroll state
           let assistantText = '';
+          AppState.pendingAssistant[AppState.currentChatId] = {
+            text: '',
+            timestamp: Date.now(),
+            model: DOM.modelSelect.value,
+          };
           safeCallAndroidBridge('keepScreenOnFor', 15000); // Keep android screen on for 15 seconds
 
 
           await Utils.streamToText(reader, (token) => {
             assistantText += token;
+            AppState.pendingAssistant[AppState.currentChatId].text = assistantText;
             msg.history[msg.selected] = assistantText;
             textDiv.textContent = assistantText;
-            // DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
             // Auto-scroll only if user hasn't scrolled manually
             console.log('User scrolled:', AppState.userHasScrolled);
             if (!AppState.userHasScrolled) {
@@ -2660,6 +2653,7 @@
           stopButton?.remove();
           Storage.saveChats();
           MessageRenderer.render();
+          delete AppState.pendingAssistant[AppState.currentChatId];
         }
       },
 
@@ -3021,9 +3015,9 @@
         AppState.selectedTopicId = topicId;
 
         // Set Pin/Unpin button label
-        const pinBtn = DOM.modal.querySelector('button[onclick="confirmPinAction()"]');
+        const pinLabel = DOM.modal.querySelector('#pinLabel');
         const isPinned = AppState.pinnedTopics.includes(topicId);
-        pinBtn.textContent = isPinned ? 'Unpin' : 'Pin';
+        pinLabel.textContent = isPinned ? 'Unpin' : 'Pin';
 
         // Highlight the topic visually
         const chatItems = document.querySelectorAll('.chat-item');
@@ -3036,10 +3030,18 @@
 
         // Prevent clicking other topics
         DOM.chatList.classList.add('modal-open');
+        // Add click outside listener
+        setTimeout(() => {
+          document.addEventListener('click', ModalManager.handleOutsideClick);
+        }, 500);
       },
 
       close() {
-        DOM.modal.style.display = 'none';
+        DOM.modal.style.animation = 'slideDown 0.3s ease-in';
+        DOM.modal.addEventListener('animationend', () => {
+          DOM.modal.style.display = 'none';
+          DOM.modal.style.animation = ''; // Reset animation
+        }, { once: true });
         AppState.selectedTopicId = null;
 
         // Remove highlight and unlock interaction
@@ -3047,6 +3049,14 @@
           item.classList.remove('active-highlight')
         );
         DOM.chatList.classList.remove('modal-open');
+        document.removeEventListener('click', ModalManager.handleOutsideClick);
+      },
+
+      handleOutsideClick(e) {
+        const modal = DOM.modal;
+        if (modal && !modal.contains(e.target)) {
+          ModalManager.close();
+        }
       },
 
       confirmPin() {
