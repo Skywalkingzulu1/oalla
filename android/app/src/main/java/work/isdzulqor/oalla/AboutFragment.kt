@@ -83,7 +83,7 @@ class AboutFragment : Fragment() {
 
         We’re building:
         – MCP Integration
-        – Custom GPT
+        – Custom AI Agent
         – Other stuff we’re still testing at 2AM
 
         Have feedback or ideas?

@@ -20,9 +20,13 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okio.Buffer
+import org.json.JSONArray
 import org.json.JSONObject
 import android.provider.Settings
 import androidx.core.net.toUri
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.io.InputStreamReader
 import kotlin.random.Random
 
 class ModelFragment : Fragment() {
@@ -33,22 +37,13 @@ class ModelFragment : Fragment() {
     private lateinit var modelList: RecyclerView
     private lateinit var adapter: ModelAdapter
     private lateinit var storageToggle: RadioGroup
+    private lateinit var modelSuggestionAdapter: ModelSuggestionAdapter
 
     private var selectedStorageType: String = "internal"
     private var lastLogTime = 0L
     private var lastCheckedStorageId: Int = R.id.storage_internal
-
-    private val topModelSuggestions = listOf(
-        "llama3.1:latest", "phi4-mini:latest", "gemma:2b", "qwen3:0.6b", "smollm2:135m"
-    )
-
-    private val modelSizes = mapOf(
-        "llama3.1:latest" to 420,
-        "phi4-mini:latest" to 130,
-        "gemma:2b" to 280,
-        "qwen3:0.6b" to 175,
-        "smollm2:135m" to 65
-    )
+    private var modelDataList: List<ModelData> = emptyList()
+    private var allSuggestions: List<ModelSuggestion> = emptyList()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = inflater.inflate(R.layout.fragment_model, container, false)
@@ -61,6 +56,7 @@ class ModelFragment : Fragment() {
         storageToggle = view.findViewById(R.id.storage_toggle)
 
         restoreStoragePreference()
+        loadModelDataFromAssets()
         setupAutocomplete()
         setupRecyclerView()
         fetchModelList()
@@ -80,7 +76,40 @@ class ModelFragment : Fragment() {
             }
         }
 
+        // Handle selection from dropdown
+        modelInput.setOnItemClickListener { _, _, position, _ ->
+            val selected = modelSuggestionAdapter.getItem(position)
+            modelInput.setText(selected.modelName)
+            modelInput.setSelection(selected.modelName.length)
+        }
+
         return view
+    }
+
+    private fun loadModelDataFromAssets() {
+        try {
+            val inputStream = requireContext().assets.open("models.json")
+            val reader = InputStreamReader(inputStream)
+            val type = object : TypeToken<List<ModelData>>() {}.type
+            modelDataList = Gson().fromJson(reader, type)
+            reader.close()
+
+            // Create flat list of all suggestions
+            allSuggestions = modelDataList.flatMap { model ->
+                model.data.variants.map { variant ->
+                    ModelSuggestion(
+                        displayText = "${variant.model} (${variant.size}, ${variant.context})",
+                        modelName = variant.model,
+                        size = variant.size,
+                        context = variant.context
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("ModelFragment", "Failed to load model data: ${e.message}")
+            // Fallback to empty list
+            allSuggestions = emptyList()
+        }
     }
 
     private fun showStorageSwitchConfirmation(checkedId: Int) {
@@ -141,9 +170,23 @@ class ModelFragment : Fragment() {
     }
 
     private fun setupAutocomplete() {
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, topModelSuggestions)
-        modelInput.setAdapter(adapter)
-        modelInput.threshold = 1
+        modelSuggestionAdapter = ModelSuggestionAdapter(requireContext(), allSuggestions)
+        modelInput.setAdapter(modelSuggestionAdapter)
+        modelInput.threshold = 0 // Show suggestions immediately
+
+        // Show dropdown when focused
+        modelInput.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus && modelInput.text.isEmpty()) {
+                modelInput.showDropDown()
+            }
+        }
+
+        // Show dropdown on click if empty
+        modelInput.setOnClickListener {
+            if (modelInput.text.isEmpty()) {
+                modelInput.showDropDown()
+            }
+        }
     }
 
     private fun setupRecyclerView() {
@@ -310,13 +353,16 @@ class ModelFragment : Fragment() {
     }
 
     private fun showConfirmDownloadDialog(modelName: String) {
-        val size = modelSizes[modelName] ?: Random.nextInt(100, 400)
+        // Try to find size from our model data
+        val modelInfo = allSuggestions.find { it.modelName == modelName }
+        val sizeDisplay = modelInfo?.size ?: "Unknown size"
 
         val message = """
         You are about to download:
         
         • Model: $modelName
-        • Estimated size: ~$size MB
+        • Size: $sizeDisplay
+        ${modelInfo?.let { "• Context: ${it.context}" } ?: ""}
         
         To see download progress, please ensure notifications are enabled.
         Also, avoid closing or force-stopping the app during the download, as it may cancel the process.
@@ -400,5 +446,4 @@ class ModelFragment : Fragment() {
         requireActivity().finish()
         Runtime.getRuntime().exit(0)
     }
-
 }
