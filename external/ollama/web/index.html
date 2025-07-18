@@ -12,6 +12,7 @@
       --primary-color: #062944;
       /* dark header/nav */
       --primary-dark: #031d31;
+      --primary-dark-light: #042037;
       /* darker background shade */
       --primary-light: #202c33;
       /* lighter panel background */
@@ -1557,6 +1558,93 @@
       background: rgba(0, 0, 0, 0.2);
       border-radius: 3px;
     }
+
+    /* Message Info Modal */
+    #messageInfoModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 2001;
+      animation: fadeIn 0.1s ease-out;
+    }
+
+    #messageInfoModal .modal-content {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 1.25rem;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    #messageInfoModal h3 {
+      margin: 0 0 1.5rem 0;
+      color: var(--text-primary);
+      font-size: 1.25rem;
+      text-align: center;
+    }
+
+    .info-grid {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      background: var(--primary-dark-light);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .info-label {
+      color: var(--text-secondary);
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .info-value {
+      color: var(--text-primary);
+      font-family: monospace;
+      font-size: 0.875rem;
+      text-align: right;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+
+    .modal-button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 300;
+      background: var(--secondary-color);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .modal-button:hover {
+      background: var(--primary-light);
+    }
   </style>
 </head>
 
@@ -1768,6 +1856,55 @@
     </div>
   </div>
 
+  <!-- Message Information Modal -->
+  <!-- Message Information Modal -->
+  <div id="messageInfoModal" class="modal unallow-select">
+    <div class="modal-content">
+      <h3 id="messageInfoTitle">Message Information</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Model</span>
+          <span id="infoModel" class="info-value">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Total Duration</span>
+          <span id="infoTotalDuration" class="info-value">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Load Duration</span>
+          <span id="infoLoadDuration" class="info-value">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Prompt Tokens</span>
+          <span id="infoPromptTokens" class="info-value">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Prompt Eval Duration</span>
+          <span id="infoPromptEvalDuration" class="info-value">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Prompt Eval Rate</span>
+          <span id="infoPromptEvalRate" class="info-value">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Response Tokens</span>
+          <span id="infoEvalTokens" class="info-value">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Response Duration</span>
+          <span id="infoEvalDuration" class="info-value">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Response Rate</span>
+          <span id="infoEvalRate" class="info-value">-</span>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-button" onclick="closeMessageInfoModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // === Application State ===
     const AppState = {
@@ -1786,6 +1923,7 @@
       userHasScrolled: false,
       chatHistoryVisible: false,
       pendingAssistant: {}, // chatId -> { text, timestamp, model }
+      messageMetrics: JSON.parse(localStorage.getItem('messageMetrics') || '{}'), // chatId -> { [messageIndex]
     };
 
     // === Configuration ===
@@ -1828,7 +1966,17 @@
       get chatHistoryButton() { return document.getElementById('chatHistoryButton'); },
       get searchBar() { return document.getElementById('searchBar'); },
       get chatListContainer() { return document.getElementById('chatListContainer'); },
-      get welcomeScreen() { return document.getElementById('welcomeScreen'); }
+      get welcomeScreen() { return document.getElementById('welcomeScreen'); },
+      get messageInfoModal() { return document.getElementById('messageInfoModal'); },
+      get infoModel() { return document.getElementById('infoModel'); },
+      get infoTotalDuration() { return document.getElementById('infoTotalDuration'); },
+      get infoLoadDuration() { return document.getElementById('infoLoadDuration'); },
+      get infoPromptTokens() { return document.getElementById('infoPromptTokens'); },
+      get infoPromptEvalDuration() { return document.getElementById('infoPromptEvalDuration'); },
+      get infoPromptEvalRate() { return document.getElementById('infoPromptEvalRate'); },
+      get infoEvalTokens() { return document.getElementById('infoEvalTokens'); },
+      get infoEvalDuration() { return document.getElementById('infoEvalDuration'); },
+      get infoEvalRate() { return document.getElementById('infoEvalRate'); }
     };
 
     // === API Service ===
@@ -1880,6 +2028,10 @@
 
     // === Storage Manager ===
     const Storage = {
+      saveMessageMetrics() {
+        localStorage.setItem('messageMetrics', JSON.stringify(AppState.messageMetrics));
+      },
+
       saveChats() {
         localStorage.setItem('ollamaChats', JSON.stringify(AppState.chats));
       },
@@ -1971,9 +2123,10 @@
         AppState.searchDebounceTimer = setTimeout(func, delay);
       },
 
-      async streamToText(reader, onChunk) {
+      async streamToText(reader, onChunk, onMetrics) {
         const decoder = new TextDecoder();
         let buffer = '';
+        let lastChunk = null;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -1988,10 +2141,29 @@
             if (part.trim()) {
               try {
                 const json = JSON.parse(part);
+                lastChunk = json; // Store the last chunk
+
                 const token = json.message?.content || '';
                 onChunk(token);
 
-                // 🔁 Re-attach to text DOM if needed
+                // If this is the final chunk with metrics
+                if (json.done && json.total_duration && onMetrics) {
+                  const metrics = {
+                    total_duration: json.total_duration,
+                    load_duration: json.load_duration,
+                    prompt_eval_count: json.prompt_eval_count,
+                    prompt_eval_duration: json.prompt_eval_duration,
+                    eval_count: json.eval_count,
+                    eval_duration: json.eval_duration,
+                    prompt_eval_rate: json.prompt_eval_duration && json.prompt_eval_count ?
+                      (json.prompt_eval_count / (json.prompt_eval_duration / 1000000000)) : null,
+                    eval_rate: json.eval_duration && json.eval_count ?
+                      (json.eval_count / (json.eval_duration / 1000000000)) : null
+                  };
+                  onMetrics(metrics);
+                }
+
+                // Re-attach to text DOM if needed
                 const textDiv = document.getElementById('pending-assistant-text');
                 if (textDiv) {
                   textDiv.textContent = AppState.pendingAssistant[AppState.currentChatId].text;
@@ -2036,6 +2208,74 @@
 
       getSystemPrompt(chatId) {
         return AppState.chatConfigs[chatId]?.systemPrompt || '';
+      }
+    };
+
+    const MessageInfoModalManager = {
+      show(chatId, messageIndex) {
+        const metrics = AppState.messageMetrics[chatId]?.[messageIndex];
+        const message = AppState.chats[chatId]?.[messageIndex];
+
+        if (!message || message.role !== 'assistant') return;
+
+        // Update modal content
+        DOM.infoModel.textContent = message.model || '-';
+
+        if (metrics) {
+          DOM.infoTotalDuration.textContent = this.formatDuration(metrics.total_duration);
+          DOM.infoLoadDuration.textContent = this.formatDuration(metrics.load_duration);
+          DOM.infoPromptTokens.textContent = `${metrics.prompt_eval_count || 0} token(s)`;
+          DOM.infoPromptEvalDuration.textContent = this.formatDuration(metrics.prompt_eval_duration);
+          DOM.infoPromptEvalRate.textContent = metrics.prompt_eval_rate ? `${metrics.prompt_eval_rate.toFixed(2)} tokens/s` : '-';
+          DOM.infoEvalTokens.textContent = `${metrics.eval_count || 0} token(s)`;
+          DOM.infoEvalDuration.textContent = this.formatDuration(metrics.eval_duration);
+          DOM.infoEvalRate.textContent = metrics.eval_rate ? `${metrics.eval_rate.toFixed(2)} tokens/s` : '-';
+        } else {
+          DOM.infoTotalDuration.textContent = 'No data available';
+          DOM.infoLoadDuration.textContent = '-';
+          DOM.infoPromptTokens.textContent = '-';
+          DOM.infoPromptEvalDuration.textContent = '-';
+          DOM.infoPromptEvalRate.textContent = '-';
+          DOM.infoEvalTokens.textContent = '-';
+          DOM.infoEvalDuration.textContent = '-';
+          DOM.infoEvalRate.textContent = '-';
+        }
+
+        // Show modal
+        DOM.messageInfoModal.style.display = 'block';
+
+        // Handle outside click to auto-close
+        const handleClickOutside = (e) => {
+          if (!DOM.messageInfoModal.querySelector('.modal-content').contains(e.target)) {
+            this.close();
+            document.removeEventListener('click', handleClickOutside);
+          }
+        };
+
+        // Delay to prevent immediate trigger if click opened it
+        setTimeout(() => {
+          document.addEventListener('click', handleClickOutside);
+        }, 1000);
+      },
+      close() {
+        DOM.messageInfoModal.style.display = 'none';
+      },
+
+      formatDuration(nanoseconds) {
+        if (!nanoseconds) return '-';
+
+        const milliseconds = nanoseconds / 1000000;
+        if (milliseconds < 1000) {
+          return `${milliseconds.toFixed(1)}ms`;
+        }
+
+        const seconds = milliseconds / 1000;
+        if (seconds < 60) {
+          return `${seconds.toFixed(3)}s`;
+        }
+
+        const minutes = seconds / 60;
+        return `${minutes.toFixed(2)}m`;
       }
     };
 
@@ -2117,7 +2357,6 @@
       },
 
       show() {
-        DOM.chatHistoryButton.classList.add('active');
         DOM.searchBar.classList.add('visible');
         DOM.chatListContainer.classList.add('visible');
         DOM.welcomeScreen.classList.add('hidden');
@@ -2125,7 +2364,6 @@
       },
 
       hide() {
-        DOM.chatHistoryButton.classList.remove('active');
         DOM.searchBar.classList.remove('visible');
         DOM.chatListContainer.classList.remove('visible');
         DOM.welcomeScreen.classList.remove('hidden');
@@ -2241,6 +2479,8 @@
         const tempDiv = this.createPendingMessage();
         const textDiv = tempDiv.querySelector('.text');
         let assistantText = '';
+        let capturedMetrics = null;
+
         AppState.pendingAssistant[AppState.currentChatId] = {
           text: '',
           timestamp: Date.now(),
@@ -2263,20 +2503,19 @@
             messages,
             AppState.controller.signal
           );
-          AppState.userHasScrolled = false; // Reset scroll state
-          safeCallAndroidBridge('keepScreenOnFor', 15000); // Keep android screen on for 15 seconds
+          AppState.userHasScrolled = false;
+          safeCallAndroidBridge('keepScreenOnFor', 15000);
 
           await Utils.streamToText(reader, (token) => {
             assistantText += token;
             AppState.pendingAssistant[AppState.currentChatId].text = assistantText;
             textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
-            // Auto-scroll only if user hasn't scrolled manually
-            console.log('User scrolled:', AppState.userHasScrolled);
             if (!AppState.userHasScrolled) {
               DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
             }
-
-            safeCallAndroidBridge('keepScreenOnFor', 5000); // Keep android screen on for 5 seconds
+            safeCallAndroidBridge('keepScreenOnFor', 5000);
+          }, (metrics) => {
+            capturedMetrics = metrics;
           });
         } catch (err) {
           if (err.name !== 'AbortError') {
@@ -2289,6 +2528,16 @@
 
           if (assistantText) {
             this.addAssistantMessage(assistantText);
+
+            // Store metrics if available
+            if (capturedMetrics) {
+              const messageIndex = AppState.chats[AppState.currentChatId].length - 1;
+              if (!AppState.messageMetrics[AppState.currentChatId]) {
+                AppState.messageMetrics[AppState.currentChatId] = {};
+              }
+              AppState.messageMetrics[AppState.currentChatId][messageIndex] = capturedMetrics;
+              Storage.saveMessageMetrics();
+            }
           }
 
           delete AppState.pendingAssistant[AppState.currentChatId];
@@ -2440,7 +2689,7 @@
         if (msg.role === 'assistant') {
           const markdownRaw = msg.history?.[selected] || msg.content;
           text.innerHTML = renderMarkdownForAssistant(markdownRaw);
-        } else  {
+        } else {
           text.textContent = msg.history?.[selected] || msg.content;
         }
 
@@ -2449,7 +2698,89 @@
         bubble.appendChild(text);
         bubble.appendChild(meta);
         wrapper.appendChild(bubble);
+
+        // Add long-click handler for assistant messages
+        if (msg.role === 'assistant') {
+          this.attachAssistantLongClickHandler(bubble, index);
+        }
+
         DOM.chatBox.appendChild(wrapper);
+      },
+
+      attachAssistantLongClickHandler(bubble, messageIndex) {
+        let timer = null;
+        let startX = 0;
+        let startY = 0;
+        let longPressTriggered = false;
+        const MOVEMENT_THRESHOLD = 10;
+        const LONG_PRESS_DURATION = 600;
+
+        const startPress = (x, y) => {
+          startX = x;
+          startY = y;
+          longPressTriggered = false;
+
+          bubble.style.opacity = '0.8';
+          bubble.style.transform = 'scale(0.98)';
+          bubble.style.transition = 'all 0.1s ease';
+
+          timer = setTimeout(() => {
+            longPressTriggered = true;
+            MessageInfoModalManager.show(AppState.currentChatId, messageIndex);
+            resetVisualState();
+          }, LONG_PRESS_DURATION);
+        };
+
+        const cancelPress = () => {
+          clearTimeout(timer);
+          timer = null;
+          resetVisualState();
+        };
+
+        const resetVisualState = () => {
+          bubble.style.opacity = '';
+          bubble.style.transform = '';
+          bubble.style.transition = '';
+        };
+
+        const onTouchStart = (e) => {
+          if (e.touches && e.touches.length > 0) {
+            const t = e.touches[0];
+            startPress(t.clientX, t.clientY);
+          }
+        };
+
+        const onTouchEnd = cancelPress;
+
+        const onTouchMove = (e) => {
+          if (!timer) return;
+          const t = e.touches[0];
+          const dx = Math.abs(t.clientX - startX);
+          const dy = Math.abs(t.clientY - startY);
+          if (dx > MOVEMENT_THRESHOLD || dy > MOVEMENT_THRESHOLD) {
+            cancelPress();
+          }
+        };
+
+        const onMouseDown = (e) => {
+          startPress(e.clientX, e.clientY);
+        };
+
+        const onMouseUp = cancelPress;
+        const onMouseLeave = cancelPress;
+
+        bubble.addEventListener('touchstart', onTouchStart, { passive: true });
+        bubble.addEventListener('touchend', onTouchEnd, { passive: true });
+        bubble.addEventListener('touchmove', onTouchMove, { passive: true });
+
+        bubble.addEventListener('mousedown', onMouseDown);
+        bubble.addEventListener('mouseup', onMouseUp);
+        bubble.addEventListener('mouseleave', onMouseLeave);
+
+        bubble.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          return false;
+        });
       },
 
       createMetaElement(msg, index) {
@@ -2670,23 +3001,24 @@
       async regenerateWithModel(index, model) {
         const targetDiv = document.querySelector(`.message-wrapper.assistant[data-index="${index}"]`);
         const msg = AppState.chats[AppState.currentChatId][index];
+        let capturedMetrics = null;
 
         if (!targetDiv || !msg) return;
 
         const bubble = targetDiv.querySelector('.bubble');
         bubble.innerHTML = `
-    <div class="text"></div>
-    <div class="meta unallow-select">
-      <div class="generating-indicator">
-        <div class="typing-dots">
-          <span></span>
-          <span></span>
-          <span></span>
+      <div class="text"></div>
+      <div class="meta unallow-select">
+        <div class="generating-indicator">
+          <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <span class="generating-text">Generating response...</span>
         </div>
-        <span class="generating-text">Generating response...</span>
       </div>
-    </div>
-  `;
+    `;
         const textDiv = bubble.querySelector('.text');
 
         AppState.controller = new AbortController();
@@ -2699,7 +3031,6 @@
         );
 
         try {
-          // Build context messages up to current index
           const messagesUntilNow = AppState.chats[AppState.currentChatId].slice(0, index);
           const systemPrompt = ConfigManager.getSystemPrompt(AppState.currentChatId);
           const messages = [];
@@ -2710,22 +3041,19 @@
 
           messages.push(...messagesUntilNow);
 
-          // Start streaming new assistant response
           const reader = await API.createChatStream(model, messages, AppState.controller.signal);
           AppState.userHasScrolled = false;
           let assistantText = '';
 
-          // Track the pending assistant with the message index
           AppState.pendingAssistant[AppState.currentChatId] = {
             text: '',
             timestamp: Date.now(),
             model: model,
-            messageIndex: index  // Add this to track which message is being regenerated
+            messageIndex: index
           };
 
           safeCallAndroidBridge('keepScreenOnFor', 15000);
 
-          // Initialize history tracking if needed
           msg.history = msg.history || [msg.content];
           msg.historyModels = msg.historyModels || [msg.model];
 
@@ -2738,7 +3066,7 @@
             msg.historyModels.push(model);
             msg.selected = msg.history.length - 1;
           } else {
-            msg.selected = lastIndex; // reuse existing empty placeholder
+            msg.selected = lastIndex;
           }
 
           msg.model = model;
@@ -2754,7 +3082,18 @@
             }
 
             safeCallAndroidBridge('keepScreenOnFor', 5000);
+          }, (metrics) => {
+            capturedMetrics = metrics;
           });
+
+          // Store metrics if available
+          if (capturedMetrics) {
+            if (!AppState.messageMetrics[AppState.currentChatId]) {
+              AppState.messageMetrics[AppState.currentChatId] = {};
+            }
+            AppState.messageMetrics[AppState.currentChatId][index] = capturedMetrics;
+            Storage.saveMessageMetrics();
+          }
 
         } catch (err) {
           if (err.name !== 'AbortError') {
@@ -2762,15 +3101,12 @@
             textDiv.textContent = 'Error generating response.';
           }
         } finally {
-          // Hide the sticky banner
           StickyBannerManager.hide();
           AppState.controller = null;
           AppState.isGenerating = false;
           stopButton?.remove();
           Storage.saveChats();
           delete AppState.pendingAssistant[AppState.currentChatId];
-
-          // Re-render to show the final state
           MessageRenderer.render();
         }
       },
@@ -3387,6 +3723,7 @@
     window.refreshModelList = function () {
       ModelManager.retryFetchModels();
     };
+    window.closeMessageInfoModal = () => MessageInfoModalManager.close();
 
     function handleBackNavigation() {
       const hash = window.location.hash;
