@@ -1,5 +1,7 @@
 package work.isdzulqor.oalla
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,6 +11,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.webkit.WebViewFragment
 import androidx.fragment.app.Fragment
 
 class ChatFragment : Fragment() {
@@ -34,6 +37,35 @@ class ChatFragment : Fragment() {
 
             webViewClient = object : WebViewClient() {
                 var loadError = false
+
+                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
+                    val url = request.url.toString()
+
+                    // Whitelist: allow anything from your internal Ollama server
+                    if (url.startsWith("http://localhost:$ollamaPort")) {
+                        return false // Load inside WebView
+                    }
+
+                    // Everything else: open in external browser
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    view?.context?.startActivity(intent)
+                    return true
+                }
+
+                // For older API levels (< 24)
+                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                    if (url != null && url.startsWith("http://localhost:$ollamaPort")) {
+                        return false
+                    }
+
+                    if (url != null && url.startsWith("http")) {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        view?.context?.startActivity(intent)
+                        return true
+                    }
+
+                    return false
+                }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     if (!loadError) {
@@ -75,6 +107,13 @@ class ChatFragment : Fragment() {
             loadUrl("http://localhost:$ollamaPort/web")
         }
         return root
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // Trigger JS-side logic when the fragment becomes active again
+        webView?.evaluateJavascript("window.refreshModelList && window.refreshModelList();", null)
     }
 
     inner class JSBridge {

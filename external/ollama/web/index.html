@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="./marked.min.js"></script>
   <title>Ollama Chat</title>
   <style>
     /* === CSS Variables === */
@@ -663,6 +664,54 @@
     .message-wrapper.assistant .bubble {
       background: var(--assistant-bubble);
       border-bottom-left-radius: 4px;
+    }
+
+    .message-wrapper.assistant .bubble .text h1,
+    .message-wrapper.assistant .bubble .text h2,
+    .message-wrapper.assistant .bubble .text h3,
+    .message-wrapper.assistant .bubble .text h4,
+    .message-wrapper.assistant .bubble .text h5 {
+      font-weight: bold;
+      color: var(--text-primary);
+      margin: 0.5em 0 0.25em;
+    }
+
+    .message-wrapper.assistant .bubble .text p {
+      margin: 0.25em 0;
+    }
+
+    .message-wrapper.assistant .bubble .text code {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85em;
+      color: #ffcb6b;
+    }
+
+    .message-wrapper.assistant .bubble .text pre {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1em;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: monospace;
+      font-size: 0.85em;
+      color: #e0e0e0;
+    }
+
+    .message-wrapper.assistant .bubble .text ul,
+    .message-wrapper.assistant .bubble .text ol {
+      padding-left: 1.25rem;
+      margin: 0.5em 0;
+    }
+
+    .message-wrapper.assistant .bubble .text li {
+      margin-bottom: 0.3em;
+    }
+
+    .message-wrapper.assistant .bubble .text a {
+      color: var(--secondary-color);
+      text-decoration: underline;
     }
 
     .text {
@@ -2220,7 +2269,7 @@
           await Utils.streamToText(reader, (token) => {
             assistantText += token;
             AppState.pendingAssistant[AppState.currentChatId].text = assistantText;
-            textDiv.textContent = assistantText;
+            textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
             // Auto-scroll only if user hasn't scrolled manually
             console.log('User scrolled:', AppState.userHasScrolled);
             if (!AppState.userHasScrolled) {
@@ -2388,7 +2437,12 @@
         const text = document.createElement('div');
         text.className = 'text';
         const selected = msg.selected ?? 0;
-        text.textContent = msg.history?.[selected] || msg.content;
+        if (msg.role === 'assistant') {
+          const markdownRaw = msg.history?.[selected] || msg.content;
+          text.innerHTML = renderMarkdownForAssistant(markdownRaw);
+        } else  {
+          text.textContent = msg.history?.[selected] || msg.content;
+        }
 
         const meta = this.createMetaElement(msg, index);
 
@@ -2693,7 +2747,7 @@
             assistantText += token;
             msg.history[msg.selected] = assistantText;
             AppState.pendingAssistant[AppState.currentChatId].text = assistantText;
-            textDiv.textContent = assistantText;
+            textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
 
             if (!AppState.userHasScrolled) {
               DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
@@ -3330,6 +3384,9 @@
     window.MessageManager = MessageManager;
     window.HistoryManager = HistoryManager;
     window.toggleChatHistory = () => ChatHistoryManager.toggle();
+    window.refreshModelList = function () {
+      ModelManager.retryFetchModels();
+    };
 
     function handleBackNavigation() {
       const hash = window.location.hash;
@@ -3420,6 +3477,34 @@
         const dy = e.changedTouches[0].clientY - startY;
         endDrag(dy);
       });
+    }
+
+    function renderMarkdownForAssistant(text) {
+      const safeText = escapeCustomTags(text);
+      const htmlFromMarkdown = marked.parse(safeText);
+
+      // Create a temporary container to manipulate the HTML
+      const container = document.createElement('div');
+      container.innerHTML = htmlFromMarkdown;
+
+      // Add target="_blank" and rel to all links
+      container.querySelectorAll('a[href]').forEach(a => {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+      });
+
+      return container.innerHTML;
+    }
+
+    function escapeCustomTags(content, tags = ['think']) {
+      for (const tag of tags) {
+        const openTag = new RegExp(`<${tag}>`, 'gi');
+        const closeTag = new RegExp(`</${tag}>`, 'gi');
+        content = content
+          .replace(openTag, `&lt;${tag}&gt;`)
+          .replace(closeTag, `&lt;/${tag}&gt;`);
+      }
+      return content;
     }
 
     // Start the application
