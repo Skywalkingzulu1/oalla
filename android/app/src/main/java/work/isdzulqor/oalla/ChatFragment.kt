@@ -13,6 +13,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebViewFragment
 import androidx.fragment.app.Fragment
+import okhttp3.internal.userAgent
 
 class ChatFragment : Fragment() {
 
@@ -31,6 +32,7 @@ class ChatFragment : Fragment() {
 
         val root = inflater.inflate(R.layout.fragment_chat, container, false)
         webView = root.findViewById(R.id.webview)
+        val userAgentSecret = (activity as? MainActivity)?.USER_AGENT_SECRET
 
         webView?.apply {
             visibility = View.GONE
@@ -100,7 +102,8 @@ class ChatFragment : Fragment() {
                     Log.e("WebView", "onReceivedHttpError: ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}")
                 }
             }
-
+            Log.e("WebView", "userAgentSecret: ${userAgentSecret}")
+            settings.userAgentString = userAgentSecret
             settings.javaScriptEnabled = true
             addJavascriptInterface(JSBridge(),"AndroidBridge")
             settings.domStorageEnabled = true

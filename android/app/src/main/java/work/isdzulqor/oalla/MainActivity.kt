@@ -33,8 +33,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mainPagerAdapter: MainPagerAdapter
 
     private val DEBUG_MODE = true // Set to false to hide log area and log button
+    val USER_AGENT_SECRET = "ikilho-secrete-bosque-38298939"
 
-    private val ollamaPort = 9090
+    val SERVER_PORT = 9090
     external fun runOllamaWithArgs(args: Array<String>)
 
     companion object {
@@ -145,7 +146,9 @@ class MainActivity : AppCompatActivity() {
     private fun startOllamaWithArgs() {
         Thread {
             try {
-                val args = mutableListOf("serve", "--host", "localhost:$ollamaPort")
+                val args = mutableListOf("serve",
+                    "--host", "localhost:$SERVER_PORT",
+                    "--useragent-secret", USER_AGENT_SECRET)
                 val storagePref = getSharedPreferences("model_prefs", 0).getString("storage_model", "internal")
                 val modelPath = if (storagePref == "external") {
                     getExternalFilesDir("ollama_models")?.absolutePath

@@ -45,6 +45,23 @@ class ModelFragment : Fragment() {
     private var modelDataList: List<ModelData> = emptyList()
     private var allSuggestions: List<ModelSuggestion> = emptyList()
 
+    private val serverPort: Int
+        get() = (activity as? MainActivity)?.SERVER_PORT
+            ?: throw IllegalStateException("SERVER_PORT is not set in MainActivity")
+
+    private val userAgentSecret: String
+        get() = (activity as? MainActivity)?.USER_AGENT_SECRET
+            ?: throw IllegalStateException("USER_AGENT_SECRET is not set in MainActivity")
+
+    private val apiBaseUrl: String
+        get() = "http://localhost:$serverPort"
+
+    private fun buildRequestBuilder(url: String): Request.Builder {
+        return Request.Builder()
+            .url(url)
+            .header("User-Agent", userAgentSecret)
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val view = inflater.inflate(R.layout.fragment_model, container, false)
 
@@ -211,8 +228,7 @@ class ModelFragment : Fragment() {
             try {
                 val client = OkHttpClient()
                 val requestBody = """{"name":"$name"}""".toRequestBody("application/json".toMediaType())
-                val request = Request.Builder()
-                    .url("http://localhost:9090/api/delete")
+                val request = buildRequestBuilder("$apiBaseUrl/api/delete")
                     .delete(requestBody)
                     .build()
                 val response = client.newCall(request).execute()
@@ -236,8 +252,7 @@ class ModelFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val client = OkHttpClient()
-                val request = Request.Builder()
-                    .url("http://localhost:9090/api/tags")
+                val request = buildRequestBuilder("$apiBaseUrl/api/tags")
                     .get()
                     .build()
                 val response = client.newCall(request).execute()
@@ -281,8 +296,7 @@ class ModelFragment : Fragment() {
             try {
                 val client = OkHttpClient()
                 val requestBody = """{"name":"$modelName"}""".toRequestBody("application/json".toMediaType())
-                val request = Request.Builder()
-                    .url("http://localhost:9090/api/pull")
+                val request = buildRequestBuilder("$apiBaseUrl/api/pull")
                     .post(requestBody)
                     .build()
                 val response = client.newCall(request).execute()
