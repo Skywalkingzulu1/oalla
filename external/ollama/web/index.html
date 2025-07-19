@@ -2596,46 +2596,93 @@ Overall
         const text = document.createElement('div');
         text.className = 'text';
         const selected = msg.selected ?? 0;
+        const markdownRaw = msg.history?.[selected] || msg.content;
+
         if (msg.role === 'assistant') {
-          const markdownRaw = msg.history?.[selected] || msg.content;
           text.innerHTML = renderMarkdownForAssistant(markdownRaw);
         } else {
-          text.textContent = msg.history?.[selected] || msg.content;
+          text.textContent = markdownRaw;
         }
 
         const meta = this.createMetaElement(msg, index);
+        meta.classList.add('unallow-select');
+        meta.style.display = 'flex'; // Make .meta a flex container
+        meta.style.alignItems = 'center';
+
+        // === Copy Icon (Assistant Only) ===
+        if (msg.role === 'assistant') {
+          const copyIcon = document.createElement('span');
+          copyIcon.className = 'copy-icon';
+          copyIcon.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--text-secondary)" viewBox="0 0 24 24">
+        <path d="M19 21H9a2 2 0 0 1-2-2V7h2v12h10v2Zm3-4H13a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2Zm0-14H13v12h9V3Z"/>
+      </svg>
+    `;
+          copyIcon.title = 'Copy';
+          copyIcon.style.cssText = `
+      margin-left: auto;
+      font-size: 0.9rem;
+      cursor: pointer;
+      opacity: 0.8;
+      user-select: none;
+    `;
+
+          copyIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navigator.clipboard.writeText(markdownRaw);
+            copyIcon.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--secondary-color)" viewBox="0 0 24 24">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+      `;
+            setTimeout(() => {
+              copyIcon.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="var(--text-secondary)" viewBox="0 0 24 24">
+            <path d="M19 21H9a2 2 0 0 1-2-2V7h2v12h10v2Zm3-4H13a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2Zm0-14H13v12h9V3Z"/>
+          </svg>
+        `;
+            }, 1000);
+          });
+
+          copyIcon.addEventListener('touchstart', (e) => e.stopPropagation());
+          copyIcon.addEventListener('mousedown', (e) => e.stopPropagation());
+
+          meta.appendChild(copyIcon);
+        }
 
         bubble.appendChild(text);
         bubble.appendChild(meta);
         wrapper.appendChild(bubble);
 
-        // Add long-click handler for assistant messages
         if (msg.role === 'assistant') {
           this.attachAssistantLongClickHandler(bubble, index);
         }
 
         DOM.chatBox.appendChild(wrapper);
       },
-
+      
       attachAssistantLongClickHandler(bubble, messageIndex) {
         let timer = null;
         let startX = 0;
         let startY = 0;
-        let longPressTriggered = false;
         const MOVEMENT_THRESHOLD = 10;
         const LONG_PRESS_DURATION = 600;
 
-        const startPress = (x, y) => {
+        const isInCopyIcon = (target) => {
+          return target.closest('.copy-icon') !== null;
+        };
+
+        const startPress = (x, y, target) => {
+          if (isInCopyIcon(target)) return;
+
           startX = x;
           startY = y;
-          longPressTriggered = false;
 
           bubble.style.opacity = '0.8';
           bubble.style.transform = 'scale(0.98)';
           bubble.style.transition = 'all 0.1s ease';
 
           timer = setTimeout(() => {
-            longPressTriggered = true;
             MessageInfoModalManager.show(AppState.currentChatId, messageIndex);
             resetVisualState();
           }, LONG_PRESS_DURATION);
@@ -2653,16 +2700,16 @@ Overall
           bubble.style.transition = '';
         };
 
-        const onTouchStart = (e) => {
+        bubble.addEventListener('touchstart', (e) => {
           if (e.touches && e.touches.length > 0) {
             const t = e.touches[0];
-            startPress(t.clientX, t.clientY);
+            startPress(t.clientX, t.clientY, e.target);
           }
-        };
+        }, { passive: true });
 
-        const onTouchEnd = cancelPress;
+        bubble.addEventListener('touchend', cancelPress, { passive: true });
 
-        const onTouchMove = (e) => {
+        bubble.addEventListener('touchmove', (e) => {
           if (!timer) return;
           const t = e.touches[0];
           const dx = Math.abs(t.clientX - startX);
@@ -2670,22 +2717,14 @@ Overall
           if (dx > MOVEMENT_THRESHOLD || dy > MOVEMENT_THRESHOLD) {
             cancelPress();
           }
-        };
+        }, { passive: true });
 
-        const onMouseDown = (e) => {
-          startPress(e.clientX, e.clientY);
-        };
+        bubble.addEventListener('mousedown', (e) => {
+          startPress(e.clientX, e.clientY, e.target);
+        });
 
-        const onMouseUp = cancelPress;
-        const onMouseLeave = cancelPress;
-
-        bubble.addEventListener('touchstart', onTouchStart, { passive: true });
-        bubble.addEventListener('touchend', onTouchEnd, { passive: true });
-        bubble.addEventListener('touchmove', onTouchMove, { passive: true });
-
-        bubble.addEventListener('mousedown', onMouseDown);
-        bubble.addEventListener('mouseup', onMouseUp);
-        bubble.addEventListener('mouseleave', onMouseLeave);
+        bubble.addEventListener('mouseup', cancelPress);
+        bubble.addEventListener('mouseleave', cancelPress);
 
         bubble.addEventListener('contextmenu', (e) => {
           e.preventDefault();
