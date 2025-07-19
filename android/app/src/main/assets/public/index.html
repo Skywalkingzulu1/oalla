@@ -1588,62 +1588,36 @@
     }
 
     #messageInfoModal h3 {
-      margin: 0 0 1.5rem 0;
+      margin: 0 0 1.25rem;
       color: var(--text-primary);
       font-size: 1.25rem;
       text-align: center;
     }
 
-    .info-grid {
-      display: grid;
-      gap: 0.75rem;
-    }
-
-    .info-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem;
+    .info-block {
+      white-space: pre-wrap;
       background: var(--primary-dark-light);
+      padding: 1rem;
       border-radius: 8px;
-      border: 1px solid var(--border-color);
-    }
-
-    .info-label {
-      color: var(--text-secondary);
-      font-weight: 500;
-      font-size: 0.875rem;
-    }
-
-    .info-value {
-      color: var(--text-primary);
       font-family: monospace;
       font-size: 0.875rem;
-      text-align: right;
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
     }
 
     .modal-buttons {
       display: flex;
-      gap: 0.75rem;
       justify-content: flex-end;
       margin-top: 1.5rem;
     }
 
     .modal-button {
       padding: 0.5rem 1rem;
-      border: none;
       border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-weight: 300;
       background: var(--secondary-color);
       color: var(--text-primary);
       border: 1px solid var(--border-color);
-    }
-
-    .modal-button:hover {
-      background: var(--primary-light);
+      cursor: pointer;
     }
   </style>
 </head>
@@ -1861,44 +1835,7 @@
   <div id="messageInfoModal" class="modal unallow-select">
     <div class="modal-content">
       <h3 id="messageInfoTitle">Message Information</h3>
-      <div class="info-grid">
-        <div class="info-item">
-          <span class="info-label">Model</span>
-          <span id="infoModel" class="info-value">-</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Total Duration</span>
-          <span id="infoTotalDuration" class="info-value">-</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Load Duration</span>
-          <span id="infoLoadDuration" class="info-value">-</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Prompt Tokens</span>
-          <span id="infoPromptTokens" class="info-value">-</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Prompt Eval Duration</span>
-          <span id="infoPromptEvalDuration" class="info-value">-</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Prompt Eval Rate</span>
-          <span id="infoPromptEvalRate" class="info-value">-</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Response Tokens</span>
-          <span id="infoEvalTokens" class="info-value">-</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Response Duration</span>
-          <span id="infoEvalDuration" class="info-value">-</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">Response Rate</span>
-          <span id="infoEvalRate" class="info-value">-</span>
-        </div>
-      </div>
+      <pre id="infoCombinedText" class="info-block">Loading...</pre>
       <div class="modal-buttons">
         <button class="modal-button" onclick="closeMessageInfoModal()">Close</button>
       </div>
@@ -1968,15 +1905,7 @@
       get chatListContainer() { return document.getElementById('chatListContainer'); },
       get welcomeScreen() { return document.getElementById('welcomeScreen'); },
       get messageInfoModal() { return document.getElementById('messageInfoModal'); },
-      get infoModel() { return document.getElementById('infoModel'); },
-      get infoTotalDuration() { return document.getElementById('infoTotalDuration'); },
-      get infoLoadDuration() { return document.getElementById('infoLoadDuration'); },
-      get infoPromptTokens() { return document.getElementById('infoPromptTokens'); },
-      get infoPromptEvalDuration() { return document.getElementById('infoPromptEvalDuration'); },
-      get infoPromptEvalRate() { return document.getElementById('infoPromptEvalRate'); },
-      get infoEvalTokens() { return document.getElementById('infoEvalTokens'); },
-      get infoEvalDuration() { return document.getElementById('infoEvalDuration'); },
-      get infoEvalRate() { return document.getElementById('infoEvalRate'); }
+      get infoCombinedText() { return document.getElementById('infoCombinedText'); },
     };
 
     // === API Service ===
@@ -2051,14 +1980,6 @@
       saveChatConfigs() {
         localStorage.setItem('ollmaChatConfigs', JSON.stringify(AppState.chatConfigs));
       },
-
-      // saveChatHistoryState(visible) {
-      //   localStorage.setItem('chatHistoryVisible', visible);
-      // },
-
-      // getChatHistoryState() {
-      //   return localStorage.getItem('chatHistoryVisible') === 'true';
-      // }
     };
 
     // === Utility Functions ===
@@ -2213,38 +2134,45 @@
 
     const MessageInfoModalManager = {
       show(chatId, messageIndex) {
+        clearTextSelection();
+
         const metrics = AppState.messageMetrics[chatId]?.[messageIndex];
         const message = AppState.chats[chatId]?.[messageIndex];
-
         if (!message || message.role !== 'assistant') return;
 
-        // Update modal content
-        DOM.infoModel.textContent = message.model || '-';
+        const formatDuration = (ns) => {
+          if (!ns) return '-';
+          const ms = ns / 1_000_000;
+          if (ms < 1000) return `${ms.toFixed(1)}ms`;
+          const s = ms / 1000;
+          return s < 60 ? `${s.toFixed(2)}s` : `${(s / 60).toFixed(2)}m`;
+        };
 
-        if (metrics) {
-          DOM.infoTotalDuration.textContent = this.formatDuration(metrics.total_duration);
-          DOM.infoLoadDuration.textContent = this.formatDuration(metrics.load_duration);
-          DOM.infoPromptTokens.textContent = `${metrics.prompt_eval_count || 0} token(s)`;
-          DOM.infoPromptEvalDuration.textContent = this.formatDuration(metrics.prompt_eval_duration);
-          DOM.infoPromptEvalRate.textContent = metrics.prompt_eval_rate ? `${metrics.prompt_eval_rate.toFixed(2)} tokens/s` : '-';
-          DOM.infoEvalTokens.textContent = `${metrics.eval_count || 0} token(s)`;
-          DOM.infoEvalDuration.textContent = this.formatDuration(metrics.eval_duration);
-          DOM.infoEvalRate.textContent = metrics.eval_rate ? `${metrics.eval_rate.toFixed(2)} tokens/s` : '-';
+        let output = `Model: ${message.model || '-'}`;
+
+        if (!metrics) {
+          output += `\n\nNo detailed timing or token metrics available.`;
         } else {
-          DOM.infoTotalDuration.textContent = 'No data available';
-          DOM.infoLoadDuration.textContent = '-';
-          DOM.infoPromptTokens.textContent = '-';
-          DOM.infoPromptEvalDuration.textContent = '-';
-          DOM.infoPromptEvalRate.textContent = '-';
-          DOM.infoEvalTokens.textContent = '-';
-          DOM.infoEvalDuration.textContent = '-';
-          DOM.infoEvalRate.textContent = '-';
+          output += `
+
+Prompt
+  Tokens       : ${metrics.prompt_eval_count || 0}
+  Duration     : ${formatDuration(metrics.prompt_eval_duration)}
+  Rate         : ${metrics.prompt_eval_rate?.toFixed(2) || '-'} tokens/s
+
+Response
+  Tokens       : ${metrics.eval_count || 0}
+  Duration     : ${formatDuration(metrics.eval_duration)}
+  Rate         : ${metrics.eval_rate?.toFixed(2) || '-'} tokens/s
+
+Overall
+  Total Time   : ${formatDuration(metrics.total_duration)}
+  Load Time    : ${formatDuration(metrics.load_duration)}`;
         }
 
-        // Show modal
+        DOM.infoCombinedText.textContent = output;
         DOM.messageInfoModal.style.display = 'block';
 
-        // Handle outside click to auto-close
         const handleClickOutside = (e) => {
           if (!DOM.messageInfoModal.querySelector('.modal-content').contains(e.target)) {
             this.close();
@@ -2252,30 +2180,13 @@
           }
         };
 
-        // Delay to prevent immediate trigger if click opened it
         setTimeout(() => {
           document.addEventListener('click', handleClickOutside);
         }, 1000);
       },
+
       close() {
         DOM.messageInfoModal.style.display = 'none';
-      },
-
-      formatDuration(nanoseconds) {
-        if (!nanoseconds) return '-';
-
-        const milliseconds = nanoseconds / 1000000;
-        if (milliseconds < 1000) {
-          return `${milliseconds.toFixed(1)}ms`;
-        }
-
-        const seconds = milliseconds / 1000;
-        if (seconds < 60) {
-          return `${seconds.toFixed(3)}s`;
-        }
-
-        const minutes = seconds / 60;
-        return `${minutes.toFixed(2)}m`;
       }
     };
 
@@ -2957,6 +2868,8 @@
       },
 
       showDropdown(index, buttonElem) {
+        clearTextSelection();
+
         const dropdown = document.getElementById(`modelDropdown-${index}`);
         dropdown.innerHTML = '';
 
@@ -3264,11 +3177,8 @@
                 To start chatting, you need to download at least one model.
               </div>
               <div class="no-models-actions">
-                <button class="primary-action-button" onclick="showScreen('download')">
+                <button class="primary-action-button" onclick="goToModelFragment()">
                   Download Models
-                </button>
-                <button class="secondary-action-button" onclick="ModelManager.retryFetchModels()">
-                  I Already Have Models
                 </button>
               </div>
             </div>
@@ -3464,6 +3374,7 @@
     // === Modal Manager ===
     const ModalManager = {
       show(topicId) {
+        clearTextSelection();
         DOM.modalTitle.textContent = `Conversation: ${Utils.extractTopicTitle(topicId)}`;
         DOM.modal.style.display = 'block';
         AppState.selectedTopicId = topicId;
@@ -3724,6 +3635,9 @@
       ModelManager.retryFetchModels();
     };
     window.closeMessageInfoModal = () => MessageInfoModalManager.close();
+    window.goToModelFragment = () => {
+      safeCallAndroidBridge('navigateTo', 'model');
+    };
 
     function handleBackNavigation() {
       const hash = window.location.hash;
@@ -3842,6 +3756,13 @@
           .replace(closeTag, `&lt;/${tag}&gt;`);
       }
       return content;
+    }
+
+    function clearTextSelection() {
+      const selection = window.getSelection();
+      if (selection && selection.removeAllRanges) {
+        selection.removeAllRanges();
+      }
     }
 
     // Start the application

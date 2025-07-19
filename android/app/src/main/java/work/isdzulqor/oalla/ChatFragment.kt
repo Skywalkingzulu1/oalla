@@ -138,5 +138,17 @@ class ChatFragment : Fragment() {
         fun keepScreenOnFor(ms: Int) {
             (activity as? MainActivity)?.keepScreenOnFor(ms.toLong())
         }
+
+        @android.webkit.JavascriptInterface
+        fun navigateTo(tab: String) {
+            (activity as? MainActivity)?.let {
+                when (tab.lowercase()) {
+                    "chat" -> it.setTab(0)
+                    "model" -> it.setTab(1)
+                    "about" -> it.setTab(2)
+                    else -> Log.w("JSBridge", "Unknown tab: $tab")
+                }
+            }
+        }
     }
 }

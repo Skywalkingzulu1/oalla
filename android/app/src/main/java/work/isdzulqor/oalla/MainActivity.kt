@@ -93,6 +93,11 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     logScroll.visibility = View.VISIBLE
                     logToggleButton.text = "HIDE"
+
+                    // Scroll to bottom after layout pass
+                    logScroll.post {
+                        logScroll.fullScroll(View.FOCUS_DOWN)
+                    }
                 }
             }
         } else {
@@ -223,5 +228,11 @@ class MainActivity : AppCompatActivity() {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
         }, durationMs)
+    }
+
+    fun setTab(index: Int) {
+        runOnUiThread {
+            viewPager.currentItem = index
+        }
     }
 }
