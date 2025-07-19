@@ -1831,7 +1831,6 @@
   </div>
 
   <!-- Message Information Modal -->
-  <!-- Message Information Modal -->
   <div id="messageInfoModal" class="modal unallow-select">
     <div class="modal-content">
       <h3 id="messageInfoTitle">Message Information</h3>
@@ -3433,11 +3432,52 @@ Overall
       confirmDelete() {
         if (!AppState.selectedTopicId) return;
 
-        if (confirm(`Delete topic: ${Utils.extractTopicTitle(AppState.selectedTopicId)}?`)) {
-          ChatManager.delete(AppState.selectedTopicId);
-        }
+        const topicTitle = Utils.extractTopicTitle(AppState.selectedTopicId);
+        const modal = document.createElement('div');
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.background = 'rgba(0,0,0,0.6)';
+        modal.style.display = 'flex';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        modal.style.zIndex = '9999';
 
-        this.close();
+        modal.innerHTML = `
+    <div id="modalContent" style="background: var(--surface); color: var(--text-primary); padding: 1.5rem; border-radius: 12px; width: 90%; max-width: 400px; text-align: center;">
+      <p style="margin-bottom: 1.5rem;">Delete conversation: <strong>${topicTitle}</strong>?</p>
+      <div style="display: flex; justify-content: space-between; gap: 1rem;">
+        <button id="cancelDelete" style="flex:1; padding: 0.5rem; border: none; border-radius: 6px; background: var(--primary-dark); color: var(--text-primary);">Cancel</button>
+        <button id="confirmDelete" style="flex:1; padding: 0.5rem; border: none; border-radius: 6px; background: var(--danger-color); color: white;">Delete</button>
+      </div>
+    </div>
+  `;
+
+        document.body.appendChild(modal);
+
+        const closeModal = () => {
+          if (modal.parentNode) {
+            modal.parentNode.removeChild(modal);
+          }
+        };
+
+        modal.querySelector('#cancelDelete').onclick = closeModal;
+
+        modal.querySelector('#confirmDelete').onclick = () => {
+          ChatManager.delete(AppState.selectedTopicId);
+          closeModal();
+          this.close();
+        };
+
+        // Dismiss when clicking outside the modal content
+        modal.addEventListener('click', (e) => {
+          const modalContent = modal.querySelector('#modalContent');
+          if (!modalContent.contains(e.target)) {
+            closeModal();
+          }
+        });
       }
     };
 
