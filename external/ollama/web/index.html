@@ -1993,8 +1993,23 @@
           body: JSON.stringify({ model, messages, stream: true }),
           signal
         });
+
+        if (!response.ok) {
+          const contentType = response.headers.get('content-type') || '';
+          let errorBody;
+
+          if (contentType.includes('application/json')) {
+            errorBody = await response.json();
+          } else {
+            errorBody = await response.text();
+          }
+
+          const errorMessage = `ERROR_CHAT_API: ${errorBody.error || "Unable to Chat with the model"}`;
+          throw new Error(errorMessage);
+        }
+
         return response.body.getReader();
-      }
+      },
     };
 
     // === Storage Manager ===
@@ -2215,7 +2230,7 @@
 
         let output = `Model: ${actualModel || '-'}`;
 
-        if (!metrics) {
+        if (!metrics || Object.keys(metrics).length === 0) {
           output += `\n\nNo detailed timing or token metrics available.`;
         } else {
           output += `
@@ -2459,103 +2474,92 @@ Overall
       },
 
       async generateAssistantResponse() {
-        // Capture the current chat ID at the start
         const chatId = AppState.currentChatId;
         if (!chatId) return;
 
-        // Instead of creating a temporary div, we'll use the renderer
+        const model = DOM.modelSelect.value;
         AppState.pendingAssistant[chatId] = {
           text: '',
           timestamp: Date.now(),
-          model: DOM.modelSelect.value,
+          model,
         };
 
         AppState.controller = new AbortController();
         AppState.isGenerating = true;
         StickyBannerManager.show(chatId);
-
-        // Render to show the pending message bubble
         MessageRenderer.render();
 
         let assistantText = '';
         let capturedMetrics = null;
 
+        const updatePendingText = (text) => {
+          if (AppState.pendingAssistant[chatId]) {
+            AppState.pendingAssistant[chatId].text = text;
+          }
+
+          if (AppState.currentChatId === chatId) {
+            const textDiv = document.getElementById('pending-assistant-text');
+            if (textDiv) {
+              textDiv.innerHTML = renderMarkdownForAssistant(text);
+              if (!AppState.userHasScrolled) {
+                DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+              }
+            }
+          }
+        };
+
         try {
           const messages = this.buildMessagesWithSystemPrompt();
-          const reader = await API.createChatStream(
-            DOM.modelSelect.value,
-            messages,
-            AppState.controller.signal
-          );
+          const reader = await API.createChatStream(model, messages, AppState.controller.signal);
           AppState.userHasScrolled = false;
           safeCallAndroidBridge('keepScreenOnFor', 15000);
 
-          await Utils.streamToText(reader, (token) => {
-            assistantText += token;
-
-            // Update the pending assistant text
-            if (AppState.pendingAssistant[chatId]) {
-              AppState.pendingAssistant[chatId].text = assistantText;
+          await Utils.streamToText(
+            reader,
+            (token) => {
+              assistantText += token;
+              updatePendingText(assistantText);
+              safeCallAndroidBridge('keepScreenOnFor', 5000);
+            },
+            (metrics) => {
+              capturedMetrics = metrics;
             }
-
-            // Only update DOM if we're still on the same chat screen
-            if (AppState.currentChatId === chatId) {
-              const textDiv = document.getElementById('pending-assistant-text');
-              if (textDiv) {
-                textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
-                if (!AppState.userHasScrolled) {
-                  DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
-                }
-              }
-            }
-
-            safeCallAndroidBridge('keepScreenOnFor', 5000);
-          }, (metrics) => {
-            capturedMetrics = metrics;
-          });
+          );
         } catch (err) {
-          if (err.name !== 'AbortError') {
+          if (err.message.includes('ERROR_CHAT_API')) {
+            assistantText = `*${err.message.replace('ERROR_CHAT_API: ', '')}*`;
+            updatePendingText(assistantText);
+          } else if (err.name !== 'AbortError') {
             console.error('Stream failed:', err);
-            // Update error in pending message if still on same chat
-            if (AppState.currentChatId === chatId && AppState.pendingAssistant[chatId]) {
-              AppState.pendingAssistant[chatId].text = 'Error generating response. Please try again.';
-              const textDiv = document.getElementById('pending-assistant-text');
-              if (textDiv) {
-                textDiv.textContent = 'Error generating response. Please try again.';
-              }
-            }
+            const fallbackError = 'Error generating response. Please try again.';
+            assistantText = fallbackError;
+            updatePendingText(fallbackError);
           }
         } finally {
           StickyBannerManager.hide();
           this.cleanup();
 
           if (assistantText && AppState.chats[chatId]) {
-            // Add the message to the specific chat
             AppState.chats[chatId].push({
               role: 'assistant',
               content: assistantText,
               timestamp: Date.now(),
-              model: DOM.modelSelect.value,
+              model,
               history: [assistantText],
-              selected: 0
+              selected: 0,
             });
             Storage.saveChats();
 
-            // Store metrics if available
             if (capturedMetrics) {
-              const messageIndex = AppState.chats[chatId].length - 1;
-              if (!AppState.messageMetrics[chatId]) {
-                AppState.messageMetrics[chatId] = {};
-              }
-              // Store with regular index for initial message
-              AppState.messageMetrics[chatId][messageIndex] = capturedMetrics;
+              const index = AppState.chats[chatId].length - 1;
+              AppState.messageMetrics[chatId] = AppState.messageMetrics[chatId] || {};
+              AppState.messageMetrics[chatId][index] = capturedMetrics;
               Storage.saveMessageMetrics();
             }
           }
 
           delete AppState.pendingAssistant[chatId];
 
-          // Only re-render if we're still on the same chat
           if (AppState.currentChatId === chatId) {
             MessageRenderer.render();
           }
@@ -3147,12 +3151,11 @@ Overall
         let assistantText = '';
         let versionAdded = false;
 
-        // Set up pending assistant state
         AppState.pendingAssistant[chatId] = {
           text: '',
           timestamp: Date.now(),
           model: newModel,
-          messageIndex: index
+          messageIndex: index,
         };
 
         AppState.controller = new AbortController();
@@ -3160,25 +3163,40 @@ Overall
         StickyBannerManager.show(chatId);
         MessageRenderer.render();
 
+        const updatePendingText = (text) => {
+          if (AppState.pendingAssistant[chatId]) {
+            AppState.pendingAssistant[chatId].text = text;
+          }
+          if (AppState.currentChatId === chatId) {
+            const wrapper = DOM.chatBox.querySelector(`.message-wrapper.assistant.pending[data-index="${index}"]`);
+            const textDiv = wrapper?.querySelector('.text');
+            if (textDiv) {
+              textDiv.innerHTML = renderMarkdownForAssistant(text);
+              if (!AppState.userHasScrolled) {
+                DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+              }
+            }
+          }
+        };
+
         try {
-          const messagesUntilNow = AppState.chats[chatId].slice(0, index);
           const systemPrompt = ConfigManager.getSystemPrompt(chatId);
-          const messages = systemPrompt ? [{ role: 'system', content: systemPrompt }, ...messagesUntilNow] : messagesUntilNow;
+          const messagesUntilNow = AppState.chats[chatId].slice(0, index);
+          const messages = systemPrompt
+            ? [{ role: 'system', content: systemPrompt }, ...messagesUntilNow]
+            : messagesUntilNow;
 
           const reader = await API.createChatStream(newModel, messages, AppState.controller.signal);
           AppState.userHasScrolled = false;
-
           safeCallAndroidBridge('keepScreenOnFor', 15000);
 
-          // Prepare history
+          // prepare history
           msg.history = msg.history || [msg.content];
           msg.historyModels = msg.historyModels || [msg.model];
-
           const lastIndex = msg.history.length - 1;
-          const lastHistoryEmpty = msg.history[lastIndex] === '';
-          const lastModel = msg.historyModels[lastIndex];
+          const shouldAddVersion = msg.history[lastIndex] !== '' || msg.historyModels[lastIndex] !== newModel;
 
-          if (!lastHistoryEmpty || lastModel !== newModel) {
+          if (shouldAddVersion) {
             msg.history.push('');
             msg.historyModels.push(newModel);
             msg.selected = msg.history.length - 1;
@@ -3189,50 +3207,32 @@ Overall
 
           msg.model = newModel;
 
-          await Utils.streamToText(reader, (token) => {
-            assistantText += token;
-
-            if (msg.history[msg.selected] !== undefined) {
+          await Utils.streamToText(
+            reader,
+            (token) => {
+              assistantText += token;
               msg.history[msg.selected] = assistantText;
+              updatePendingText(assistantText);
+              safeCallAndroidBridge('keepScreenOnFor', 5000);
+            },
+            (metrics) => {
+              capturedMetrics = metrics;
             }
-
-            if (AppState.pendingAssistant[chatId]) {
-              AppState.pendingAssistant[chatId].text = assistantText;
-            }
-
-            if (AppState.currentChatId === chatId) {
-              const pendingWrapper = DOM.chatBox.querySelector(`.message-wrapper.assistant.pending[data-index="${index}"]`);
-              if (pendingWrapper) {
-                const textDiv = pendingWrapper.querySelector('.text');
-                if (textDiv) {
-                  textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
-                  if (!AppState.userHasScrolled) {
-                    DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
-                  }
-                }
-              }
-            }
-
-            safeCallAndroidBridge('keepScreenOnFor', 5000);
-          }, (metrics) => {
-            capturedMetrics = metrics;
-          });
-
-          // Save metrics only if text was received and not aborted prematurely
-          if (assistantText && capturedMetrics) {
-            AppState.messageMetrics[chatId] = AppState.messageMetrics[chatId] || {};
-            const metricsKey = `${index}.${msg.selected + 1}`;
-            AppState.messageMetrics[chatId][metricsKey] = capturedMetrics;
-            Storage.saveMessageMetrics();
-          }
-
+          );
         } catch (err) {
-          if (err.name !== 'AbortError') {
+          if (err.message?.includes('ERROR_CHAT_API')) {
+            assistantText = `*${err.message.replace('ERROR_CHAT_API: ', '')}*`;
+            msg.history = msg.history || [msg.content];
+            msg.historyModels = msg.historyModels || [msg.model];
+            msg.history.push(assistantText);
+            msg.historyModels.push(newModel);
+            msg.selected = msg.history.length - 1;
+            msg.model = newModel;
+            versionAdded = true;
+            updatePendingText(assistantText);
+          } else if (err.name !== 'AbortError') {
             console.error('Model change failed:', err);
-            if (AppState.currentChatId === chatId && AppState.pendingAssistant[chatId]) {
-              AppState.pendingAssistant[chatId].text = 'Error generating response. Please try again.';
-              MessageRenderer.render();
-            }
+            updatePendingText('Error generating response. Please try again.');
           }
         } finally {
           StickyBannerManager.hide();
@@ -3240,18 +3240,31 @@ Overall
           AppState.isGenerating = false;
           delete AppState.pendingAssistant[chatId];
 
-          // If assistantText is empty and version was added, remove it
+          // Clean up if assistantText is still empty and version was added
           if (!assistantText && versionAdded) {
             msg.history.pop();
             msg.historyModels.pop();
             msg.selected = msg.history.length - 1;
 
-            // Clean up any pre-created metrics entry
             const metricsKey = `${index}.${msg.selected + 1}`;
             if (AppState.messageMetrics[chatId]?.[metricsKey]) {
               delete AppState.messageMetrics[chatId][metricsKey];
               Storage.saveMessageMetrics();
             }
+          }
+
+          if (assistantText && capturedMetrics) {
+            AppState.messageMetrics[chatId] = AppState.messageMetrics[chatId] || {};
+            const metricsKey = `${index}.${msg.selected + 1}`;
+            AppState.messageMetrics[chatId][metricsKey] = capturedMetrics;
+            Storage.saveMessageMetrics();
+          } else {
+            // store empty metrics if no text was generated
+            const metricsKey = `${index}.${msg.selected + 1}`;
+            if (!AppState.messageMetrics[chatId]) {
+              AppState.messageMetrics[chatId] = {};
+            }
+            AppState.messageMetrics[chatId][metricsKey] = {};
           }
 
           Storage.saveChats();
@@ -3908,9 +3921,9 @@ Overall
       const sizeInKB = totalSize / 1024; // Return size in KB
       const sizeInMB = sizeInKB / 1024; // Convert to MB
       console.log(`LocalStorage size used: ${sizeInMB.toFixed(2)} MB`);
-      
+
       // Show toast with long duration and should in debug mode only
-      safeCallAndroidBridge('showToast', `LocalStorage size used: (${sizeInMB.toFixed(2)} MB)`, true, true); 
+      safeCallAndroidBridge('showToast', `LocalStorage size used: (${sizeInMB.toFixed(2)} MB)`, true, true);
     }
 
     // === Public API (for onclick handlers in HTML) ===
@@ -4099,6 +4112,82 @@ Overall
 
     function resetToDefaultPrompt() {
       DOM.systemPrompt.value = Config.DEFAULT_SYSTEM_PROMPT;
+    }
+
+    function showToast(message, { type = 'default', duration = 3000 } = {}) {
+      // Create toast container if not exists
+      let container = document.getElementById('toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.position = 'fixed';
+        container.style.bottom = '2rem';
+        container.style.left = '50%';
+        container.style.transform = 'translateX(-50%)';
+        container.style.zIndex = '9999';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.alignItems = 'center';
+        container.style.gap = '0.5rem';
+        container.style.width = '100%';
+        container.style.pointerEvents = 'none'; // Allows click-through
+        document.body.appendChild(container);
+      }
+
+      // Define theme colors
+      const theme = {
+        default: {
+          background: 'var(--surface)',
+          color: 'var(--text-primary)'
+        },
+        success: {
+          background: 'var(--secondary-color)',
+          color: 'white'
+        },
+        danger: {
+          background: 'var(--danger-color)',
+          color: 'white'
+        },
+        warning: {
+          background: 'var(--warning-color)',
+          color: 'black'
+        }
+      };
+
+      const toastStyle = theme[type] || theme.default;
+
+      // Create toast element
+      const toast = document.createElement('div');
+      toast.textContent = message;
+      toast.style.background = toastStyle.background;
+      toast.style.color = toastStyle.color;
+      toast.style.padding = '1rem 1.5rem';
+      toast.style.borderRadius = '10px';
+      toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+      toast.style.fontSize = '1rem';
+      toast.style.fontWeight = '500';
+      toast.style.maxWidth = '90%';
+      toast.style.width = 'auto';
+      toast.style.minWidth = '320px';
+      toast.style.textAlign = 'center';
+      toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(20px)';
+      toast.style.pointerEvents = 'auto';
+
+      // Animate in
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+      });
+
+      // Remove after duration
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        toast.addEventListener('transitionend', () => toast.remove());
+      }, duration);
     }
 
     // Start the application
