@@ -10,8 +10,8 @@
     <color name="text_secondary">#8696a0</color>
     <color name="text_primary">#FFFFFFFF</color>
     <color name="surface">#001a2e</color>
-    <color name="border_color">#2a3942</color> <!-- Subtle border -->
-    <color name="text_tertiary">#667781</color> <!-- Dim gray for hint/text -->
-    <color name="danger_color">#e35454</color> <!-- Dim gray for hint/text -->
+    <color name="border_color">#2a3942</color>
+    <color name="text_tertiary">#667781</color>
+    <color name="danger_color">#e35454</color>
     <color name="secondary_color">#00a884</color>
 </resources>

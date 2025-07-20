@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/model_scroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -118,18 +119,37 @@
             android:max="100"
             android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/download_log"
+        <!-- Download Log + Cancel Button container -->
+        <FrameLayout
+            android:id="@+id/download_container"
             android:layout_width="match_parent"
+            android:visibility="gone"
             android:layout_height="60dp"
-            android:layout_marginTop="4dp"
-            android:background="@color/surface"
-            android:overScrollMode="always"
-            android:padding="8dp"
-            android:scrollbars="vertical"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:visibility="gone" />
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/download_log"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/surface"
+                android:padding="8dp"
+                android:scrollbars="vertical"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <ImageButton
+                android:id="@+id/cancel_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="4dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_cancel"
+                android:visibility="gone" />
+        </FrameLayout>
 
         <!-- Divider -->
         <View

@@ -23,4 +23,11 @@
     <style name="DialogWindowTitle">
         <item name="android:textAppearance">@style/DialogTitleText</item>
     </style>
+    <style name="TextAppearance.SmallButtonText" parent="TextAppearance.AppCompat.Button">
+        <item name="android:textSize">10sp</item>
+        <item name="android:padding">2sp</item>
+        <item name="android:background">@color/danger_color</item>
+        <item name="android:textColor">#FFFFFF</item> <!-- or @color/white -->
+        <item name="android:letterSpacing">0</item> <!-- optional: to tighten spacing -->
+    </style>
 </resources>

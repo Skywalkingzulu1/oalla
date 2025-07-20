@@ -1,6 +1,7 @@
 package work.isdzulqor.oalla
 
 import android.app.NotificationManager
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -38,6 +39,12 @@ class ModelFragment : Fragment() {
     private lateinit var adapter: ModelAdapter
     private lateinit var storageToggle: RadioGroup
     private lateinit var modelSuggestionAdapter: ModelSuggestionAdapter
+    private lateinit var downloadContainer: FrameLayout
+
+    private var currentCall: okhttp3.Call? = null
+    private var currentModelName: String? = null
+    private lateinit var cancelButton: ImageButton
+    private var lastProgressText: String = ""
 
     private var selectedStorageType: String = "internal"
     private var lastLogTime = 0L
@@ -71,6 +78,11 @@ class ModelFragment : Fragment() {
         progressBar = view.findViewById(R.id.download_progress_bar)
         modelList = view.findViewById(R.id.model_list)
         storageToggle = view.findViewById(R.id.storage_toggle)
+        downloadContainer = view.findViewById(R.id.download_container)
+        cancelButton = view.findViewById(R.id.cancel_button)
+        cancelButton.setOnClickListener {
+            cancelDownload()
+        }
 
         restoreStoragePreference()
         loadModelDataFromAssets()
@@ -101,6 +113,54 @@ class ModelFragment : Fragment() {
         }
 
         return view
+    }
+
+    private fun cancelDownload() {
+        val name = currentModelName ?: return
+        currentCall?.cancel()
+        currentCall = null
+        currentModelName = null
+
+        // Stop foreground service and clear notification
+        val manager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        manager.cancel(DownloadService.NOTIFICATION_ID)
+
+        if (DownloadService.instance != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                DownloadService.instance?.stopForeground(Service.STOP_FOREGROUND_REMOVE)
+            } else {
+                @Suppress("DEPRECATION")
+                DownloadService.instance?.stopForeground(true)
+            }
+            DownloadService.instance?.stopSelf()
+        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val client = OkHttpClient()
+                val requestBody = """{"name":"$name"}""".toRequestBody("application/json".toMediaType())
+                val request = buildRequestBuilder("$apiBaseUrl/api/delete")
+                    .delete(requestBody)
+                    .build()
+                client.newCall(request).execute()
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Download cancelled", Toast.LENGTH_SHORT).show()
+
+                    cancelButton.visibility = View.GONE
+                    progressBar.visibility = View.GONE
+                    downloadLog.text = "Download cancelled"
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        downloadContainer.visibility = View.GONE
+                    }, 2000)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Cancel failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun loadModelDataFromAssets() {
@@ -283,9 +343,9 @@ class ModelFragment : Fragment() {
     }
 
     private fun downloadModel(modelName: String) {
-        val serviceIntent = Intent(requireContext(), DownloadService::class.java)
-        requireContext().startService(serviceIntent)
-
+        currentModelName = modelName
+        cancelButton.visibility = View.VISIBLE
+        downloadContainer.visibility = View.VISIBLE
         downloadLog.visibility = View.VISIBLE
         progressBar.visibility = View.VISIBLE
         progressBar.progress = 0
@@ -299,7 +359,10 @@ class ModelFragment : Fragment() {
                 val request = buildRequestBuilder("$apiBaseUrl/api/pull")
                     .post(requestBody)
                     .build()
-                val response = client.newCall(request).execute()
+
+                currentCall = client.newCall(request)
+                val response = currentCall!!.execute()
+
                 val source = response.body?.source() ?: return@launch
                 val buffer = Buffer()
                 var partial = ""
@@ -322,19 +385,25 @@ class ModelFragment : Fragment() {
 
                 withContext(Dispatchers.Main) {
                     downloadLog.text = "Download complete"
+                    cancelButton.visibility = View.GONE
                     fetchModelList()
                     DownloadService.instance?.finishDownload()
 
                     Handler(Looper.getMainLooper()).postDelayed({
+                        downloadContainer.visibility = View.GONE
                         downloadLog.visibility = View.GONE
                         progressBar.visibility = View.GONE
-                    }, 1500)
+                    }, 1000)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     downloadLog.text = "Error: ${e.localizedMessage}"
+                    cancelButton.visibility = View.GONE
                     progressBar.visibility = View.GONE
                 }
+            } finally {
+                currentCall = null
+                currentModelName = null
             }
         }
     }
@@ -350,19 +419,19 @@ class ModelFragment : Fragment() {
             val percent = (completed.toDouble() / total.toDouble() * 100).toInt()
             val mbDone = completed / 1024 / 1024
             val mbTotal = total / 1024 / 1024
-            val logText = "Progress: $mbDone / $mbTotal MB ($percent%)"
+            lastProgressText = "Progress: $mbDone / $mbTotal MB ($percent%)"
 
             val now = SystemClock.elapsedRealtime()
             if (now - lastLogTime > 2000 || completed == total) {
-                downloadLog.text = logText
+                downloadLog.text = lastProgressText
                 progressBar.progress = percent
                 progressBar.isIndeterminate = false
                 lastLogTime = now
             }
 
-            DownloadService.instance?.updateProgress(percent, logText)
-        } catch (e: Exception) {
-            // Ignore malformed lines
+            DownloadService.instance?.updateProgress(percent, lastProgressText)
+        } catch (_: Exception) {
+            // ignore bad line
         }
     }
 
@@ -398,6 +467,8 @@ class ModelFragment : Fragment() {
                         onNegative = {}
                     )
                 } else {
+                    val intent = Intent(requireContext(), DownloadService::class.java)
+                    requireContext().startService(intent) // Start foreground service!
                     downloadModel(modelName)
                 }
             },
