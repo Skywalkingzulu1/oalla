@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var logToggleButton: Button
     private lateinit var mainPagerAdapter: MainPagerAdapter
 
-    private val DEBUG_MODE = true // Set to false to hide log area and log button
+    val DEBUG_MODE = true // Set to false to hide log area and log button
     val USER_AGENT_SECRET = "ikilho-secrete-bosque-38298939"
 
     val SERVER_PORT = 9090

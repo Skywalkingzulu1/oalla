@@ -1,5 +1,6 @@
 package work.isdzulqor.oalla
 
+import android.R.attr.duration
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -20,7 +21,9 @@ class ChatFragment : Fragment() {
 
     private val ollamaPort = 9090
     private var splashStartTime: Long = 0
-
+    private val debugMode: Boolean
+        get() = (activity as? MainActivity)?.DEBUG_MODE
+            ?: false
     // Expose webView so MainActivity can access it for back press
     var webView: WebView? = null
 
@@ -156,8 +159,13 @@ class ChatFragment : Fragment() {
         }
 
         @android.webkit.JavascriptInterface
-        fun showToast(text: String) {
-            Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()
+        fun showToast(text: String, isLongDur: Boolean = false, shouldDebug: Boolean = false) {
+            if (shouldDebug && !debugMode) {
+                return
+            }
+
+            val duration = if (isLongDur) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+            Toast.makeText(requireContext(), text, duration).show()
         }
     }
 }

@@ -1916,7 +1916,7 @@
       SEARCH_DEBOUNCE_DELAY: 300,
       MESSAGE_PREVIEW_LENGTH: 80,
       TOPIC_TITLE_MAX_WORDS: 12,
-      DEFAULT_SYSTEM_PROMPT: 'You are a helpful assistant. Answer questions concisely and accurately.',
+      DEFAULT_SYSTEM_PROMPT: 'You are a concise, accurate assistant. Use Markdown if needed.',
     };
 
     // === DOM Elements Cache ===
@@ -3888,6 +3888,9 @@ Overall
     };
     // === Initialize Application ===
     async function initializeApp() {
+      // Check localStorage size
+      checkLocalStorageSizeUsed();
+
       await ModelManager.load();
       EventHandlers.init();
 
@@ -3896,6 +3899,18 @@ Overall
       } else {
         handleBackNavigation(); // In case user reloaded on a chat screen
       }
+    }
+
+    function checkLocalStorageSizeUsed() {
+      const totalSize = Object.entries(localStorage).reduce((total, [key, value]) => {
+        return total + key.length + value.length;
+      }, 0);
+      const sizeInKB = totalSize / 1024; // Return size in KB
+      const sizeInMB = sizeInKB / 1024; // Convert to MB
+      console.log(`LocalStorage size used: ${sizeInMB.toFixed(2)} MB`);
+      
+      // Show toast with long duration and should in debug mode only
+      safeCallAndroidBridge('showToast', `LocalStorage size used: (${sizeInMB.toFixed(2)} MB)`, true, true); 
     }
 
     // === Public API (for onclick handlers in HTML) ===
@@ -3952,7 +3967,7 @@ Overall
       }
 
       if (isAssistantGenerating) {
-        safeCallAndroidBridge('showToast', 'Please wait for the assistant to finish generating.');
+        safeCallAndroidBridge('showToast', 'Please wait for the assistant to finish generating.', false, false);
       }
     }
 
