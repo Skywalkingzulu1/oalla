@@ -1177,11 +1177,6 @@
       border-radius: 4px;
     }
 
-    .model-change-button:hover {
-      color: var(--primary-color);
-      background: rgba(0, 0, 0, 0.05);
-    }
-
     .model-change-button svg {
       width: 12.5px;
       height: 12.5px;
@@ -3849,13 +3844,6 @@ Overall
         <span></span><span></span><span></span>
       </span>
     `;
-          banner.onclick = () => {
-            if (typeof AppState !== 'undefined') {
-              AppState.currentChatId = chatId;
-              ScreenManager.show('chat');
-              MessageRenderer.render();
-            }
-          };
 
           // Insert before quick-send-container if it exists
           const quickSend = document.querySelector('.quick-send-container');
@@ -3866,10 +3854,19 @@ Overall
           }
         }
 
+        // 🟡 Always update the onclick with the latest chatId
+        banner.onclick = () => {
+          if (typeof AppState !== 'undefined') {
+            AppState.currentChatId = chatId;
+            ScreenManager.show('chat');
+            MessageRenderer.render();
+          }
+        };
+
         banner.classList.remove('hiding');
         banner.style.display = 'flex';
       },
-
+      
       hide() {
         const banner = document.getElementById('stickyBanner');
         if (banner && banner.style.display !== 'none') {

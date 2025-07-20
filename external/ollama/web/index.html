@@ -1177,11 +1177,6 @@
       border-radius: 4px;
     }
 
-    .model-change-button:hover {
-      color: var(--primary-color);
-      background: rgba(0, 0, 0, 0.05);
-    }
-
     .model-change-button svg {
       width: 12.5px;
       height: 12.5px;
@@ -1856,7 +1851,7 @@
         <div style="margin-top: 0.5rem;">
           <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
             <input type="checkbox" id="setAsDefaultPrompt" />
-            Set as default for all new chats
+            Set as default
           </label>
         </div>
         <div class="config-description">
@@ -2145,8 +2140,7 @@
       open() {
         if (!AppState.currentChatId) return;
 
-        const config = AppState.chatConfigs[AppState.currentChatId] || {};
-        DOM.systemPrompt.value = config.systemPrompt || Config.DEFAULT_SYSTEM_PROMPT;
+        DOM.systemPrompt.value = ConfigManager.getSystemPrompt(AppState.currentChatId);
         DOM.configModal.style.display = 'flex';
       },
 
@@ -2445,7 +2439,8 @@ Overall
       },
 
       buildMessagesWithSystemPrompt() {
-        const systemPrompt = ConfigManager.getSystemPrompt(AppState.currentChatId) || Config.DEFAULT_SYSTEM_PROMPT;
+        const systemPrompt = ConfigManager.getSystemPrompt(AppState.currentChatId);
+        console.log('Using system prompt:', systemPrompt);
         const messages = [];
 
         if (systemPrompt) {
@@ -3849,13 +3844,6 @@ Overall
         <span></span><span></span><span></span>
       </span>
     `;
-          banner.onclick = () => {
-            if (typeof AppState !== 'undefined') {
-              AppState.currentChatId = chatId;
-              ScreenManager.show('chat');
-              MessageRenderer.render();
-            }
-          };
 
           // Insert before quick-send-container if it exists
           const quickSend = document.querySelector('.quick-send-container');
@@ -3865,6 +3853,15 @@ Overall
             document.body.appendChild(banner); // fallback
           }
         }
+
+        // 🟡 Always update the onclick with the latest chatId
+        banner.onclick = () => {
+          if (typeof AppState !== 'undefined') {
+            AppState.currentChatId = chatId;
+            ScreenManager.show('chat');
+            MessageRenderer.render();
+          }
+        };
 
         banner.classList.remove('hiding');
         banner.style.display = 'flex';
