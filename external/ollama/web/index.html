@@ -21,6 +21,7 @@
       --secondary-dark: #018069;
       /* darker green hover */
       --danger-color: #e35454;
+      --danger-color-light: #e46969;
       --warning-color: #fbbf24;
       --background: #031d31;
       /* main app background */
@@ -1814,18 +1815,19 @@
     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
       <button onclick="confirmPinAction()"
         style="width: 100%; background: none; border: none; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 1rem; font-weight: 500; font-size: 1rem; color: var(--text-primary); cursor: pointer; transition: background 0.2s;">
-        <svg xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px; color: var(--secondary-color);"
-          fill="currentColor" viewBox="0 0 20 20">
+        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
+          style="width: 24px; height: 24px;">
           <path
-            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.518 4.674a1 1 0 00.95.69h4.916c.969 0 1.371 1.24.588 1.81l-3.974 2.888a1 1 0 00-.364 1.118l1.518 4.674c.3.921-.755 1.688-1.538 1.118L10 15.347l-3.547 2.554c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118l-3.974-2.888c-.783-.57-.38-1.81.588-1.81h4.916a1 1 0 00.95-.69l1.518-4.674z" />
+            d="M19.1835 7.80516L16.2188 4.83755C14.1921 2.8089 13.1788 1.79457 12.0904 2.03468C11.0021 2.2748 10.5086 3.62155 9.5217 6.31506L8.85373 8.1381C8.59063 8.85617 8.45908 9.2152 8.22239 9.49292C8.11619 9.61754 7.99536 9.72887 7.86251 9.82451C7.56644 10.0377 7.19811 10.1392 6.46145 10.3423C4.80107 10.8 3.97088 11.0289 3.65804 11.5721C3.5228 11.8069 3.45242 12.0735 3.45413 12.3446C3.45809 12.9715 4.06698 13.581 5.28476 14.8L6.69935 16.2163L2.22345 20.6964C1.92552 20.9946 1.92552 21.4782 2.22345 21.7764C2.52138 22.0746 3.00443 22.0746 3.30236 21.7764L7.77841 17.2961L9.24441 18.7635C10.4699 19.9902 11.0827 20.6036 11.7134 20.6045C11.9792 20.6049 12.2404 20.5358 12.4713 20.4041C13.0192 20.0914 13.2493 19.2551 13.7095 17.5825C13.9119 16.8472 14.013 16.4795 14.2254 16.1835C14.3184 16.054 14.4262 15.9358 14.5468 15.8314C14.8221 15.593 15.1788 15.459 15.8922 15.191L17.7362 14.4981C20.4 13.4973 21.7319 12.9969 21.9667 11.9115C22.2014 10.826 21.1954 9.81905 19.1835 7.80516Z" />
         </svg>
         <span id="pinLabel">Pin</span>
       </button>
       <button onclick="confirmDeleteAction()"
-        style="width: 100%; background: none; border: none; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 1rem; font-weight: 500; font-size: 1rem; color: var(--danger-color); cursor: pointer; transition: background 0.2s;">
-        <svg style="width: 24px; height: 24px; color: var(--danger-color);" xmlns="http://www.w3.org/2000/svg"
-          fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        style="width: 100%; background: none; border: none; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 1rem; font-weight: 500; font-size: 1rem; color: var(--danger-color-light); cursor: pointer; transition: background 0.2s;">
+        <svg style="width: 24px; height: 24px; color: var(--danger-color-light);" viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+          <path
+            d="M5.755,20.283,4,8H20L18.245,20.283A2,2,0,0,1,16.265,22H7.735A2,2,0,0,1,5.755,20.283ZM21,4H16V3a1,1,0,0,0-1-1H9A1,1,0,0,0,8,3V4H3A1,1,0,0,0,3,6H21a1,1,0,0,0,0-2Z" />
         </svg>
         Delete
       </button>
@@ -3448,13 +3450,18 @@ Overall
         const time = Utils.formatRelativeDateTime(timestamp);
 
         item.innerHTML = `
-            <div class="chat-item-header">
-              <span class="chat-item-topic-id" style="display:none">${id}</span>
-              <span class="chat-item-title">${title}</span>
-              ${isPinned ? '<span style="font-size: 1rem;">📌</span>' : ''}
-            </div>
-            <div class="chat-item-time">${time}</div>
-          `;
+          <div class="chat-item-header">
+            <span class="chat-item-topic-id" style="display:none">${id}</span>
+            <span class="chat-item-title">${title}</span>
+            ${isPinned ? `
+              <span style="width: 1rem; height: 1rem; color: var(--text-secondary); display: inline-block; vertical-align: middle;">
+                <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="width: 1rem; height: 1rem;">
+                  <path d="M19.1835 7.80516L16.2188 4.83755C14.1921 2.8089 13.1788 1.79457 12.0904 2.03468C11.0021 2.2748 10.5086 3.62155 9.5217 6.31506L8.85373 8.1381C8.59063 8.85617 8.45908 9.2152 8.22239 9.49292C8.11619 9.61754 7.99536 9.72887 7.86251 9.82451C7.56644 10.0377 7.19811 10.1392 6.46145 10.3423C4.80107 10.8 3.97088 11.0289 3.65804 11.5721C3.5228 11.8069 3.45242 12.0735 3.45413 12.3446C3.45809 12.9715 4.06698 13.581 5.28476 14.8L6.69935 16.2163L2.22345 20.6964C1.92552 20.9946 1.92552 21.4782 2.22345 21.7764C2.52138 22.0746 3.00443 22.0746 3.30236 21.7764L7.77841 17.2961L9.24441 18.7635C10.4699 19.9902 11.0827 20.6036 11.7134 20.6045C11.9792 20.6049 12.2404 20.5358 12.4713 20.4041C13.0192 20.0914 13.2493 19.2551 13.7095 17.5825C13.9119 16.8472 14.013 16.4795 14.2254 16.1835C14.3184 16.054 14.4262 15.9358 14.5468 15.8314C14.8221 15.593 15.1788 15.459 15.8922 15.191L17.7362 14.4981C20.4 13.4973 21.7319 12.9969 21.9667 11.9115C22.2014 10.826 21.1954 9.81905 19.1835 7.80516Z" />
+                </svg>
+              </span>` : ''}
+          </div>
+          <div class="chat-item-time">${time}</div>
+        `;
 
         this.attachEventHandlers(item, id);
         return item;
