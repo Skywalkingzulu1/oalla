@@ -1818,10 +1818,20 @@
       <div class="config-section">
         <label for="systemPrompt">System Prompt</label>
         <textarea id="systemPrompt" placeholder="Enter a system prompt to guide the assistant's behavior..."></textarea>
+        <div style="margin-top: 0.5rem;">
+          <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="setAsDefaultPrompt" />
+            Set as default for all new chats
+          </label>
+        </div>
         <div class="config-description">
           This prompt will be sent with every message in this conversation to guide the assistant's behavior and
           responses.
         </div>
+        <button onclick="resetToDefaultPrompt()"
+          style="margin-top: 0.5rem; font-size: 0.75rem; background: var(--primary-dark); border: none; padding: 0.25rem 0.75rem; border-radius: 6px; color: var(--text-primary);">
+          Reset to Default
+        </button>
       </div>
       <div class="config-actions">
         <button class="config-cancel-button" onclick="closeConfigModal()">Cancel</button>
@@ -1905,6 +1915,7 @@
       get welcomeScreen() { return document.getElementById('welcomeScreen'); },
       get messageInfoModal() { return document.getElementById('messageInfoModal'); },
       get infoCombinedText() { return document.getElementById('infoCombinedText'); },
+      get setAsDefaultPrompt() { return document.getElementById('setAsDefaultPrompt'); },
     };
 
     // === API Service ===
@@ -2083,18 +2094,15 @@
                   onMetrics(metrics);
                 }
 
-                // Re-attach to text DOM if needed
-                const textDiv = document.getElementById('pending-assistant-text');
-                if (textDiv) {
-                  textDiv.textContent = AppState.pendingAssistant[AppState.currentChatId].text;
-                }
+                // Re-attach to text DOM if needed - REMOVED THIS PROBLEMATIC CODE
+                // This should be handled in the onChunk callback, not here
               } catch (e) {
                 console.error('Failed to parse chunk:', e);
               }
             }
           }
         }
-      }
+      },
     };
 
     // === Config Manager ===
@@ -2115,19 +2123,25 @@
         if (!AppState.currentChatId) return;
 
         const systemPrompt = DOM.systemPrompt.value.trim();
+        const setAsDefault = DOM.setAsDefaultPrompt.checked;
 
         if (!AppState.chatConfigs[AppState.currentChatId]) {
           AppState.chatConfigs[AppState.currentChatId] = {};
         }
 
         AppState.chatConfigs[AppState.currentChatId].systemPrompt = systemPrompt;
-        Storage.saveChatConfigs();
 
+        if (setAsDefault) {
+          localStorage.setItem('defaultSystemPrompt', systemPrompt);
+        }
+
+        Storage.saveChatConfigs();
         this.close();
       },
 
       getSystemPrompt(chatId) {
-        return AppState.chatConfigs[chatId]?.systemPrompt || '';
+        const defaultFromStorage = localStorage.getItem('defaultSystemPrompt') || Config.DEFAULT_SYSTEM_PROMPT;
+        return AppState.chatConfigs[chatId]?.systemPrompt || defaultFromStorage;
       }
     };
 
@@ -2135,9 +2149,30 @@
       show(chatId, messageIndex) {
         clearTextSelection();
 
-        const metrics = AppState.messageMetrics[chatId]?.[messageIndex];
         const message = AppState.chats[chatId]?.[messageIndex];
         if (!message || message.role !== 'assistant') return;
+
+        // Get metrics based on current selection
+        let metrics = null;
+        let metricsKey = messageIndex.toString();
+
+        // If message has history and a selection, use decimal notation
+        if (message.history && message.selected !== undefined && message.selected > 0) {
+          metricsKey = `${messageIndex}.${message.selected + 1}`;
+        }
+
+        metrics = AppState.messageMetrics[chatId]?.[metricsKey];
+
+        // Fallback to base index if decimal key not found
+        if (!metrics) {
+          metrics = AppState.messageMetrics[chatId]?.[messageIndex];
+        }
+
+        // Get the actual model used for the current version
+        let actualModel = message.model;
+        if (message.history && message.historyModels && message.selected !== undefined) {
+          actualModel = message.historyModels[message.selected] || message.model;
+        }
 
         const formatDuration = (ns) => {
           if (!ns) return '-';
@@ -2147,7 +2182,7 @@
           return s < 60 ? `${s.toFixed(2)}s` : `${(s / 60).toFixed(2)}m`;
         };
 
-        let output = `Model: ${message.model || '-'}`;
+        let output = `Model: ${actualModel || '-'}`;
 
         if (!metrics) {
           output += `\n\nNo detailed timing or token metrics available.`;
@@ -2194,6 +2229,11 @@ Overall
       show(screenName) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.footer button').forEach(b => b.classList.remove('active'));
+
+        // Clean up stale pending data when navigating away from chat
+        if (screenName !== 'chat' && AppState.currentChatId && !AppState.isGenerating) {
+          delete AppState.pendingAssistant[AppState.currentChatId];
+        }
 
         // Push history state
         if (screenName === 'chat') {
@@ -2386,12 +2426,12 @@ Overall
       },
 
       async generateAssistantResponse() {
-        const tempDiv = this.createPendingMessage();
-        const textDiv = tempDiv.querySelector('.text');
-        let assistantText = '';
-        let capturedMetrics = null;
+        // Capture the current chat ID at the start
+        const chatId = AppState.currentChatId;
+        if (!chatId) return;
 
-        AppState.pendingAssistant[AppState.currentChatId] = {
+        // Instead of creating a temporary div, we'll use the renderer
+        AppState.pendingAssistant[chatId] = {
           text: '',
           timestamp: Date.now(),
           model: DOM.modelSelect.value,
@@ -2399,12 +2439,13 @@ Overall
 
         AppState.controller = new AbortController();
         AppState.isGenerating = true;
-        StickyBannerManager.show(AppState.currentChatId);
+        StickyBannerManager.show(chatId);
 
-        const stopButton = UIManager.createStopButton(
-          () => AppState.controller.abort(),
-          tempDiv
-        );
+        // Render to show the pending message bubble
+        MessageRenderer.render();
+
+        let assistantText = '';
+        let capturedMetrics = null;
 
         try {
           const messages = this.buildMessagesWithSystemPrompt();
@@ -2418,11 +2459,23 @@ Overall
 
           await Utils.streamToText(reader, (token) => {
             assistantText += token;
-            AppState.pendingAssistant[AppState.currentChatId].text = assistantText;
-            textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
-            if (!AppState.userHasScrolled) {
-              DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+
+            // Update the pending assistant text
+            if (AppState.pendingAssistant[chatId]) {
+              AppState.pendingAssistant[chatId].text = assistantText;
             }
+
+            // Only update DOM if we're still on the same chat screen
+            if (AppState.currentChatId === chatId) {
+              const textDiv = document.getElementById('pending-assistant-text');
+              if (textDiv) {
+                textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
+                if (!AppState.userHasScrolled) {
+                  DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+                }
+              }
+            }
+
             safeCallAndroidBridge('keepScreenOnFor', 5000);
           }, (metrics) => {
             capturedMetrics = metrics;
@@ -2430,28 +2483,49 @@ Overall
         } catch (err) {
           if (err.name !== 'AbortError') {
             console.error('Stream failed:', err);
-            textDiv.textContent = 'Error generating response. Please try again.';
+            // Update error in pending message if still on same chat
+            if (AppState.currentChatId === chatId && AppState.pendingAssistant[chatId]) {
+              AppState.pendingAssistant[chatId].text = 'Error generating response. Please try again.';
+              const textDiv = document.getElementById('pending-assistant-text');
+              if (textDiv) {
+                textDiv.textContent = 'Error generating response. Please try again.';
+              }
+            }
           }
         } finally {
           StickyBannerManager.hide();
-          this.cleanup(stopButton);
+          this.cleanup();
 
-          if (assistantText) {
-            this.addAssistantMessage(assistantText);
+          if (assistantText && AppState.chats[chatId]) {
+            // Add the message to the specific chat
+            AppState.chats[chatId].push({
+              role: 'assistant',
+              content: assistantText,
+              timestamp: Date.now(),
+              model: DOM.modelSelect.value,
+              history: [assistantText],
+              selected: 0
+            });
+            Storage.saveChats();
 
             // Store metrics if available
             if (capturedMetrics) {
-              const messageIndex = AppState.chats[AppState.currentChatId].length - 1;
-              if (!AppState.messageMetrics[AppState.currentChatId]) {
-                AppState.messageMetrics[AppState.currentChatId] = {};
+              const messageIndex = AppState.chats[chatId].length - 1;
+              if (!AppState.messageMetrics[chatId]) {
+                AppState.messageMetrics[chatId] = {};
               }
-              AppState.messageMetrics[AppState.currentChatId][messageIndex] = capturedMetrics;
+              // Store with regular index for initial message
+              AppState.messageMetrics[chatId][messageIndex] = capturedMetrics;
               Storage.saveMessageMetrics();
             }
           }
 
-          delete AppState.pendingAssistant[AppState.currentChatId];
-          MessageRenderer.render();
+          delete AppState.pendingAssistant[chatId];
+
+          // Only re-render if we're still on the same chat
+          if (AppState.currentChatId === chatId) {
+            MessageRenderer.render();
+          }
         }
       },
 
@@ -2490,10 +2564,16 @@ Overall
         return div;
       },
 
-      cleanup(stopButton) {
+      cleanup() {
         AppState.controller = null;
         AppState.isGenerating = false;
-        stopButton?.remove();
+
+        // Remove any stop buttons
+        const stopButton = document.getElementById('stopButton');
+        if (stopButton) {
+          stopButton.remove();
+        }
+
         DOM.userInput.disabled = false;
         DOM.sendBtn.disabled = false;
       },
@@ -2539,7 +2619,8 @@ Overall
           this.renderMessage(msg, index);
         });
 
-        if (pending) {
+        // Only show pending bubble if we're actually generating (not just have stale pending data)
+        if (pending && AppState.isGenerating) {
           // Remove any existing pending bubble first
           const oldPending = DOM.chatBox.querySelector('.message-wrapper.assistant.pending');
           if (oldPending) oldPending.remove();
@@ -2554,16 +2635,16 @@ Overall
           const text = document.createElement('div');
           text.className = 'text';
           text.id = 'pending-assistant-text';
-          text.textContent = pending.text;
+          text.innerHTML = renderMarkdownForAssistant(pending.text);
 
           const meta = document.createElement('div');
           meta.className = 'meta unallow-select';
           meta.innerHTML = `
-        <div class="generating-indicator">
-          <div class="typing-dots"><span></span><span></span><span></span></div>
-          <span class="generating-text">Generating response...</span>
-        </div>
-      `;
+      <div class="generating-indicator">
+        <div class="typing-dots"><span></span><span></span><span></span></div>
+        <span class="generating-text">Generating response...</span>
+      </div>
+    `;
 
           bubble.appendChild(text);
           bubble.appendChild(meta);
@@ -2573,6 +2654,9 @@ Overall
           if (AppState.isGenerating && AppState.controller) {
             UIManager.createStopButton(() => AppState.controller.abort(), wrapper);
           }
+        } else if (pending && !AppState.isGenerating) {
+          // Clean up stale pending data if generation is complete
+          delete AppState.pendingAssistant[AppState.currentChatId];
         }
 
         if (callback) callback();
@@ -2655,12 +2739,12 @@ Overall
         wrapper.appendChild(bubble);
 
         if (msg.role === 'assistant') {
-          this.attachAssistantLongClickHandler(bubble, index);
+          this.attachAssistantLongClickHandler(text, index);
         }
 
         DOM.chatBox.appendChild(wrapper);
       },
-      
+
       attachAssistantLongClickHandler(bubble, messageIndex) {
         let timer = null;
         let startX = 0;
@@ -2949,59 +3033,46 @@ Overall
         await this.regenerateWithModel(index, newModel);
       },
 
-      async regenerateWithModel(index, model) {
-        const targetDiv = document.querySelector(`.message-wrapper.assistant[data-index="${index}"]`);
-        const msg = AppState.chats[AppState.currentChatId][index];
+      async regenerateWithModel(index, newModel) {
+        // Capture the current chat ID at the start
+        const chatId = AppState.currentChatId;
+        if (!chatId) return;
+
+        const msg = AppState.chats[chatId][index];
         let capturedMetrics = null;
 
-        if (!targetDiv || !msg) return;
+        if (!msg) return;
 
-        const bubble = targetDiv.querySelector('.bubble');
-        bubble.innerHTML = `
-      <div class="text"></div>
-      <div class="meta unallow-select">
-        <div class="generating-indicator">
-          <div class="typing-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-          <span class="generating-text">Generating response...</span>
-        </div>
-      </div>
-    `;
-        const textDiv = bubble.querySelector('.text');
+        // Set up pending assistant state
+        AppState.pendingAssistant[chatId] = {
+          text: '',
+          timestamp: Date.now(),
+          model: newModel,
+          messageIndex: index
+        };
 
         AppState.controller = new AbortController();
         AppState.isGenerating = true;
-        StickyBannerManager.show(AppState.currentChatId);
+        StickyBannerManager.show(chatId);
 
-        const stopButton = UIManager.createStopButton(
-          () => AppState.controller.abort(),
-          targetDiv
-        );
+        // Re-render to show the pending state
+        MessageRenderer.render();
 
         try {
-          const messagesUntilNow = AppState.chats[AppState.currentChatId].slice(0, index);
-          const systemPrompt = ConfigManager.getSystemPrompt(AppState.currentChatId);
+          const messagesUntilNow = AppState.chats[chatId].slice(0, index);
+          const systemPrompt = ConfigManager.getSystemPrompt(chatId);
           const messages = [];
 
+          console.log('Using system prompt:', systemPrompt);
           if (systemPrompt) {
             messages.push({ role: 'system', content: systemPrompt });
           }
 
           messages.push(...messagesUntilNow);
 
-          const reader = await API.createChatStream(model, messages, AppState.controller.signal);
+          const reader = await API.createChatStream(newModel, messages, AppState.controller.signal);
           AppState.userHasScrolled = false;
           let assistantText = '';
-
-          AppState.pendingAssistant[AppState.currentChatId] = {
-            text: '',
-            timestamp: Date.now(),
-            model: model,
-            messageIndex: index
-          };
 
           safeCallAndroidBridge('keepScreenOnFor', 15000);
 
@@ -3012,24 +3083,37 @@ Overall
           const lastHistoryEmpty = msg.history[lastIndex] === '';
           const lastModel = msg.historyModels[lastIndex];
 
-          if (!lastHistoryEmpty || lastModel !== model) {
+          if (!lastHistoryEmpty || lastModel !== newModel) {
             msg.history.push('');
-            msg.historyModels.push(model);
+            msg.historyModels.push(newModel);
             msg.selected = msg.history.length - 1;
           } else {
             msg.selected = lastIndex;
           }
 
-          msg.model = model;
+          msg.model = newModel;
 
           await Utils.streamToText(reader, (token) => {
             assistantText += token;
             msg.history[msg.selected] = assistantText;
-            AppState.pendingAssistant[AppState.currentChatId].text = assistantText;
-            textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
 
-            if (!AppState.userHasScrolled) {
-              DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+            // Update the pending assistant text
+            if (AppState.pendingAssistant[chatId]) {
+              AppState.pendingAssistant[chatId].text = assistantText;
+            }
+
+            // Only update DOM if we're still on the same chat screen
+            if (AppState.currentChatId === chatId) {
+              const pendingWrapper = DOM.chatBox.querySelector('.message-wrapper.assistant.pending[data-index="' + index + '"]');
+              if (pendingWrapper) {
+                const textDiv = pendingWrapper.querySelector('.text');
+                if (textDiv) {
+                  textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
+                  if (!AppState.userHasScrolled) {
+                    DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+                  }
+                }
+              }
             }
 
             safeCallAndroidBridge('keepScreenOnFor', 5000);
@@ -3037,31 +3121,39 @@ Overall
             capturedMetrics = metrics;
           });
 
-          // Store metrics if available
+          // Store metrics with decimal key for regenerated versions
           if (capturedMetrics) {
-            if (!AppState.messageMetrics[AppState.currentChatId]) {
-              AppState.messageMetrics[AppState.currentChatId] = {};
+            if (!AppState.messageMetrics[chatId]) {
+              AppState.messageMetrics[chatId] = {};
             }
-            AppState.messageMetrics[AppState.currentChatId][index] = capturedMetrics;
+
+            // Use decimal notation for regenerated messages
+            // selected is 0-based, but we want 1-based for the decimal part
+            const metricsKey = `${index}.${msg.selected + 1}`;
+            AppState.messageMetrics[chatId][metricsKey] = capturedMetrics;
             Storage.saveMessageMetrics();
           }
 
         } catch (err) {
           if (err.name !== 'AbortError') {
             console.error('Model change failed:', err);
-            textDiv.textContent = 'Error generating response.';
+            if (AppState.currentChatId === chatId && AppState.pendingAssistant[chatId]) {
+              AppState.pendingAssistant[chatId].text = 'Error generating response. Please try again.';
+              MessageRenderer.render();
+            }
           }
         } finally {
           StickyBannerManager.hide();
           AppState.controller = null;
           AppState.isGenerating = false;
-          stopButton?.remove();
           Storage.saveChats();
-          delete AppState.pendingAssistant[AppState.currentChatId];
-          MessageRenderer.render();
+          delete AppState.pendingAssistant[chatId];
+
+          if (AppState.currentChatId === chatId) {
+            MessageRenderer.render();
+          }
         }
       },
-
       async retryFetchModels() {
         await this.load();
       }
@@ -3074,6 +3166,7 @@ Overall
         if (!msg.history || msg.history.length < 2) return;
 
         msg.selected = (msg.selected + direction + msg.history.length) % msg.history.length;
+
         Storage.saveChats();
         MessageRenderer.render();
       }
@@ -3842,6 +3935,10 @@ Overall
       if (selection && selection.removeAllRanges) {
         selection.removeAllRanges();
       }
+    }
+
+    function resetToDefaultPrompt() {
+      DOM.systemPrompt.value = Config.DEFAULT_SYSTEM_PROMPT;
     }
 
     // Start the application
