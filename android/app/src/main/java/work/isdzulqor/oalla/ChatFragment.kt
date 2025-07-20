@@ -12,6 +12,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebViewFragment
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import okhttp3.internal.userAgent
 
@@ -152,6 +153,11 @@ class ChatFragment : Fragment() {
                     else -> Log.w("JSBridge", "Unknown tab: $tab")
                 }
             }
+        }
+
+        @android.webkit.JavascriptInterface
+        fun showToast(text: String) {
+            Toast.makeText(requireContext(), text, Toast.LENGTH_SHORT).show()
         }
     }
 }

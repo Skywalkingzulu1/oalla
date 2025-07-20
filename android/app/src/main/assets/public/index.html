@@ -715,6 +715,41 @@
       text-decoration: underline;
     }
 
+    /* Edit mode overlay */
+    /* .edit-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 999;
+      backdrop-filter: blur(2px);
+    } */
+
+    /* Highlighted message bubble during edit */
+    /* .message-wrapper.editing .bubble {
+      background: rgba(255, 255, 255, 0.1) !important;
+      border: 2px solid var(--primary-color);
+      box-shadow: 0 0 20px rgba(var(--primary-color-rgb), 0.3);
+    }
+
+    .message-wrapper.editing .bubble.editing-bubble {
+      animation: editPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes editPulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.8;
+      }
+    } */
+
     .text {
       font-size: 0.9375rem;
       margin-bottom: 0.3rem;
@@ -1133,7 +1168,7 @@
       font-size: 0.75rem;
       cursor: pointer;
       margin-left: 0.4rem;
-      color: #888;
+      color: var(--text-secondary);
       padding: 0.125rem;
       display: inline-flex;
       align-items: center;
@@ -1148,8 +1183,8 @@
     }
 
     .model-change-button svg {
-      width: 14px;
-      height: 14px;
+      width: 12.5px;
+      height: 12.5px;
     }
 
     .model-dropdown {
@@ -1698,7 +1733,7 @@
           </h3>
           <p class="quick-send-subtitle">Ask me anything and I'll help you out!</p>
         </div>
-        <div class="quick-send-wrapper">
+        <div class="quick-send-wrapper" onmouseup="checkIsInputDisabled(event)">
           <textarea id="quickInput" placeholder="What's on your mind today?" oninput="toggleQuickSend()"></textarea>
           <button id="quickSendBtn" class="quick-send-button" onclick="quickSend()">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1743,7 +1778,7 @@
       </div>
       <div class="chat-box" id="chatBox"></div>
       <div class="input-area">
-        <div class="input-wrapper">
+        <div class="input-wrapper" onmouseup="checkIsInputDisabled(event)">
           <textarea id="userInput" placeholder="Ask me anything..." oninput="toggleSendButton()"></textarea>
           <button id="sendBtn" onclick="sendMessage()" class="send-button">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1818,10 +1853,20 @@
       <div class="config-section">
         <label for="systemPrompt">System Prompt</label>
         <textarea id="systemPrompt" placeholder="Enter a system prompt to guide the assistant's behavior..."></textarea>
+        <div style="margin-top: 0.5rem;">
+          <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+            <input type="checkbox" id="setAsDefaultPrompt" />
+            Set as default for all new chats
+          </label>
+        </div>
         <div class="config-description">
           This prompt will be sent with every message in this conversation to guide the assistant's behavior and
           responses.
         </div>
+        <button onclick="resetToDefaultPrompt()"
+          style="margin-top: 0.5rem; font-size: 0.75rem; background: var(--primary-dark); border: none; padding: 0.25rem 0.75rem; border-radius: 6px; color: var(--text-primary);">
+          Reset to Default
+        </button>
       </div>
       <div class="config-actions">
         <button class="config-cancel-button" onclick="closeConfigModal()">Cancel</button>
@@ -1905,6 +1950,7 @@
       get welcomeScreen() { return document.getElementById('welcomeScreen'); },
       get messageInfoModal() { return document.getElementById('messageInfoModal'); },
       get infoCombinedText() { return document.getElementById('infoCombinedText'); },
+      get setAsDefaultPrompt() { return document.getElementById('setAsDefaultPrompt'); },
     };
 
     // === API Service ===
@@ -2083,18 +2129,15 @@
                   onMetrics(metrics);
                 }
 
-                // Re-attach to text DOM if needed
-                const textDiv = document.getElementById('pending-assistant-text');
-                if (textDiv) {
-                  textDiv.textContent = AppState.pendingAssistant[AppState.currentChatId].text;
-                }
+                // Re-attach to text DOM if needed - REMOVED THIS PROBLEMATIC CODE
+                // This should be handled in the onChunk callback, not here
               } catch (e) {
                 console.error('Failed to parse chunk:', e);
               }
             }
           }
         }
-      }
+      },
     };
 
     // === Config Manager ===
@@ -2115,19 +2158,25 @@
         if (!AppState.currentChatId) return;
 
         const systemPrompt = DOM.systemPrompt.value.trim();
+        const setAsDefault = DOM.setAsDefaultPrompt.checked;
 
         if (!AppState.chatConfigs[AppState.currentChatId]) {
           AppState.chatConfigs[AppState.currentChatId] = {};
         }
 
         AppState.chatConfigs[AppState.currentChatId].systemPrompt = systemPrompt;
-        Storage.saveChatConfigs();
 
+        if (setAsDefault) {
+          localStorage.setItem('defaultSystemPrompt', systemPrompt);
+        }
+
+        Storage.saveChatConfigs();
         this.close();
       },
 
       getSystemPrompt(chatId) {
-        return AppState.chatConfigs[chatId]?.systemPrompt || '';
+        const defaultFromStorage = localStorage.getItem('defaultSystemPrompt') || Config.DEFAULT_SYSTEM_PROMPT;
+        return AppState.chatConfigs[chatId]?.systemPrompt || defaultFromStorage;
       }
     };
 
@@ -2135,9 +2184,30 @@
       show(chatId, messageIndex) {
         clearTextSelection();
 
-        const metrics = AppState.messageMetrics[chatId]?.[messageIndex];
         const message = AppState.chats[chatId]?.[messageIndex];
         if (!message || message.role !== 'assistant') return;
+
+        // Get metrics based on current selection
+        let metrics = null;
+        let metricsKey = messageIndex.toString();
+
+        // If message has history and a selection, use decimal notation
+        if (message.history && message.selected !== undefined && message.selected > 0) {
+          metricsKey = `${messageIndex}.${message.selected + 1}`;
+        }
+
+        metrics = AppState.messageMetrics[chatId]?.[metricsKey];
+
+        // Fallback to base index if decimal key not found
+        if (!metrics) {
+          metrics = AppState.messageMetrics[chatId]?.[messageIndex];
+        }
+
+        // Get the actual model used for the current version
+        let actualModel = message.model;
+        if (message.history && message.historyModels && message.selected !== undefined) {
+          actualModel = message.historyModels[message.selected] || message.model;
+        }
 
         const formatDuration = (ns) => {
           if (!ns) return '-';
@@ -2147,7 +2217,7 @@
           return s < 60 ? `${s.toFixed(2)}s` : `${(s / 60).toFixed(2)}m`;
         };
 
-        let output = `Model: ${message.model || '-'}`;
+        let output = `Model: ${actualModel || '-'}`;
 
         if (!metrics) {
           output += `\n\nNo detailed timing or token metrics available.`;
@@ -2194,6 +2264,11 @@ Overall
       show(screenName) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.footer button').forEach(b => b.classList.remove('active'));
+
+        // Clean up stale pending data when navigating away from chat
+        if (screenName !== 'chat' && AppState.currentChatId && !AppState.isGenerating) {
+          delete AppState.pendingAssistant[AppState.currentChatId];
+        }
 
         // Push history state
         if (screenName === 'chat') {
@@ -2329,6 +2404,7 @@ Overall
         // Handle edit mode
         if (AppState.editIndex !== null) {
           this.updateMessage(AppState.editIndex, content);
+          this.cancelEdit(); // Clean up edit mode
         } else {
           this.addUserMessage(content);
         }
@@ -2386,12 +2462,12 @@ Overall
       },
 
       async generateAssistantResponse() {
-        const tempDiv = this.createPendingMessage();
-        const textDiv = tempDiv.querySelector('.text');
-        let assistantText = '';
-        let capturedMetrics = null;
+        // Capture the current chat ID at the start
+        const chatId = AppState.currentChatId;
+        if (!chatId) return;
 
-        AppState.pendingAssistant[AppState.currentChatId] = {
+        // Instead of creating a temporary div, we'll use the renderer
+        AppState.pendingAssistant[chatId] = {
           text: '',
           timestamp: Date.now(),
           model: DOM.modelSelect.value,
@@ -2399,12 +2475,13 @@ Overall
 
         AppState.controller = new AbortController();
         AppState.isGenerating = true;
-        StickyBannerManager.show(AppState.currentChatId);
+        StickyBannerManager.show(chatId);
 
-        const stopButton = UIManager.createStopButton(
-          () => AppState.controller.abort(),
-          tempDiv
-        );
+        // Render to show the pending message bubble
+        MessageRenderer.render();
+
+        let assistantText = '';
+        let capturedMetrics = null;
 
         try {
           const messages = this.buildMessagesWithSystemPrompt();
@@ -2418,11 +2495,23 @@ Overall
 
           await Utils.streamToText(reader, (token) => {
             assistantText += token;
-            AppState.pendingAssistant[AppState.currentChatId].text = assistantText;
-            textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
-            if (!AppState.userHasScrolled) {
-              DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+
+            // Update the pending assistant text
+            if (AppState.pendingAssistant[chatId]) {
+              AppState.pendingAssistant[chatId].text = assistantText;
             }
+
+            // Only update DOM if we're still on the same chat screen
+            if (AppState.currentChatId === chatId) {
+              const textDiv = document.getElementById('pending-assistant-text');
+              if (textDiv) {
+                textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
+                if (!AppState.userHasScrolled) {
+                  DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+                }
+              }
+            }
+
             safeCallAndroidBridge('keepScreenOnFor', 5000);
           }, (metrics) => {
             capturedMetrics = metrics;
@@ -2430,28 +2519,49 @@ Overall
         } catch (err) {
           if (err.name !== 'AbortError') {
             console.error('Stream failed:', err);
-            textDiv.textContent = 'Error generating response. Please try again.';
+            // Update error in pending message if still on same chat
+            if (AppState.currentChatId === chatId && AppState.pendingAssistant[chatId]) {
+              AppState.pendingAssistant[chatId].text = 'Error generating response. Please try again.';
+              const textDiv = document.getElementById('pending-assistant-text');
+              if (textDiv) {
+                textDiv.textContent = 'Error generating response. Please try again.';
+              }
+            }
           }
         } finally {
           StickyBannerManager.hide();
-          this.cleanup(stopButton);
+          this.cleanup();
 
-          if (assistantText) {
-            this.addAssistantMessage(assistantText);
+          if (assistantText && AppState.chats[chatId]) {
+            // Add the message to the specific chat
+            AppState.chats[chatId].push({
+              role: 'assistant',
+              content: assistantText,
+              timestamp: Date.now(),
+              model: DOM.modelSelect.value,
+              history: [assistantText],
+              selected: 0
+            });
+            Storage.saveChats();
 
             // Store metrics if available
             if (capturedMetrics) {
-              const messageIndex = AppState.chats[AppState.currentChatId].length - 1;
-              if (!AppState.messageMetrics[AppState.currentChatId]) {
-                AppState.messageMetrics[AppState.currentChatId] = {};
+              const messageIndex = AppState.chats[chatId].length - 1;
+              if (!AppState.messageMetrics[chatId]) {
+                AppState.messageMetrics[chatId] = {};
               }
-              AppState.messageMetrics[AppState.currentChatId][messageIndex] = capturedMetrics;
+              // Store with regular index for initial message
+              AppState.messageMetrics[chatId][messageIndex] = capturedMetrics;
               Storage.saveMessageMetrics();
             }
           }
 
-          delete AppState.pendingAssistant[AppState.currentChatId];
-          MessageRenderer.render();
+          delete AppState.pendingAssistant[chatId];
+
+          // Only re-render if we're still on the same chat
+          if (AppState.currentChatId === chatId) {
+            MessageRenderer.render();
+          }
         }
       },
 
@@ -2490,10 +2600,16 @@ Overall
         return div;
       },
 
-      cleanup(stopButton) {
+      cleanup() {
         AppState.controller = null;
         AppState.isGenerating = false;
-        stopButton?.remove();
+
+        // Remove any stop buttons
+        const stopButton = document.getElementById('stopButton');
+        if (stopButton) {
+          stopButton.remove();
+        }
+
         DOM.userInput.disabled = false;
         DOM.sendBtn.disabled = false;
       },
@@ -2502,11 +2618,91 @@ Overall
         const msg = AppState.chats[AppState.currentChatId][index];
         if (!msg || msg.role !== 'user') return;
 
+        // Remove any existing edit overlay
+        this.cancelEdit();
+
+        // Create a wrapper that covers the entire scrollable content
+        const overlayWrapper = document.createElement('div');
+        overlayWrapper.id = 'editOverlayWrapper';
+        overlayWrapper.style.cssText = `
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100%;
+    height: ${DOM.chatBox.scrollHeight}px;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    pointer-events: all;
+  `;
+        overlayWrapper.onclick = () => this.cancelEdit();
+
+        // Insert overlay as first child of chatBox
+        DOM.chatBox.style.position = 'relative'; // Ensure chatBox is positioned
+        DOM.chatBox.insertBefore(overlayWrapper, DOM.chatBox.firstChild);
+
+        // Highlight the message being edited with elevated z-index
+        const messageWrapper = DOM.chatBox.querySelector(`.message-wrapper[data-index="${index}"]`);
+        if (messageWrapper) {
+          messageWrapper.classList.add('editing');
+
+          // Elevate the message above the overlay
+          messageWrapper.style.position = 'relative';
+          messageWrapper.style.zIndex = '10';
+
+          const bubble = messageWrapper.querySelector('.bubble');
+          if (bubble) {
+            bubble.classList.add('editing-bubble');
+            bubble.style.cssText = `
+        background: var(--surface);
+        border: 2px solid var(--primary-color);
+        box-shadow: 0 0 30px rgba(255, 255, 255, 0.3), 0 0 60px rgba(var(--primary-color-rgb), 0.2);
+        transform: scale(1.02);
+        transition: all 0.3s ease;
+      `;
+          }
+
+          // Scroll the message into view if needed
+          messageWrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
         DOM.userInput.value = msg.content;
         UIManager.toggleSendButton();
         AppState.editIndex = index;
         DOM.userInput.focus();
-      }
+      },
+
+      cancelEdit() {
+        // Remove the overlay wrapper
+        const overlayWrapper = document.getElementById('editOverlayWrapper');
+        if (overlayWrapper) {
+          overlayWrapper.remove();
+        }
+
+        // Remove editing classes and reset styles from any messages
+        const editingMessages = DOM.chatBox.querySelectorAll('.message-wrapper.editing');
+        editingMessages.forEach(msg => {
+          msg.classList.remove('editing');
+          msg.style.position = '';
+          msg.style.zIndex = '';
+
+          const bubble = msg.querySelector('.bubble');
+          if (bubble) {
+            bubble.classList.remove('editing-bubble');
+            bubble.style.cssText = ''; // Reset all inline styles
+          }
+        });
+
+        // Reset chatBox position if needed
+        if (DOM.chatBox) {
+          DOM.chatBox.style.position = '';
+        }
+
+        // Clear the edit state
+        AppState.editIndex = null;
+        DOM.userInput.value = '';
+        UIManager.toggleSendButton();
+      },
     };
 
     // === Message Renderer ===
@@ -2539,7 +2735,8 @@ Overall
           this.renderMessage(msg, index);
         });
 
-        if (pending) {
+        // Only show pending bubble if we're actually generating (not just have stale pending data)
+        if (pending && AppState.isGenerating) {
           // Remove any existing pending bubble first
           const oldPending = DOM.chatBox.querySelector('.message-wrapper.assistant.pending');
           if (oldPending) oldPending.remove();
@@ -2554,16 +2751,16 @@ Overall
           const text = document.createElement('div');
           text.className = 'text';
           text.id = 'pending-assistant-text';
-          text.textContent = pending.text;
+          text.innerHTML = renderMarkdownForAssistant(pending.text);
 
           const meta = document.createElement('div');
           meta.className = 'meta unallow-select';
           meta.innerHTML = `
-        <div class="generating-indicator">
-          <div class="typing-dots"><span></span><span></span><span></span></div>
-          <span class="generating-text">Generating response...</span>
-        </div>
-      `;
+      <div class="generating-indicator">
+        <div class="typing-dots"><span></span><span></span><span></span></div>
+        <span class="generating-text">Generating response...</span>
+      </div>
+    `;
 
           bubble.appendChild(text);
           bubble.appendChild(meta);
@@ -2573,6 +2770,9 @@ Overall
           if (AppState.isGenerating && AppState.controller) {
             UIManager.createStopButton(() => AppState.controller.abort(), wrapper);
           }
+        } else if (pending && !AppState.isGenerating) {
+          // Clean up stale pending data if generation is complete
+          delete AppState.pendingAssistant[AppState.currentChatId];
         }
 
         if (callback) callback();
@@ -2655,12 +2855,12 @@ Overall
         wrapper.appendChild(bubble);
 
         if (msg.role === 'assistant') {
-          this.attachAssistantLongClickHandler(bubble, index);
+          this.attachAssistantLongClickHandler(text, index);
         }
 
         DOM.chatBox.appendChild(wrapper);
       },
-      
+
       attachAssistantLongClickHandler(bubble, messageIndex) {
         let timer = null;
         let startX = 0;
@@ -2935,76 +3135,45 @@ Overall
         const msg = AppState.chats[AppState.currentChatId][index];
         if (!newModel || newModel === msg.model) return;
 
-        // Initialize history
-        msg.history = msg.history || [msg.content];
-        msg.historyModels = msg.historyModels || [msg.model];
-        msg.history.push('');
-        msg.historyModels.push(newModel);
-        msg.selected = msg.history.length - 1;
-        msg.model = newModel;
-
-        MessageRenderer.render();
-
-        // Generate new response
+        // Just trigger regeneration — all state updates will be handled there
         await this.regenerateWithModel(index, newModel);
       },
 
-      async regenerateWithModel(index, model) {
-        const targetDiv = document.querySelector(`.message-wrapper.assistant[data-index="${index}"]`);
-        const msg = AppState.chats[AppState.currentChatId][index];
+      async regenerateWithModel(index, newModel) {
+        const chatId = AppState.currentChatId;
+        if (!chatId) return;
+
+        const msg = AppState.chats[chatId][index];
+        if (!msg) return;
+
         let capturedMetrics = null;
+        let assistantText = '';
+        let versionAdded = false;
 
-        if (!targetDiv || !msg) return;
-
-        const bubble = targetDiv.querySelector('.bubble');
-        bubble.innerHTML = `
-      <div class="text"></div>
-      <div class="meta unallow-select">
-        <div class="generating-indicator">
-          <div class="typing-dots">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-          <span class="generating-text">Generating response...</span>
-        </div>
-      </div>
-    `;
-        const textDiv = bubble.querySelector('.text');
+        // Set up pending assistant state
+        AppState.pendingAssistant[chatId] = {
+          text: '',
+          timestamp: Date.now(),
+          model: newModel,
+          messageIndex: index
+        };
 
         AppState.controller = new AbortController();
         AppState.isGenerating = true;
-        StickyBannerManager.show(AppState.currentChatId);
-
-        const stopButton = UIManager.createStopButton(
-          () => AppState.controller.abort(),
-          targetDiv
-        );
+        StickyBannerManager.show(chatId);
+        MessageRenderer.render();
 
         try {
-          const messagesUntilNow = AppState.chats[AppState.currentChatId].slice(0, index);
-          const systemPrompt = ConfigManager.getSystemPrompt(AppState.currentChatId);
-          const messages = [];
+          const messagesUntilNow = AppState.chats[chatId].slice(0, index);
+          const systemPrompt = ConfigManager.getSystemPrompt(chatId);
+          const messages = systemPrompt ? [{ role: 'system', content: systemPrompt }, ...messagesUntilNow] : messagesUntilNow;
 
-          if (systemPrompt) {
-            messages.push({ role: 'system', content: systemPrompt });
-          }
-
-          messages.push(...messagesUntilNow);
-
-          const reader = await API.createChatStream(model, messages, AppState.controller.signal);
+          const reader = await API.createChatStream(newModel, messages, AppState.controller.signal);
           AppState.userHasScrolled = false;
-          let assistantText = '';
-
-          AppState.pendingAssistant[AppState.currentChatId] = {
-            text: '',
-            timestamp: Date.now(),
-            model: model,
-            messageIndex: index
-          };
 
           safeCallAndroidBridge('keepScreenOnFor', 15000);
 
+          // Prepare history
           msg.history = msg.history || [msg.content];
           msg.historyModels = msg.historyModels || [msg.model];
 
@@ -3012,24 +3181,39 @@ Overall
           const lastHistoryEmpty = msg.history[lastIndex] === '';
           const lastModel = msg.historyModels[lastIndex];
 
-          if (!lastHistoryEmpty || lastModel !== model) {
+          if (!lastHistoryEmpty || lastModel !== newModel) {
             msg.history.push('');
-            msg.historyModels.push(model);
+            msg.historyModels.push(newModel);
             msg.selected = msg.history.length - 1;
+            versionAdded = true;
           } else {
             msg.selected = lastIndex;
           }
 
-          msg.model = model;
+          msg.model = newModel;
 
           await Utils.streamToText(reader, (token) => {
             assistantText += token;
-            msg.history[msg.selected] = assistantText;
-            AppState.pendingAssistant[AppState.currentChatId].text = assistantText;
-            textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
 
-            if (!AppState.userHasScrolled) {
-              DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+            if (msg.history[msg.selected] !== undefined) {
+              msg.history[msg.selected] = assistantText;
+            }
+
+            if (AppState.pendingAssistant[chatId]) {
+              AppState.pendingAssistant[chatId].text = assistantText;
+            }
+
+            if (AppState.currentChatId === chatId) {
+              const pendingWrapper = DOM.chatBox.querySelector(`.message-wrapper.assistant.pending[data-index="${index}"]`);
+              if (pendingWrapper) {
+                const textDiv = pendingWrapper.querySelector('.text');
+                if (textDiv) {
+                  textDiv.innerHTML = renderMarkdownForAssistant(assistantText);
+                  if (!AppState.userHasScrolled) {
+                    DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+                  }
+                }
+              }
             }
 
             safeCallAndroidBridge('keepScreenOnFor', 5000);
@@ -3037,28 +3221,47 @@ Overall
             capturedMetrics = metrics;
           });
 
-          // Store metrics if available
-          if (capturedMetrics) {
-            if (!AppState.messageMetrics[AppState.currentChatId]) {
-              AppState.messageMetrics[AppState.currentChatId] = {};
-            }
-            AppState.messageMetrics[AppState.currentChatId][index] = capturedMetrics;
+          // Save metrics only if text was received and not aborted prematurely
+          if (assistantText && capturedMetrics) {
+            AppState.messageMetrics[chatId] = AppState.messageMetrics[chatId] || {};
+            const metricsKey = `${index}.${msg.selected + 1}`;
+            AppState.messageMetrics[chatId][metricsKey] = capturedMetrics;
             Storage.saveMessageMetrics();
           }
 
         } catch (err) {
           if (err.name !== 'AbortError') {
             console.error('Model change failed:', err);
-            textDiv.textContent = 'Error generating response.';
+            if (AppState.currentChatId === chatId && AppState.pendingAssistant[chatId]) {
+              AppState.pendingAssistant[chatId].text = 'Error generating response. Please try again.';
+              MessageRenderer.render();
+            }
           }
         } finally {
           StickyBannerManager.hide();
           AppState.controller = null;
           AppState.isGenerating = false;
-          stopButton?.remove();
+          delete AppState.pendingAssistant[chatId];
+
+          // If assistantText is empty and version was added, remove it
+          if (!assistantText && versionAdded) {
+            msg.history.pop();
+            msg.historyModels.pop();
+            msg.selected = msg.history.length - 1;
+
+            // Clean up any pre-created metrics entry
+            const metricsKey = `${index}.${msg.selected + 1}`;
+            if (AppState.messageMetrics[chatId]?.[metricsKey]) {
+              delete AppState.messageMetrics[chatId][metricsKey];
+              Storage.saveMessageMetrics();
+            }
+          }
+
           Storage.saveChats();
-          delete AppState.pendingAssistant[AppState.currentChatId];
-          MessageRenderer.render();
+
+          if (AppState.currentChatId === chatId) {
+            MessageRenderer.render();
+          }
         }
       },
 
@@ -3074,6 +3277,7 @@ Overall
         if (!msg.history || msg.history.length < 2) return;
 
         msg.selected = (msg.selected + direction + msg.history.length) % msg.history.length;
+
         Storage.saveChats();
         MessageRenderer.render();
       }
@@ -3618,6 +3822,16 @@ Overall
         DOM.chatBox.addEventListener('wheel', () => {
           AppState.userHasScrolled = true;
         });
+
+        DOM.userInput?.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            MessageManager.send();
+          } else if (e.key === 'Escape' && AppState.editIndex !== null) {
+            e.preventDefault();
+            MessageManager.cancelEdit();
+          }
+        });
       }
     };
 
@@ -3717,6 +3931,26 @@ Overall
     window.goToModelFragment = () => {
       safeCallAndroidBridge('navigateTo', 'model');
     };
+    window.cancelEdit = () => MessageManager.cancelEdit();
+
+    function checkIsInputDisabled(e) {
+      e.preventDefault();
+      const textarea = document.querySelector('textarea');
+      if (!textarea) return;
+
+      const isAssistantGenerating = AppState.isGenerating;
+
+      if (!textarea.disabled && isAssistantGenerating) {
+        textarea.disabled = true;
+        setTimeout(() => {
+          textarea.disabled = false;
+        }, 1000);
+      }
+
+      if (isAssistantGenerating) {
+        safeCallAndroidBridge('showToast', 'Please wait for the assistant to finish generating.');
+      }
+    }
 
     function handleBackNavigation() {
       const hash = window.location.hash;
@@ -3842,6 +4076,10 @@ Overall
       if (selection && selection.removeAllRanges) {
         selection.removeAllRanges();
       }
+    }
+
+    function resetToDefaultPrompt() {
+      DOM.systemPrompt.value = Config.DEFAULT_SYSTEM_PROMPT;
     }
 
     // Start the application
