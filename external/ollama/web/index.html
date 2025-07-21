@@ -96,7 +96,7 @@
     header {
       background: var(--primary-color);
       color: white;
-      padding: 0.6rem 1.5rem;
+      padding: 0.8rem 0.8rem 0.8rem 1rem;
       font-size: 1.25rem;
       display: flex;
       align-items: center;
@@ -116,6 +116,7 @@
     }
 
     .logo {
+      margin-right: 1rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -125,29 +126,34 @@
     }
 
     .model-selector-wrapper {
-      position: relative;
+      /* Pushes it to the right of logo */
+      max-width: 200px;
+      /* or 100% if you use flex: 1 */
+      flex-shrink: 1;
+      overflow: hidden;
     }
 
     .model-selector-wrapper select {
       font-size: 0.875rem;
       padding: 0.45rem 1rem;
       border-radius: 999px;
-      border: 1px solid var(--secondary-color);
-      background: var(--primary-light);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: var(--primary-color);
       color: var(--text-primary);
       cursor: pointer;
       transition: all 0.1s ease;
-      min-width: 150px;
-    }
-
-    .model-selector-wrapper select:hover {
-      border-color: var(--secondary-dark);
-      background: var(--primary-color);
+      min-width: 100px;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .model-selector-wrapper select:focus {
       outline: none;
-      box-shadow: 0 0 0 2px rgba(0, 168, 132, 0.5);
+      box-shadow: 0 0 0 2px rgba(0, 168, 132, 0.3);
+      /* subtle glow */
+      border-color: var(--secondary-color);
     }
 
     .logo {
@@ -155,16 +161,6 @@
       align-items: center;
       gap: 0.5rem;
       font-weight: 600;
-    }
-
-    header select {
-      font-size: 0.875rem;
-      padding: 0.4rem 0.8rem;
-      border-radius: 6px;
-      border: none;
-      background: rgba(255, 255, 255, 0.9);
-      color: var(--text-primary);
-      cursor: pointer;
     }
 
     /* === Mobile Wrapper === */
@@ -207,14 +203,14 @@
     /* === Chat History Toggle Button === */
     .chat-history-toggle {
       width: 100%;
-      height: 5px;
+      height: 2px;
       /* As thin as a shadow */
       /* background: var(--primary-dark); */
 
       display: flex;
       justify-content: center;
       align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.25);
       /* subtle edge */
 
       will-change: transform;
@@ -715,41 +711,6 @@
       color: var(--secondary-color);
       text-decoration: underline;
     }
-
-    /* Edit mode overlay */
-    /* .edit-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      z-index: 999;
-      backdrop-filter: blur(2px);
-    } */
-
-    /* Highlighted message bubble during edit */
-    /* .message-wrapper.editing .bubble {
-      background: rgba(255, 255, 255, 0.1) !important;
-      border: 2px solid var(--primary-color);
-      box-shadow: 0 0 20px rgba(var(--primary-color-rgb), 0.3);
-    }
-
-    .message-wrapper.editing .bubble.editing-bubble {
-      animation: editPulse 2s ease-in-out infinite;
-    }
-
-    @keyframes editPulse {
-
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.8;
-      }
-    } */
 
     .text {
       font-size: 0.9375rem;
@@ -1650,18 +1611,54 @@
       border: 1px solid var(--border-color);
       cursor: pointer;
     }
+
+    .header-history-button {
+      margin-left: auto; /* Pushes history icon to the far right */
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      cursor: pointer;
+      border-radius: 50%;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-history-button:hover {
+      background: var(--background);
+    }
+
+    .header-history-button svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--text-primary);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      gap: 0.5rem;
+    }
   </style>
 </head>
 
 <body>
   <header class="unallow-select" id="mainHeader">
-    <div class="logo">
-      <img src="./oala-logo-flat-horizontal.svg" alt="Ollama Logo" style="height: 26px;" />
-    </div>
-    <div class="model-selector-wrapper" id="headerModelSelector">
-      <select id="modelSelect" onchange="updateModelLabel()">
-        <!-- Models will be populated dynamically -->
-      </select>
+    <div class="header-inner">
+      <div class="logo">
+        <img src="./oala-logo-flat-horizontal.svg" alt="Ollama Logo" style="height: 26px;" />
+      </div>
+      <div class="model-selector-wrapper" id="headerModelSelector">
+        <select id="modelSelect" onchange="updateModelLabel()"></select>
+      </div>
+      <button id="historyBtn" class="header-history-button" onclick="toggleChatHistory()" title="History">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e3e3e3">
+          <path
+            d="M480-120q-138 0-240.5-91.5T122-440h82q14 104 92.5 172T480-200q117 0 198.5-81.5T760-480q0-117-81.5-198.5T480-760q-69 0-129 32t-101 88h110v80H120v-240h80v94q51-64 124.5-99T480-840q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-480q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-120Zm112-192L440-464v-216h80v184l128 128-56 56Z" />
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -1669,11 +1666,6 @@
     <!-- Topic Screen -->
     <div id="topicScreen" class="screen active">
       <div class="chat-history-toggle" id="chatHistoryToggle">
-        <button class="chat-history-button" id="chatHistoryButton" onclick="toggleChatHistory()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="currentColor" stroke-width="2">
-            <polygon points="12,16 6,8 18,8"></polygon>
-          </svg>
-        </button>
       </div>
 
       <div class="search-bar" id="searchBar">
@@ -2527,7 +2519,10 @@ Overall
           );
         } catch (err) {
           if (err.message.includes('ERROR_CHAT_API')) {
-            assistantText = `*${err.message.replace('ERROR_CHAT_API: ', '')}*`;
+            // > [!CAUTION]
+            // > Negative potential consequences of an action.
+            assistantText = `> [!CAUTION] \n> ${err.message.replace('ERROR_CHAT_API: ', '')}`;
+            // assistantText = `*${err.message.replace('ERROR_CHAT_API: ', '')}*`;
             updatePendingText(assistantText);
           } else if (err.name !== 'AbortError') {
             console.error('Stream failed:', err);
