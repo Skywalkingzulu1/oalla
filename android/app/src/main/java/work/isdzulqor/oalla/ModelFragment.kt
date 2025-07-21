@@ -353,6 +353,8 @@ class ModelFragment : Fragment() {
         downloadLog.text = "Starting model pull..."
 
         CoroutineScope(Dispatchers.IO).launch {
+            var hasError = false
+
             try {
                 val client = OkHttpClient()
                 val requestBody = """{"name":"$modelName"}""".toRequestBody("application/json".toMediaType())
@@ -377,14 +379,17 @@ class ModelFragment : Fragment() {
                     for (line in lines.dropLast(1)) {
                         if (line.isNotBlank()) {
                             withContext(Dispatchers.Main) {
-                                parseAndUpdateProgress(line)
+                                val isError = parseAndUpdateProgress(line)
+                                if (isError) hasError = true
                             }
                         }
                     }
                 }
 
                 withContext(Dispatchers.Main) {
-                    downloadLog.text = "Download complete"
+                    if (!hasError) {
+                        downloadLog.text = "Download complete"
+                    }
                     cancelButton.visibility = View.GONE
                     fetchModelList()
                     DownloadService.instance?.finishDownload()
@@ -393,7 +398,7 @@ class ModelFragment : Fragment() {
                         downloadContainer.visibility = View.GONE
                         downloadLog.visibility = View.GONE
                         progressBar.visibility = View.GONE
-                    }, 1000)
+                    }, 2000)
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -408,17 +413,32 @@ class ModelFragment : Fragment() {
         }
     }
 
-    private fun parseAndUpdateProgress(line: String) {
+    private fun parseAndUpdateProgress(line: String): Boolean {
         try {
             val json = JSONObject(line)
-            if (!json.has("completed") || !json.has("total")) return
+
+            if (json.has("error")) {
+                val errorMsg = json.getString("error")
+                lastProgressText = "Error: $errorMsg"
+                downloadLog.text = lastProgressText
+                progressBar.isIndeterminate = false
+                progressBar.progress = 0
+                DownloadService.instance?.updateProgress(0, lastProgressText)
+                return true // error detected
+            }
+
+            if (!json.has("completed") || !json.has("total")) return false
+
             val completed = json.getLong("completed")
             val total = json.getLong("total")
-            if (total <= 0) return
+            if (total <= 0) return false
 
             val percent = (completed.toDouble() / total.toDouble() * 100).toInt()
             val mbDone = completed / 1024 / 1024
             val mbTotal = total / 1024 / 1024
+
+            if (mbTotal == 0L && mbDone == 0L) return false
+
             lastProgressText = "Progress: $mbDone / $mbTotal MB ($percent%)"
 
             val now = SystemClock.elapsedRealtime()
@@ -431,8 +451,10 @@ class ModelFragment : Fragment() {
 
             DownloadService.instance?.updateProgress(percent, lastProgressText)
         } catch (_: Exception) {
-            // ignore bad line
+            // ignore
         }
+
+        return false
     }
 
     private fun showConfirmDownloadDialog(modelName: String) {
