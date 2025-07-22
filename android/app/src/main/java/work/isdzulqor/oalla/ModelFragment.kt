@@ -4,14 +4,11 @@ import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.*
 import android.util.Log
 import android.view.*
 import android.widget.*
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
-import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -26,9 +23,6 @@ import org.json.JSONObject
 import android.provider.Settings
 import androidx.core.net.toUri
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.io.InputStreamReader
-import kotlin.random.Random
 
 class ModelFragment : Fragment() {
     private lateinit var modelInput: AutoCompleteTextView
@@ -165,11 +159,20 @@ class ModelFragment : Fragment() {
 
     private fun loadModelDataFromAssets() {
         try {
-            val inputStream = requireContext().assets.open("models.json")
-            val reader = InputStreamReader(inputStream)
-            val type = object : TypeToken<List<ModelData>>() {}.type
-            modelDataList = Gson().fromJson(reader, type)
-            reader.close()
+            val assetManager = requireContext().assets
+            val jsonString = assetManager.open("models.json").bufferedReader().use { it.readText() }
+
+            val jsonArray = JSONArray(jsonString)
+            val gson = Gson()
+
+            val parsedList = mutableListOf<ModelData>()
+            for (i in 0 until jsonArray.length()) {
+                val item = jsonArray.getJSONObject(i).toString()
+                val modelData = gson.fromJson(item, ModelData::class.java)
+                parsedList.add(modelData)
+            }
+
+            modelDataList = parsedList
 
             // Create flat list of all suggestions
             allSuggestions = modelDataList.flatMap { model ->
@@ -182,9 +185,11 @@ class ModelFragment : Fragment() {
                     )
                 }
             }
+
+            Log.e("ModelFragment", "Parsed ${modelDataList.size} models")
+
         } catch (e: Exception) {
             Log.e("ModelFragment", "Failed to load model data: ${e.message}")
-            // Fallback to empty list
             allSuggestions = emptyList()
         }
     }
@@ -254,14 +259,22 @@ class ModelFragment : Fragment() {
         // Show dropdown when focused
         modelInput.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus && modelInput.text.isEmpty()) {
-                modelInput.showDropDown()
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (isAdded && modelInput.hasFocus()) {
+                        modelInput.showDropDown()
+                    }
+                }, 150) // small delay ensures stability
             }
         }
 
         // Show dropdown on click if empty
         modelInput.setOnClickListener {
             if (modelInput.text.isEmpty()) {
-                modelInput.showDropDown()
+                Handler(Looper.getMainLooper()).postDelayed({
+                    if (isAdded && modelInput.hasFocus()) {
+                        modelInput.showDropDown()
+                    }
+                }, 150)
             }
         }
     }

@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="./marked.min.js"></script>
-  <title>Ollama Chat</title>
+  <title>Oalla Chat</title>
   <style>
     /* === CSS Variables === */
     :root {
@@ -116,7 +116,7 @@
     }
 
     .logo {
-      margin-right: 1rem;
+      margin-right: 0.55rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -240,11 +240,6 @@
       transition: transform 0.2s ease, opacity 0.2s ease;
     }
 
-    .chat-history-button:hover svg {
-      transform: scale(1.2);
-      opacity: 0.9;
-    }
-
     /* === Search Bar === */
     .search-bar {
       padding: 0.25rem 0.75rem;
@@ -296,11 +291,6 @@
       justify-content: center;
     }
 
-    #clearSearchBtn:hover {
-      color: var(--text-secondary);
-      background: var(--background);
-    }
-
     #clearSearchBtn svg {
       width: 16px;
       height: 16px;
@@ -314,6 +304,14 @@
       border-top: 1px solid var(--border-color);
       display: none;
       flex-direction: column;
+    }
+
+    #chatList {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      /* smooth scroll on iOS & Android */
+      contain: layout paint;
+      /* isolate from rest of page */
     }
 
     .chat-list-container.visible {
@@ -330,11 +328,7 @@
       border-bottom: 1px solid var(--border-color);
       cursor: pointer;
       transition: background 0.2s;
-    }
-
-    .chat-item:hover {
-      /* disable this since hover can get stuck on webview */
-      /* background: var(--background);  */
+      will-change: transform, opacity;
     }
 
     .chat-item-header {
@@ -560,11 +554,6 @@
       transition: all 0.2s ease;
     }
 
-    .header-model-selector:hover {
-      border-color: var(--secondary-color);
-      color: var(--text-primary);
-    }
-
     .header-model-selector:focus {
       outline: none;
       border-color: var(--secondary-color);
@@ -582,10 +571,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-
-    .back-button:hover {
-      background: var(--background);
     }
 
     .back-button svg {
@@ -606,10 +591,6 @@
       align-items: center;
       justify-content: center;
       margin-left: auto;
-    }
-
-    .config-button:hover {
-      background: var(--background);
     }
 
     .config-button svg {
@@ -845,11 +826,6 @@
       box-shadow: 0 2px 8px rgba(0, 168, 132, 0.3);
     }
 
-    .quick-send-button:hover {
-      transform: scale(1.1);
-      box-shadow: 0 4px 16px rgba(0, 168, 132, 0.4);
-    }
-
     .quick-send-button:active {
       transform: scale(0.95);
     }
@@ -929,11 +905,6 @@
       transition: all 0.2s;
     }
 
-    .send-button:hover {
-      background: var(--secondary-dark);
-      transform: scale(1.05);
-    }
-
     .send-button svg {
       width: 20px;
       height: 20px;
@@ -964,11 +935,6 @@
       flex-direction: column;
       align-items: center;
       gap: 0.25rem;
-    }
-
-    .footer button:hover {
-      background: var(--background);
-      color: var(--primary-color);
     }
 
     .footer button.active {
@@ -1030,10 +996,6 @@
       transition: background 0.2s;
     }
 
-    .download-area button:hover {
-      background: var(--primary-dark);
-    }
-
     .progress {
       font-size: 0.8rem;
       margin-top: 1rem;
@@ -1078,10 +1040,6 @@
       transition: background 0.2s;
     }
 
-    .model-item button:hover {
-      background: #dc2626;
-    }
-
     /* === Model & History === */
     .model-name {
       font-size: 0.65rem;
@@ -1112,11 +1070,6 @@
       color: #666;
       transition: all 0.2s;
       border-radius: 4px;
-    }
-
-    .history-nav button:hover {
-      background: rgba(0, 0, 0, 0.1);
-      color: var(--primary-color);
     }
 
     .history-nav button svg {
@@ -1161,10 +1114,6 @@
       cursor: pointer;
     }
 
-    .model-dropdown div:hover {
-      background-color: #f5f5f5;
-    }
-
     .model-dropdown div:first-child {
       border-radius: 8px 8px 0 0;
     }
@@ -1188,10 +1137,6 @@
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
-    }
-
-    .cancel-button:hover {
-      background: #dc2626;
     }
 
     .cancel-button svg {
@@ -1316,18 +1261,10 @@
       color: white;
     }
 
-    .primary-action-button:hover {
-      background: var(--secondary-dark);
-    }
-
     .secondary-action-button {
       background: var(--background);
       color: var(--text-primary);
       border: 1px solid var(--border-color);
-    }
-
-    .secondary-action-button:hover {
-      background: var(--primary-light);
     }
 
     /* === Config Modal === */
@@ -1408,11 +1345,6 @@
       height: 36px;
     }
 
-    .config-close-button:hover {
-      background: var(--background);
-      color: var(--text-primary);
-    }
-
     .config-section {
       margin-bottom: 1.5rem;
     }
@@ -1471,18 +1403,10 @@
       color: white;
     }
 
-    .config-save-button:hover {
-      background: var(--secondary-dark);
-    }
-
     .config-cancel-button {
       background: var(--background);
       color: var(--text-primary);
       border: 1px solid var(--border-color);
-    }
-
-    .config-cancel-button:hover {
-      background: var(--primary-light);
     }
 
     /* === Generating Indicator === */
@@ -1613,7 +1537,8 @@
     }
 
     .header-history-button {
-      margin-left: auto; /* Pushes history icon to the far right */
+      margin-left: auto;
+      /* Pushes history icon to the far right */
       background: none;
       border: none;
       color: var(--text-primary);
@@ -1623,10 +1548,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-
-    .header-history-button:hover {
-      background: var(--background);
     }
 
     .header-history-button svg {
@@ -1648,7 +1569,7 @@
   <header class="unallow-select" id="mainHeader">
     <div class="header-inner">
       <div class="logo">
-        <img src="./oala-logo-flat-horizontal.svg" alt="Ollama Logo" style="height: 26px;" />
+        <img src="./oala-logo-flat-horizontal.svg" alt="Oalla Logo" style="height: 26px;" />
       </div>
       <div class="model-selector-wrapper" id="headerModelSelector">
         <select id="modelSelect" onchange="updateModelLabel()"></select>
@@ -1879,8 +1800,8 @@
     // === Application State ===
     const AppState = {
       currentChatId: null,
-      chats: JSON.parse(localStorage.getItem('ollamaChats') || '{}'),
-      chatConfigs: JSON.parse(localStorage.getItem('ollmaChatConfigs') || '{}'),
+      chats: JSON.parse(localStorage.getItem('oallaChats') || '{}'),
+      chatConfigs: JSON.parse(localStorage.getItem('oallaChatConfigs') || '{}'),
       pinnedTopics: JSON.parse(localStorage.getItem('pinnedTopics') || '[]'),
       isGenerating: false,
       controller: null,
@@ -2011,7 +1932,7 @@
       },
 
       saveChats() {
-        localStorage.setItem('ollamaChats', JSON.stringify(AppState.chats));
+        localStorage.setItem('oallaChats', JSON.stringify(AppState.chats));
       },
 
       savePinnedTopics() {
@@ -2027,7 +1948,7 @@
       },
 
       saveChatConfigs() {
-        localStorage.setItem('ollmaChatConfigs', JSON.stringify(AppState.chatConfigs));
+        localStorage.setItem('oallaChatConfigs', JSON.stringify(AppState.chatConfigs));
       },
     };
 
@@ -2519,10 +2440,7 @@ Overall
           );
         } catch (err) {
           if (err.message.includes('ERROR_CHAT_API')) {
-            // > [!CAUTION]
-            // > Negative potential consequences of an action.
-            assistantText = `> [!CAUTION] \n> ${err.message.replace('ERROR_CHAT_API: ', '')}`;
-            // assistantText = `*${err.message.replace('ERROR_CHAT_API: ', '')}*`;
+            assistantText = `*${err.message.replace('ERROR_CHAT_API: ', '')}*`;
             updatePendingText(assistantText);
           } else if (err.name !== 'AbortError') {
             console.error('Stream failed:', err);
@@ -3774,7 +3692,13 @@ Overall
     const QuickSendManager = {
       send() {
         const message = DOM.quickInput.value.trim();
-        if (!message || !AppState.hasModels) return;
+        if (!AppState.hasModels) {
+          safeCallAndroidBridge('showToast', 'No models installed. Please download a model first.', false, false);
+          return;
+        }
+        if (!message) {
+          return;
+        }
 
         const chatId = ChatManager.create(message);
         DOM.quickInput.value = '';
@@ -4145,7 +4069,7 @@ Overall
         },
         warning: {
           background: 'var(--warning-color)',
-          color: 'black'
+          color: 'white'
         }
       };
 

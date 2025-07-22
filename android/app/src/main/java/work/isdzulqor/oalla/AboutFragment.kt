@@ -79,7 +79,7 @@ class AboutFragment : Fragment() {
         Thanks to open-source projects like llama.cpp, Ollama, and many others contributing amazing models, this is finally possible.
 
         Is it fast? On high-spec devices, sure. On most phones... it's getting there.
-        But it works — and it's private, local, and evolving fast.
+        But it works — and it's private, local, and evolving f̶a̶s̶t̶.
 
         We’re building:
         – MCP Integration
@@ -87,7 +87,7 @@ class AboutFragment : Fragment() {
         – Other stuff we’re still testing at 2AM
 
         Have feedback or ideas?
-        Drop us a line: contact@oalla.isdzulqor.work
+        Drop us a line: oalla@isdzulqor.work
 
         — The OALLA Team
     """.trimIndent()
@@ -97,7 +97,7 @@ class AboutFragment : Fragment() {
         val links = mapOf(
             "llama.cpp" to "https://github.com/ggml-org/llama.cpp",
             "Ollama" to "https://github.com/ollama/ollama",
-            "contact@oalla.isdzulqor.work" to "mailto:contact@oalla.isdzulqor.work"
+            "oalla@isdzulqor.work" to "mailto:oalla@isdzulqor.work"
         )
 
         links.forEach { (text, url) ->

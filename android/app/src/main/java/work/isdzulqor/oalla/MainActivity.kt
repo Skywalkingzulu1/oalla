@@ -22,6 +22,10 @@ import androidx.activity.addCallback
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
 import java.nio.file.Files.exists
+import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
+import android.util.Base64
+import androidx.core.content.edit
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var logToggleButton: Button
     private lateinit var mainPagerAdapter: MainPagerAdapter
 
-    val DEBUG_MODE = true // Set to false to hide log area and log button
+    val DEBUG_MODE = false // Set to false to hide log area and log button
     val USER_AGENT_SECRET = "ikilho-secrete-bosque-38298939"
 
     val SERVER_PORT = 9090
@@ -62,7 +66,7 @@ class MainActivity : AppCompatActivity() {
         val adapter = MainPagerAdapter(this)
         viewPager.adapter = adapter
         mainPagerAdapter = adapter // <-- add this as a field
-        viewPager.reduceSwipeSensitivity(factor = 2) // 2–5 is usually a good range
+        viewPager.reduceSwipeSensitivity(factor = 3) // 2–5 is usually a good range
 
         // BottomNav → ViewPager
         bottomNav.setOnItemSelectedListener { item ->
@@ -127,19 +131,48 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun copyAssetsToInternalStorage() {
+        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        val storedVersion = prefs.getLong("copiedAssetsVersion", -1)
+
         val assetManager = assets
-        val publicDir = File(filesDir, "public").apply {
-            if (!exists()) mkdirs()
+        val versionStream = try {
+            assetManager.open("public/assets_version.txt")
+        } catch (e: Exception) {
+            null
         }
 
-        val assetFiles = assetManager.list("public") ?: return
+        val currentVersion = versionStream?.bufferedReader()?.use { it.readLine().toLongOrNull() } ?: -1L
+
+        if (storedVersion >= currentVersion && currentVersion > 0) return
+
+        val publicDir = File(filesDir, "public").apply { if (!exists()) mkdirs() }
+
+        val assetFiles = assetManager.list("public")?.filterNot { it == "assets_version.txt" } ?: return
         assetFiles.forEach { filename ->
             val outFile = File(publicDir, filename)
             assetManager.open("public/$filename").use { input ->
-                FileOutputStream(outFile).use { output ->
-                    input.copyTo(output)
-                }
+                val outputStream = FileOutputStream(outFile)
+                val encryptedBase64 = input.readBytes().toString(Charsets.UTF_8)
+                val decryptedBytes = decryptAES(encryptedBase64)
+                outputStream.write(decryptedBytes)
+                outputStream.close()
             }
+        }
+
+        prefs.edit().putLong("copiedAssetsVersion", currentVersion).apply()
+    }
+
+    private fun decryptAES(base64Input: String): ByteArray {
+        return try {
+            val secretKey = "1234567890123456".toByteArray()
+            val decodedBytes = Base64.decode(base64Input, Base64.DEFAULT)
+            val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+            val keySpec = SecretKeySpec(secretKey, "AES")
+            cipher.init(Cipher.DECRYPT_MODE, keySpec)
+            cipher.doFinal(decodedBytes)
+        } catch (e: Exception) {
+            Log.e("Decrypt", "Decryption failed: ${e::class.java.simpleName} - ${e.message}", e)
+            throw e
         }
     }
 
