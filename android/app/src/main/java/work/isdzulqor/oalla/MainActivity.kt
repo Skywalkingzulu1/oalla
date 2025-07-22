@@ -180,6 +180,7 @@ class MainActivity : AppCompatActivity() {
         Thread {
             try {
                 val args = mutableListOf("serve",
+                    "--debug", "$DEBUG_MODE",
                     "--host", "localhost:$SERVER_PORT",
                     "--useragent-secret", USER_AGENT_SECRET)
                 val storagePref = getSharedPreferences("model_prefs", 0).getString("storage_model", "internal")

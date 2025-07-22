@@ -1508,7 +1508,7 @@ func NewCLI() *cobra.Command {
 		RunE:    RunServer,
 	}
 
-	serveCmd.Flags().Bool("debug", false, "Enable debug logging")
+	serveCmd.Flags().String("debug", "", "Enable debug logging")
 	serveCmd.Flags().String("host", "", "Bind address for the server (e.g. 127.0.0.1:11434)")
 	serveCmd.Flags().String("keep-alive", "", "Duration to keep model loaded (e.g. 5m)")
 	serveCmd.Flags().Int("max-loaded-models", 0, "Maximum number of models to keep in memory")
