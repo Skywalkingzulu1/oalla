@@ -3217,6 +3217,13 @@ Overall
         DOM.searchInput.value = '';
         DOM.clearSearchBtn.style.display = 'none';
         AppState.lastSearchQuery = '';
+
+        // show the quick send container if it was hidden
+        const quickSendContainer = document.querySelector('.quick-send-container');
+        if (quickSendContainer) {
+          quickSendContainer.style.display = 'block';
+        }
+
         ChatListManager.render();
       },
 
