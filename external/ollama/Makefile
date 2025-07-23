@@ -16,16 +16,11 @@ copy-ollama-web-to-android:
 
 	@echo "Encrypting all files in web/..."
 	mkdir -p web/encrypted
-
-	# Encrypt each file's content and filename
 	find web -type f ! -path "web/encrypted/*" | while read filepath; do \
-		filename=$$(basename "$$filepath"); \
-		enc_name=$$(echo -n "$$filename" | openssl enc -aes-128-ecb -base64 -K 31323334353637383930313233343536 | tr '/+' '_-'); \
-		openssl enc -aes-128-ecb -base64 -in "$$filepath" -out "web/encrypted/$$enc_name" -K 31323334353637383930313233343536; \
+		filename=$$(basename $$filepath); \
+		openssl enc -aes-128-ecb -base64 -in "$$filepath" -out "web/encrypted/$$filename" -K 31323334353637383930313233343536; \
 	done
-
 	@echo "Generating assets_version.txt with current UNIX timestamp..."
 	date +%s > web/encrypted/assets_version.txt
-
 	@echo "Copying encrypted files to Android assets..."
 	cp -r web/encrypted/* ../../android/app/src/main/assets/public/

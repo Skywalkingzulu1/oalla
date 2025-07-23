@@ -130,11 +130,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun decryptFilename(encryptedBase64Name: String): String {
-        val encrypted = encryptedBase64Name.replace('_', '/').replace('-', '+')
-        return String(decryptAES(encrypted), Charsets.UTF_8)
-    }
-
     private fun copyAssetsToInternalStorage() {
         val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
         val storedVersion = prefs.getLong("copiedAssetsVersion", -1)
@@ -147,20 +142,26 @@ class MainActivity : AppCompatActivity() {
         }
 
         val currentVersion = versionStream?.bufferedReader()?.use { it.readLine().toLongOrNull() } ?: -1L
+
         if (storedVersion >= currentVersion && currentVersion > 0) return
 
         val publicDir = File(filesDir, "public").apply { if (!exists()) mkdirs() }
 
         val assetFiles = assetManager.list("public")?.filterNot { it == "assets_version.txt" } ?: return
-        for (encName in assetFiles) {
-            val realName = decryptFilename(encName)
-            val outFile = File(publicDir, realName)
-
-            assetManager.open("public/$encName").use { input ->
+        assetFiles.forEach { filename ->
+            val outFile = File(publicDir, filename)
+            assetManager.open("public/$filename").use { input ->
+                val outputStream = FileOutputStream(outFile)
                 val encryptedBase64 = input.readBytes().toString(Charsets.UTF_8)
                 val decryptedBytes = decryptAES(encryptedBase64)
-                FileOutputStream(outFile).use { it.write(decryptedBytes) }
+                outputStream.write(decryptedBytes)
+                outputStream.close()
             }
+        }
+
+        Log.d("AssetCopy", "Copied files list:")
+        publicDir.walkTopDown().forEach {
+            Log.d("AssetCopy", " - ${it.absolutePath}")
         }
 
         prefs.edit().putLong("copiedAssetsVersion", currentVersion).apply()
