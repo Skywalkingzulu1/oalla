@@ -1829,7 +1829,7 @@
       SEARCH_DEBOUNCE_DELAY: 300,
       MESSAGE_PREVIEW_LENGTH: 80,
       TOPIC_TITLE_MAX_WORDS: 12,
-      DEFAULT_SYSTEM_PROMPT: 'You are a helpful assistant. Answer questions concisely and accurately.',
+      DEFAULT_SYSTEM_PROMPT: 'You are a helpful phone assistant. Provide concise and accurate answers to all questions.',
     };
 
     // === DOM Elements Cache ===
@@ -2335,8 +2335,6 @@ Overall
 
         // Reset UI
         DOM.userInput.value = '';
-        DOM.userInput.disabled = true;
-        DOM.sendBtn.disabled = true;
         UIManager.toggleSendButton();
 
         MessageRenderer.render();
@@ -2370,7 +2368,6 @@ Overall
 
       buildMessagesWithSystemPrompt() {
         const systemPrompt = ConfigManager.getSystemPrompt(AppState.currentChatId);
-        console.log('Using system prompt:', systemPrompt);
         const messages = [];
 
         if (systemPrompt) {
@@ -2491,29 +2488,6 @@ Overall
         Storage.saveChats();
       },
 
-      createPendingMessage() {
-        const div = document.createElement('div');
-        div.className = 'message-wrapper assistant';
-        div.innerHTML = `
-            <div class="bubble">
-              <div class="text"></div>
-              <div class="meta unallow-select">
-                <div class="generating-indicator">
-                  <div class="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </div>
-                  <span class="generating-text">Generating response...</span>
-                </div>
-              </div>
-            </div>
-          `;
-        DOM.chatBox.appendChild(div);
-        DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
-        return div;
-      },
-
       cleanup() {
         AppState.controller = null;
         AppState.isGenerating = false;
@@ -2621,7 +2595,7 @@ Overall
 
     // === Message Renderer ===
     const MessageRenderer = {
-      render(callback) {
+      render(callback, indexBubble = null) {
         DOM.chatBox.innerHTML = '';
 
         if (!AppState.currentChatId || !AppState.chats[AppState.currentChatId]) return;
@@ -2679,7 +2653,14 @@ Overall
           bubble.appendChild(text);
           bubble.appendChild(meta);
           wrapper.appendChild(bubble);
-          DOM.chatBox.appendChild(wrapper);
+          if (indexBubble !== null || pending.messageIndex !== undefined) {
+            const index = indexBubble !== null ? indexBubble : pending.messageIndex;
+            const allWrappers = DOM.chatBox.querySelectorAll('.message-wrapper');
+            const targetNode = allWrappers[index] || null;
+            DOM.chatBox.insertBefore(wrapper, targetNode);
+          } else {
+            DOM.chatBox.appendChild(wrapper); // fallback
+          }
 
           if (AppState.isGenerating && AppState.controller) {
             UIManager.createStopButton(() => AppState.controller.abort(), wrapper);
@@ -3049,6 +3030,11 @@ Overall
         const msg = AppState.chats[AppState.currentChatId][index];
         if (!newModel || newModel === msg.model) return;
 
+        if (AppState.isGenerating) {
+          safeCallAndroidBridge('showToast', 'Please wait for the assistant to finish generating.', false, false);
+          return;
+        }
+
         // Just trigger regeneration — all state updates will be handled there
         await this.regenerateWithModel(index, newModel);
       },
@@ -3074,7 +3060,8 @@ Overall
         AppState.controller = new AbortController();
         AppState.isGenerating = true;
         StickyBannerManager.show(chatId);
-        MessageRenderer.render();
+        MessageRenderer.render(null, index);
+        let userHasScrolled = AppState.userHasScrolled;
 
         const updatePendingText = (text) => {
           if (AppState.pendingAssistant[chatId]) {
@@ -3085,8 +3072,19 @@ Overall
             const textDiv = wrapper?.querySelector('.text');
             if (textDiv) {
               textDiv.innerHTML = renderMarkdownForAssistant(text);
-              if (!AppState.userHasScrolled) {
-                DOM.chatBox.scrollTop = DOM.chatBox.scrollHeight;
+              if (!userHasScrolled) {
+                // scroll to the message that is being regenerated
+                const wrapper = DOM.chatBox.querySelector(`.message-wrapper.assistant.pending[data-index="${index}"]`);
+                const textDiv = wrapper?.querySelector('.text');
+                if (textDiv) {
+                  textDiv.innerHTML = renderMarkdownForAssistant(text);
+                  if (wrapper) {
+                    DOM.chatBox.scrollTop = wrapper.offsetTop - (DOM.chatBox.clientHeight / 2) + (wrapper.offsetHeight / 2);
+                  }
+                }
+              }
+              if (AppState.userHasScrolled) {
+                userHasScrolled = true;
               }
             }
           }
@@ -3151,6 +3149,7 @@ Overall
           StickyBannerManager.hide();
           AppState.controller = null;
           AppState.isGenerating = false;
+          AppState.userHasScrolled = false;
           delete AppState.pendingAssistant[chatId];
 
           // Clean up if assistantText is still empty and version was added
@@ -3183,7 +3182,7 @@ Overall
           Storage.saveChats();
 
           if (AppState.currentChatId === chatId) {
-            MessageRenderer.render();
+            MessageRenderer.render(null, index);
           }
         }
       },
@@ -3226,6 +3225,11 @@ Overall
 
         query = query.trim().toLowerCase();
         AppState.lastSearchQuery = query;
+
+        const quickSendContainer = document.querySelector('.quick-send-container');
+        if (quickSendContainer) {
+          quickSendContainer.style.display = query ? 'none' : 'block';
+        }
 
         if (!query) {
           ChatListManager.render();
@@ -3884,6 +3888,8 @@ Overall
     };
     window.cancelEdit = () => MessageManager.cancelEdit();
 
+    let lastToastTime = 0;
+
     function checkIsInputDisabled(e) {
       e.preventDefault();
       const textarea = document.querySelector('textarea');
@@ -3899,7 +3905,13 @@ Overall
       }
 
       if (isAssistantGenerating) {
-        safeCallAndroidBridge('showToast', 'Please wait for the assistant to finish generating.', false, false);
+        const now = Date.now();
+        const debounceInterval = 3000; // milliseconds
+
+        if (now - lastToastTime > debounceInterval) {
+          lastToastTime = now;
+          safeCallAndroidBridge('showToast', 'Please wait for the assistant to finish generating.', false, false);
+        }
       }
     }
 
@@ -3916,7 +3928,6 @@ Overall
     window.addEventListener('popstate', handleBackNavigation);
     window.addEventListener('hashchange', handleBackNavigation);
     window.onNativeBackPressed = function () {
-      console.log('[WebView] Android back pressed');
       const chatScreen = document.getElementById('chatScreen');
       if (chatScreen.classList.contains('active')) {
         ScreenManager.show('topic');

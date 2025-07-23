@@ -365,6 +365,8 @@ class ModelFragment : Fragment() {
         progressBar.isIndeterminate = true
         downloadLog.text = "Starting model pull..."
 
+        modelInput.isEnabled = false // ❗ Disable input
+
         CoroutineScope(Dispatchers.IO).launch {
             var hasError = false
 
@@ -403,9 +405,14 @@ class ModelFragment : Fragment() {
                     if (!hasError) {
                         downloadLog.text = "Download complete"
                     }
+
                     cancelButton.visibility = View.GONE
                     fetchModelList()
                     DownloadService.instance?.finishDownload()
+
+                    // ✅ Re-enable and clear input
+                    modelInput.isEnabled = true
+                    modelInput.setText("")
 
                     Handler(Looper.getMainLooper()).postDelayed({
                         downloadContainer.visibility = View.GONE
@@ -418,6 +425,9 @@ class ModelFragment : Fragment() {
                     downloadLog.text = "Error: ${e.localizedMessage}"
                     cancelButton.visibility = View.GONE
                     progressBar.visibility = View.GONE
+
+                    // ✅ Re-enable input if error
+                    modelInput.isEnabled = true
                 }
             } finally {
                 currentCall = null
