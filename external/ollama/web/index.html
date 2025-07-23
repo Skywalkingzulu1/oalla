@@ -2368,17 +2368,23 @@ Overall
 
       buildMessagesWithSystemPrompt() {
         const systemPrompt = ConfigManager.getSystemPrompt(AppState.currentChatId);
+        const rawMessages = AppState.chats[AppState.currentChatId];
         const messages = [];
 
         if (systemPrompt) {
-          messages.push({
-            role: 'system',
-            content: systemPrompt
-          });
+          messages.push({ role: 'system', content: systemPrompt });
         }
 
-        // Add conversation messages
-        messages.push(...AppState.chats[AppState.currentChatId]);
+        rawMessages.forEach((msg) => {
+          if (msg.role === 'assistant' && msg.history && msg.selected !== undefined) {
+            messages.push({
+              role: 'assistant',
+              content: msg.history[msg.selected],
+            });
+          } else {
+            messages.push(msg);
+          }
+        });
 
         return messages;
       },
