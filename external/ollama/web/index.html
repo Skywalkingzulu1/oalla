@@ -2144,7 +2144,7 @@
         let output = `Model: ${actualModel || '-'}`;
 
         if (!metrics || Object.keys(metrics).length === 0) {
-          output += `\n\nNo detailed timing or token metrics available.`;
+          output += `\n\nNo detailed metrics available.`;
         } else {
           output += `
 
@@ -2408,6 +2408,15 @@ Overall
         let assistantText = '';
         let capturedMetrics = null;
 
+        // Save initial empty metrics as early as possible
+        const messages = AppState.chats[chatId] || [];
+        const index = messages.length;
+        AppState.messageMetrics[chatId] = AppState.messageMetrics[chatId] || {};
+        if (!AppState.messageMetrics[chatId][index]) {
+          AppState.messageMetrics[chatId][index] = {};
+          Storage.saveMessageMetrics();
+        }
+
         const updatePendingText = (text) => {
           if (AppState.pendingAssistant[chatId]) {
             AppState.pendingAssistant[chatId].text = text;
@@ -2430,12 +2439,36 @@ Overall
           AppState.userHasScrolled = false;
           safeCallAndroidBridge('keepScreenOnFor', 15000);
 
+          let lastSaveTime = Date.now();
+          assistantText = '';
+
           await Utils.streamToText(
             reader,
             (token) => {
               assistantText += token;
               updatePendingText(assistantText);
               safeCallAndroidBridge('keepScreenOnFor', 5000);
+
+              if (Date.now() - lastSaveTime > 1000) {
+                const tempMessage = {
+                  role: 'assistant',
+                  content: assistantText,
+                  timestamp: Date.now(),
+                  model,
+                  pending: true,
+                };
+                const messages = AppState.chats[chatId] || [];
+                const existingIndex = messages.findIndex((m) => m.pending);
+
+                if (existingIndex !== -1) {
+                  messages[existingIndex] = tempMessage;
+                } else {
+                  messages.push(tempMessage);
+                }
+                AppState.chats[chatId] = messages;
+                Storage.saveChats();
+                lastSaveTime = Date.now();
+              }
             },
             (metrics) => {
               capturedMetrics = metrics;
@@ -2446,16 +2479,17 @@ Overall
             assistantText = `*${err.message.replace('ERROR_CHAT_API: ', '')}*`;
             updatePendingText(assistantText);
           } else if (err.name !== 'AbortError') {
-            console.error('Stream failed:', err);
-            const fallbackError = 'Error generating response. Please try again.';
-            assistantText = fallbackError;
-            updatePendingText(fallbackError);
+
+            // do nothing for now.
           }
         } finally {
           StickyBannerManager.hide();
           this.cleanup();
 
           if (assistantText && AppState.chats[chatId]) {
+            // Remove any existing pending message
+            AppState.chats[chatId] = AppState.chats[chatId].filter((m) => !m.pending);
+
             AppState.chats[chatId].push({
               role: 'assistant',
               content: assistantText,
@@ -2480,6 +2514,7 @@ Overall
             MessageRenderer.render();
           }
         }
+
       },
 
       addAssistantMessage(content) {
@@ -3067,6 +3102,14 @@ Overall
         AppState.isGenerating = true;
         StickyBannerManager.show(chatId);
         MessageRenderer.render(null, index);
+        // Save initial empty metrics as early as possible
+        const metricsKey = `${index}.${(msg.history?.length || 0) + 1}`;
+        AppState.messageMetrics[chatId] = AppState.messageMetrics[chatId] || {};
+        if (!AppState.messageMetrics[chatId][metricsKey]) {
+          AppState.messageMetrics[chatId][metricsKey] = {};
+          Storage.saveMessageMetrics(); // persist immediately
+        }
+
         let userHasScrolled = AppState.userHasScrolled;
 
         const updatePendingText = (text) => {
@@ -3107,7 +3150,6 @@ Overall
           AppState.userHasScrolled = false;
           safeCallAndroidBridge('keepScreenOnFor', 15000);
 
-          // prepare history
           msg.history = msg.history || [msg.content];
           msg.historyModels = msg.historyModels || [msg.model];
           const lastIndex = msg.history.length - 1;
@@ -3131,6 +3173,9 @@ Overall
               msg.history[msg.selected] = assistantText;
               updatePendingText(assistantText);
               safeCallAndroidBridge('keepScreenOnFor', 5000);
+
+              // Save progress to localStorage on each token
+              Storage.saveChats();
             },
             (metrics) => {
               capturedMetrics = metrics;
@@ -3148,8 +3193,7 @@ Overall
             versionAdded = true;
             updatePendingText(assistantText);
           } else if (err.name !== 'AbortError') {
-            console.error('Model change failed:', err);
-            updatePendingText('Error generating response. Please try again.');
+            // do nothing for now.
           }
         } finally {
           StickyBannerManager.hide();
@@ -3158,7 +3202,6 @@ Overall
           AppState.userHasScrolled = false;
           delete AppState.pendingAssistant[chatId];
 
-          // Clean up if assistantText is still empty and version was added
           if (!assistantText && versionAdded) {
             msg.history.pop();
             msg.historyModels.pop();
@@ -3177,7 +3220,6 @@ Overall
             AppState.messageMetrics[chatId][metricsKey] = capturedMetrics;
             Storage.saveMessageMetrics();
           } else {
-            // store empty metrics if no text was generated
             const metricsKey = `${index}.${msg.selected + 1}`;
             if (!AppState.messageMetrics[chatId]) {
               AppState.messageMetrics[chatId] = {};
