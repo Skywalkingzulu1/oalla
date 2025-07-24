@@ -260,16 +260,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var clearKeepScreenOnRunnable: Runnable? = null
+    private val handler = Handler(Looper.getMainLooper())
+
     fun keepScreenOnFor(durationMs: Long) {
         runOnUiThread {
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
 
-        Handler(Looper.getMainLooper()).postDelayed({
+        // Cancel the previous runnable if it exists
+        clearKeepScreenOnRunnable?.let { handler.removeCallbacks(it) }
+
+        // Create a new one
+        clearKeepScreenOnRunnable = Runnable {
             runOnUiThread {
                 window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             }
-        }, durationMs)
+        }
+
+        // Post the new one
+        handler.postDelayed(clearKeepScreenOnRunnable!!, durationMs)
     }
 
     fun setTab(index: Int) {

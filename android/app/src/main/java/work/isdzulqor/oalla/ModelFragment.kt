@@ -394,6 +394,7 @@ class ModelFragment : Fragment() {
                     for (line in lines.dropLast(1)) {
                         if (line.isNotBlank()) {
                             withContext(Dispatchers.Main) {
+                                (requireActivity() as? MainActivity)?.keepScreenOnFor(5 * 1000L) // keep screen on for 5 seconds
                                 val isError = parseAndUpdateProgress(line)
                                 if (isError) hasError = true
                             }
