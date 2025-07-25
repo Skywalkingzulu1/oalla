@@ -25,7 +25,9 @@ import java.nio.file.Files.exists
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import android.util.Base64
+import android.util.Log.e
 import androidx.core.content.edit
+import kotlin.jvm.java
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,7 +41,18 @@ class MainActivity : AppCompatActivity() {
     val DEBUG_MODE = false // Set to false to hide log area and log button
     val USER_AGENT_SECRET = "ikilho-secrete-bosque-38298939"
 
-    val SERVER_PORT = 9090
+    val SERVER_PORT: Int by lazy {
+        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        val savedPort = prefs.getInt("server_port", -1)
+
+        if (savedPort in 8000..8500 || savedPort == 9090) {
+            savedPort
+        } else {
+            val chosenPort = if (DEBUG_MODE) 9090 else (8000..8500).random()
+            prefs.edit().putInt("server_port", chosenPort).apply()
+            chosenPort
+        }
+    }
     external fun runOllamaWithArgs(args: Array<String>)
 
     companion object {
@@ -128,6 +141,37 @@ class MainActivity : AppCompatActivity() {
             isEnabled = false
             onBackPressedDispatcher.onBackPressed()
         }
+
+        handleNotificationIntent(intent)
+    }
+
+    private fun handleNotificationIntent(intent: Intent?, durationMs: Long = 2000) {
+        intent?.let {
+            if (it.getBooleanExtra("navigate_to_chat", false)) {
+                it.removeExtra("navigate_to_chat") // prevent re-trigger
+                val chatId = it.getStringExtra("chat_id") ?: return@let
+                val chatIndex = it.getIntExtra("chat_index", 0)
+                viewPager.currentItem = 0
+                Log.e("GoToChat", "navigate to chat id: $chatId")
+
+                Handler(Looper.getMainLooper()).postDelayed({
+                    notifyWebViewAppResumed()
+                    val chatFragment = mainPagerAdapter.getFragment(0) as? ChatFragment
+                    chatFragment?.webView?.evaluateJavascript(
+                        "window.goToChat && window.goToChat('$chatId', $chatIndex);",
+                        null
+                    )
+
+                    AssistantNotificationService.stopNotification(this)
+                }, durationMs)
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent) // update internal reference to new intent
+        handleNotificationIntent(intent, 1000)
     }
 
     private fun copyAssetsToInternalStorage() {
@@ -138,6 +182,7 @@ class MainActivity : AppCompatActivity() {
         val versionStream = try {
             assetManager.open("public/assets_version.txt")
         } catch (e: Exception) {
+            Log.e("AssetCopy", "Version file missing or unreadable", e)
             null
         }
 
@@ -145,17 +190,27 @@ class MainActivity : AppCompatActivity() {
 
         if (storedVersion >= currentVersion && currentVersion > 0) return
 
-        val publicDir = File(filesDir, "public").apply { if (!exists()) mkdirs() }
+        val publicDir = File(filesDir, "public")
+
+        if (publicDir.exists()) {
+            publicDir.deleteRecursively()
+        }
+        publicDir.mkdirs()
 
         val assetFiles = assetManager.list("public")?.filterNot { it == "assets_version.txt" } ?: return
+
         assetFiles.forEach { filename ->
-            val outFile = File(publicDir, filename)
-            assetManager.open("public/$filename").use { input ->
-                val outputStream = FileOutputStream(outFile)
-                val encryptedBase64 = input.readBytes().toString(Charsets.UTF_8)
-                val decryptedBytes = decryptAES(encryptedBase64)
-                outputStream.write(decryptedBytes)
-                outputStream.close()
+            try {
+                val outFile = File(publicDir, filename)
+                assetManager.open("public/$filename").use { input ->
+                    val outputStream = FileOutputStream(outFile)
+                    val encryptedBase64 = input.readBytes().toString(Charsets.UTF_8)
+                    val decryptedBytes = decryptAES(encryptedBase64)
+                    outputStream.write(decryptedBytes)
+                    outputStream.close()
+                }
+            } catch (e: Exception) {
+                Log.e("AssetCopy", "Failed to copy or decrypt $filename", e)
             }
         }
 
@@ -184,10 +239,35 @@ class MainActivity : AppCompatActivity() {
     private fun startOllamaWithArgs() {
         Thread {
             try {
-                val args = mutableListOf("serve",
+                val url = "http://localhost:$SERVER_PORT/"
+                val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+                connection.connectTimeout = 1000
+                connection.readTimeout = 1000
+                connection.requestMethod = "GET"
+                connection.setRequestProperty("User-Agent", USER_AGENT_SECRET) // ✅ Add custom header
+
+                val isRunning = try {
+                    val code = connection.responseCode
+                    val body = connection.inputStream.bufferedReader().use { it.readText() }
+                    code == 200 && body.lowercase().contains("ollama")
+                } catch (e: Exception) {
+                    false
+                } finally {
+                    connection.disconnect()
+                }
+
+                if (isRunning) {
+                    Log.d("Ollama", "Ollama already running — skipping startup")
+                    return@Thread
+                }
+
+                val args = mutableListOf(
+                    "serve",
                     "--debug", "$DEBUG_MODE",
                     "--host", "localhost:$SERVER_PORT",
-                    "--useragent-secret", USER_AGENT_SECRET)
+                    "--useragent-secret", USER_AGENT_SECRET
+                )
+
                 val storagePref = getSharedPreferences("model_prefs", 0).getString("storage_model", "internal")
                 val modelPath = if (storagePref == "external") {
                     getExternalFilesDir("ollama_models")?.absolutePath
@@ -200,6 +280,7 @@ class MainActivity : AppCompatActivity() {
                 args.add(modelPath.toString())
 
                 runOllamaWithArgs(args.toTypedArray())
+
             } catch (e: Exception) {
                 Log.e("Ollama", "Failed to start Ollama: ${e.message}", e)
             }
@@ -285,6 +366,34 @@ class MainActivity : AppCompatActivity() {
     fun setTab(index: Int) {
         runOnUiThread {
             viewPager.currentItem = index
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        notifyWebViewAppMinimized()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        notifyWebViewAppResumed()
+    }
+
+    private fun notifyWebViewAppMinimized() {
+        val currentFragment = mainPagerAdapter.getFragment(viewPager.currentItem)
+        if (currentFragment is ChatFragment) {
+            currentFragment.webView?.evaluateJavascript(
+                "window.onAppMinimized && window.onAppMinimized();", null
+            )
+        }
+    }
+
+    private fun notifyWebViewAppResumed() {
+        val currentFragment = mainPagerAdapter.getFragment(viewPager.currentItem)
+        if (currentFragment is ChatFragment) {
+            currentFragment.webView?.evaluateJavascript(
+                "window.onAppResumed && window.onAppResumed();", null
+            )
         }
     }
 }

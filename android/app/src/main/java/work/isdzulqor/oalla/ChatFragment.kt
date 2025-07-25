@@ -1,6 +1,5 @@
 package work.isdzulqor.oalla
 
-import android.R.attr.duration
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -12,20 +11,22 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.webkit.WebViewFragment
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import okhttp3.internal.userAgent
 
 class ChatFragment : Fragment() {
 
-    private val ollamaPort = 9090
     private var splashStartTime: Long = 0
+    private var isPageLoaded: Boolean = false
+
     private val debugMode: Boolean
-        get() = (activity as? MainActivity)?.DEBUG_MODE
-            ?: false
-    // Expose webView so MainActivity can access it for back press
+        get() = (activity as? MainActivity)?.DEBUG_MODE ?: false
+
     var webView: WebView? = null
+
+    private val ollamaPort: Int
+        get() = (activity as? MainActivity)?.SERVER_PORT
+            ?: throw IllegalStateException("SERVER_PORT is not set in MainActivity")
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,35 +47,23 @@ class ChatFragment : Fragment() {
 
                 override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
                     val url = request.url.toString()
-
-                    // Whitelist: allow anything from your internal Ollama server
-                    if (url.startsWith("http://localhost:$ollamaPort")) {
-                        return false // Load inside WebView
-                    }
-
-                    // Everything else: open in external browser
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    view?.context?.startActivity(intent)
+                    if (url.startsWith("http://localhost:$ollamaPort")) return false
+                    view?.context?.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                     return true
                 }
 
-                // For older API levels (< 24)
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
-                    if (url != null && url.startsWith("http://localhost:$ollamaPort")) {
-                        return false
-                    }
-
+                    if (url != null && url.startsWith("http://localhost:$ollamaPort")) return false
                     if (url != null && url.startsWith("http")) {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                        view?.context?.startActivity(intent)
+                        view?.context?.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                         return true
                     }
-
                     return false
                 }
 
                 override fun onPageFinished(view: WebView?, url: String?) {
                     if (!loadError) {
+                        isPageLoaded = true
                         val elapsed = System.currentTimeMillis() - splashStartTime
                         val remaining = 1500L - elapsed
 
@@ -106,20 +95,26 @@ class ChatFragment : Fragment() {
                     Log.e("WebView", "onReceivedHttpError: ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}")
                 }
             }
-            Log.e("WebView", "userAgentSecret: ${userAgentSecret}")
+
+            Log.e("WebView", "userAgentSecret: $userAgentSecret")
             settings.userAgentString = userAgentSecret
             settings.javaScriptEnabled = true
-            addJavascriptInterface(JSBridge(),"AndroidBridge")
+            addJavascriptInterface(JSBridge(), "AndroidBridge")
             settings.domStorageEnabled = true
             loadUrl("http://localhost:$ollamaPort/web")
         }
+
         return root
     }
 
     override fun onResume() {
         super.onResume()
 
-        // Trigger JS-side logic when the fragment becomes active again
+        if (isPageLoaded) {
+            (activity as? MainActivity)?.hideSplash()
+            webView?.visibility = View.VISIBLE
+        }
+
         webView?.evaluateJavascript("window.refreshModelList && window.refreshModelList();", null)
     }
 
@@ -160,12 +155,35 @@ class ChatFragment : Fragment() {
 
         @android.webkit.JavascriptInterface
         fun showToast(text: String, isLongDur: Boolean = false, shouldDebug: Boolean = false) {
-            if (shouldDebug && !debugMode) {
-                return
-            }
-
+            if (shouldDebug && !debugMode) return
             val duration = if (isLongDur) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
             Toast.makeText(requireContext(), text, duration).show()
+        }
+
+        @android.webkit.JavascriptInterface
+        fun updateAssistantNotification(text: String, chatId: String, messageIndex: Int, isComplete: Boolean = false) {
+            val maxLength = 120
+            val trimmedText = if (text.length > maxLength) {
+                text.take(maxLength).trimEnd() + "… more"
+            } else {
+                text
+            }
+
+            val isAppActive = activity?.lifecycle?.currentState
+                ?.isAtLeast(androidx.lifecycle.Lifecycle.State.RESUMED) == true
+
+            if (!isAppActive) {
+                // only push notif when user is not using the app
+                AssistantNotificationService.updateNotification(
+                    requireContext(),
+                    trimmedText,
+                    chatId,
+                    messageIndex,
+                    isComplete
+                )
+            } else {
+                Log.d("AssistantNotif", "Skipped notification: app is active")
+            }
         }
     }
 }

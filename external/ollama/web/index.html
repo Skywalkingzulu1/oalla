@@ -1803,6 +1803,7 @@
       chats: JSON.parse(localStorage.getItem('oallaChats') || '{}'),
       chatConfigs: JSON.parse(localStorage.getItem('oallaChatConfigs') || '{}'),
       pinnedTopics: JSON.parse(localStorage.getItem('pinnedTopics') || '[]'),
+      isAppMinimized: false,
       isGenerating: false,
       controller: null,
       editIndex: null,
@@ -1829,7 +1830,7 @@
       SEARCH_DEBOUNCE_DELAY: 300,
       MESSAGE_PREVIEW_LENGTH: 80,
       TOPIC_TITLE_MAX_WORDS: 12,
-      DEFAULT_SYSTEM_PROMPT: 'You are a helpful phone assistant. Provide concise and accurate answers to all questions.',
+      DEFAULT_SYSTEM_PROMPT: 'You are a helpful AI assistant for edge devices. Provide concise, accurate, and relevant responses.',
     };
 
     // === DOM Elements Cache ===
@@ -2392,12 +2393,16 @@ Overall
       async generateAssistantResponse() {
         const chatId = AppState.currentChatId;
         if (!chatId) return;
+        
+        const messages = AppState.chats[chatId] || [];
+        const index = messages.length;
 
         const model = DOM.modelSelect.value;
         AppState.pendingAssistant[chatId] = {
           text: '',
           timestamp: Date.now(),
           model,
+          messageIndex: index, 
         };
 
         AppState.controller = new AbortController();
@@ -2408,9 +2413,7 @@ Overall
         let assistantText = '';
         let capturedMetrics = null;
 
-        // Save initial empty metrics as early as possible
-        const messages = AppState.chats[chatId] || [];
-        const index = messages.length;
+        
         AppState.messageMetrics[chatId] = AppState.messageMetrics[chatId] || {};
         if (!AppState.messageMetrics[chatId][index]) {
           AppState.messageMetrics[chatId][index] = {};
@@ -2431,6 +2434,9 @@ Overall
               }
             }
           }
+
+          // update android push notification
+          updateAssistantNotification(text, chatId, index);
         };
 
         try {
@@ -2439,36 +2445,27 @@ Overall
           AppState.userHasScrolled = false;
           safeCallAndroidBridge('keepScreenOnFor', 15000);
 
-          let lastSaveTime = Date.now();
-          assistantText = '';
+          // Add pending message early
+          AppState.chats[chatId].push({
+            role: 'assistant',
+            content: '',
+            timestamp: Date.now(),
+            model,
+            pending: true,
+            history: [],
+            selected: 0,
+          });
+
+          const msg = AppState.chats[chatId][AppState.chats[chatId].length - 1];
 
           await Utils.streamToText(
             reader,
             (token) => {
               assistantText += token;
+              msg.content = assistantText;
               updatePendingText(assistantText);
               safeCallAndroidBridge('keepScreenOnFor', 5000);
-
-              if (Date.now() - lastSaveTime > 1000) {
-                const tempMessage = {
-                  role: 'assistant',
-                  content: assistantText,
-                  timestamp: Date.now(),
-                  model,
-                  pending: true,
-                };
-                const messages = AppState.chats[chatId] || [];
-                const existingIndex = messages.findIndex((m) => m.pending);
-
-                if (existingIndex !== -1) {
-                  messages[existingIndex] = tempMessage;
-                } else {
-                  messages.push(tempMessage);
-                }
-                AppState.chats[chatId] = messages;
-                Storage.saveChats();
-                lastSaveTime = Date.now();
-              }
+              Storage.saveChats();
             },
             (metrics) => {
               capturedMetrics = metrics;
@@ -2478,15 +2475,23 @@ Overall
           if (err.message.includes('ERROR_CHAT_API')) {
             assistantText = `*${err.message.replace('ERROR_CHAT_API: ', '')}*`;
             updatePendingText(assistantText);
-          } else if (err.name !== 'AbortError') {
-
-            // do nothing for now.
+          } else {
+            if (err.name !== 'AbortError') {
+              // do nothing for now.
+            }
+            if (assistantText !== '') {
+              updatePendingText(assistantText);
+            }
           }
         } finally {
           StickyBannerManager.hide();
           this.cleanup();
 
           if (assistantText && AppState.chats[chatId]) {
+            // push notification to android bosque
+            updateAssistantNotification(assistantText, chatId, index, true);
+
+
             // Remove any existing pending message
             AppState.chats[chatId] = AppState.chats[chatId].filter((m) => !m.pending);
 
@@ -2516,7 +2521,6 @@ Overall
         }
 
       },
-
       addAssistantMessage(content) {
         AppState.chats[AppState.currentChatId].push({
           role: 'assistant',
@@ -3137,6 +3141,8 @@ Overall
               }
             }
           }
+          // update android push notification
+          updateAssistantNotification(text, chatId, index);
         };
 
         try {
@@ -3192,8 +3198,13 @@ Overall
             msg.model = newModel;
             versionAdded = true;
             updatePendingText(assistantText);
-          } else if (err.name !== 'AbortError') {
-            // do nothing for now.
+          } else {
+            if (err.name !== 'AbortError') {
+              // do nothing for now.
+            }
+            if (assistantText !== '') {
+              updatePendingText(assistantText);
+            }
           }
         } finally {
           StickyBannerManager.hide();
@@ -3226,6 +3237,9 @@ Overall
             }
             AppState.messageMetrics[chatId][metricsKey] = {};
           }
+
+          // push notification to android bosque
+          updateAssistantNotification(assistantText, chatId, index, true);
 
           Storage.saveChats();
 
@@ -3943,6 +3957,53 @@ Overall
     };
     window.cancelEdit = () => MessageManager.cancelEdit();
 
+    window.goToChat = function (chatId, messageIndex = null) {
+      if (typeof AppState !== 'undefined' && AppState.currentChatId === chatId) {
+        AppState.currentChatId = chatId;
+        ScreenManager.show('chat');
+        MessageRenderer.render();
+        return;
+      }
+
+      AppState.currentChatId = chatId;
+      ScreenManager.show('chat');
+
+      MessageRenderer.render(() => {
+        if (messageIndex !== null) {
+          setTimeout(() => {
+            let msgSelector = `.message-wrapper[data-index="${messageIndex}"]`;
+
+            // Check if this is a pending assistant message
+            const pending = AppState.pendingAssistant[chatId];
+            if (
+              pending &&
+              AppState.isGenerating &&
+              pending.messageIndex === messageIndex
+            ) {
+              msgSelector = `.message-wrapper.assistant.pending[data-index="${messageIndex}"]`;
+            }
+
+            const msgDiv = DOM.chatBox.querySelector(msgSelector);
+            if (msgDiv) {
+              msgDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              msgDiv.style.background = '#fffbcc';
+              setTimeout(() => {
+                msgDiv.style.background = '';
+              }, 1500);
+            }
+          }, 100);
+        }
+      });
+    };
+
+    window.onAppMinimized = function () {
+      AppState.isAppMinimized = true;
+    };
+
+    window.onAppResumed = function () {
+      AppState.isAppMinimized = false;
+    };
+
     let lastToastTime = 0;
 
     function checkIsInputDisabled(e) {
@@ -3979,6 +4040,28 @@ Overall
         ScreenManager.show('topic');
       }
     }
+
+    // === Start Block of Detect App Minimize/Resume from JS itself ===
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        AppState.isAppMinimized = true;
+        console.log('[JS] App is minimized (visibilitychange)');
+      } else {
+        AppState.isAppMinimized = false;
+        console.log('[JS] App is resumed (visibilitychange)');
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      AppState.isAppMinimized = true;
+      console.log('[JS] App is minimized (blur)');
+    });
+
+    window.addEventListener('focus', () => {
+      AppState.isAppMinimized = false;
+      console.log('[JS] App is resumed (focus)');
+    });
+    // === Detect Block of Detect App Minimize/Resume from JS itself ===
 
     window.addEventListener('popstate', handleBackNavigation);
     window.addEventListener('hashchange', handleBackNavigation);
@@ -4173,6 +4256,11 @@ Overall
         toast.style.transform = 'translateY(20px)';
         toast.addEventListener('transitionend', () => toast.remove());
       }, duration);
+    }
+
+    function updateAssistantNotification(text, chatId, messageIndex, isComplete = false) {
+      if (!AppState.isAppMinimized) return;
+      safeCallAndroidBridge('updateAssistantNotification', text, chatId, messageIndex, isComplete);
     }
 
     // Start the application
