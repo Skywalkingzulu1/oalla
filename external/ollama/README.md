@@ -2,6 +2,45 @@
 
 How to modify the official Ollama repository to run on Android devices.
 
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Standard Ollama                              │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────┐             ┌─────────────────────────┐    │
+│  │   Web Client    │    HTTP     │    Ollama Server        │    │
+│  │   (Browser)     │ ←────────→  │    (Separate Process)   │    │
+│  └─────────────────┘             └─────────────────────────┘    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+                              ↓ CONVERSION ↓
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    Android Ollama                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────┐    HTTP     ┌─────────────────────────┐    │
+│  │   JavaScript    │ ←────────→  │    Go Server            │    │
+│  │   (WebView)     │  localhost  │    (In-Process)         │    │
+│  └─────────────────┘             └─────────────────────────┘    │
+│           │                                    │                │
+│  ┌─────────────────┐             ┌─────────────────────────┐    │
+│  │   Android       │    JNI      │    Native Library       │    │
+│  │   Activity      │ ←────────→  │    (libollama.so)       │    │
+│  └─────────────────┘             └─────────────────────────┘    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Key Differences:**
+- **Process**: Separate → Single Android process
+- **Communication**: Network → In-process function calls
+- **UI**: Browser → Android WebView
+- **Distribution**: Server binary → Android library (.so)
+
 ## Process Overview
 
 Three main modifications are needed:

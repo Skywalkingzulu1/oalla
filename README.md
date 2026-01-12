@@ -11,12 +11,36 @@ This is completely open source, just like Ollama itself. You can use any models 
 ## Architecture
 
 ```
-JavaScript UI ←→ HTTP API ←→ Go Server (Ollama)
-     ↓                           ↓
-Android WebView              JNI Bridge
-     ↓                           ↓
-    Same Android Process
+┌─────────────────────────────────────────────────────────────────┐
+│                    Android App Process                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────┐    HTTP     ┌─────────────────────────┐    │
+│  │   JavaScript    │ ←────────→  │     Go Server           │    │
+│  │   Chat UI       │  localhost  │     (Ollama)            │    │
+│  │                 │ :8000-8500  │                         │    │
+│  └─────────────────┘  (dynamic)  └─────────────────────────┘    │
+│           │                                    │                │
+│           │                                    │                │
+│  ┌─────────────────┐             ┌─────────────────────────┐    │
+│  │  Android        │             │    JNI Bridge           │    │
+│  │  WebView        │             │    (libbridgeollama.so) │    │
+│  │                 │             │                         │    │
+│  └─────────────────┘             └─────────────────────────┘    │
+│           │                                    │                │
+│           └────────────────────────────────────┘                │
+│                    Native Integration                           │
+└─────────────────────────────────────────────────────────────────┘
 ```
+
+**Key Components:**
+
+- **JavaScript UI**: Rich web-based chat interface running in WebView
+- **HTTP API**: Standard REST endpoints (`/api/chat`, `/api/models`, etc.)
+- **Go Server**: Full Ollama server compiled as Android native library
+- **JNI Bridge**: Connects Kotlin/Java Android code with Go server
+- **Single Process**: Everything runs in one Android app process for efficiency
+- **Dynamic Port**: Randomly allocated port (8000-8500) for security
 
 The app loads Ollama's web interface in a WebView while running the actual Ollama server natively in the same process. JavaScript communicates with the Go backend via standard HTTP requests to localhost.
 

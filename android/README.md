@@ -7,12 +7,28 @@ Running Go web server inside Android with JavaScript UI.
 Oalla runs a complete Go web server inside the Android app process. The JavaScript UI communicates with this server via HTTP while also calling native Android functions through a bridge.
 
 ```
-JavaScript UI ←→ HTTP API ←→ Go Server (Ollama)
-     ↓                           ↓
-Android Bridge               JNI Bridge
-     ↓                           ↓
-    Same Android Process
+┌─────────────────────────────────────────────────────────────────┐
+│                    Android App Process                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────┐    HTTP     ┌─────────────────────────┐    │
+│  │   JavaScript    │ ←────────→  │     Go Server           │    │
+│  │   Chat UI       │  localhost  │     (Ollama)            │    │
+│  │   (WebView)     │ :8000-8500  │                         │    │
+│  └─────────────────┘  (dynamic)  └─────────────────────────┘    │
+│           │                                    │                │
+│  ┌─────────────────┐             ┌─────────────────────────┐    │
+│  │   Android       │   JSBridge  │    JNI Bridge           │    │
+│  │   Bridge        │ ←────────→  │    (libbridgeollama.so) │    │
+│  └─────────────────┘             └─────────────────────────┘    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
+
+**Communication Flow:**
+- **HTTP**: JavaScript ↔ Go server on dynamic localhost port
+- **JSBridge**: JavaScript ↔ Android native functions  
+- **JNI**: Android ↔ Go server lifecycle management
 
 ## Implementation
 
@@ -70,10 +86,18 @@ AndroidBridge.keepScreenOnFor(15000);
 ```kotlin
 val SERVER_PORT: Int by lazy {
     val savedPort = prefs.getInt("server_port", -1)
-    if (savedPort in 8000..8500) savedPort 
-    else (8000..8500).random()
+    if (savedPort in 8000..8500 || savedPort == 9090) {
+        savedPort  // Reuse existing port
+    } else {
+        // Choose random port (9090 for debug, random 8000-8500 for release)
+        val chosenPort = if (DEBUG_MODE) 9090 else (8000..8500).random()
+        prefs.edit().putInt("server_port", chosenPort).apply()
+        chosenPort
+    }
 }
 ```
+
+This prevents port conflicts and makes the server harder to discover from other apps.
 
 **Authentication Token**
 
