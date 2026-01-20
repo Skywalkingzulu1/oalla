@@ -17,7 +17,7 @@ class ModelSuggestionAdapter(
     private var filteredSuggestions: List<ModelSuggestion> = getTop5DefaultSuggestions()
 
     private fun getTop5DefaultSuggestions(): List<ModelSuggestion> {
-        val topModels = listOf("llama3.2", "deepseek-r1", "qwen3", "mistral", "tinyllama")
+        val topModels = listOf("llama3.2", "deepseek-r1", "qwen3", "mistral", "tinyllama", "hf.co/unsloth/Qwen3-4B-GGUF")
 
         return topModels.mapNotNull { modelPrefix ->
             allSuggestions
