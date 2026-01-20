@@ -101,10 +101,26 @@ class ChatFragment : Fragment() {
             settings.javaScriptEnabled = true
             addJavascriptInterface(JSBridge(), "AndroidBridge")
             settings.domStorageEnabled = true
-            loadUrl("http://localhost:$ollamaPort/web")
+            
+            // Don't load URL immediately, wait for server to be ready
+            Log.d("WebView", "WebView configured, waiting for server...")
         }
 
         return root
+    }
+    
+    fun loadWebViewWhenReady() {
+        // Make sure the view is created and WebView is available
+        if (webView == null) {
+            Log.w("WebView", "WebView not ready yet, will retry in 500ms")
+            view?.postDelayed({ loadWebViewWhenReady() }, 500)
+            return
+        }
+        
+        webView?.post {
+            Log.d("WebView", "Loading WebView URL: http://localhost:$ollamaPort/web")
+            webView?.loadUrl("http://localhost:$ollamaPort/web")
+        }
     }
 
     override fun onResume() {

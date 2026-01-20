@@ -1,12 +1,12 @@
 # Oalla
 
-Run Ollama and any open language models directly on Android devices.
+Run [Ollama](https://github.com/ollama/ollama) and any open language models directly on Android devices.
 
 ## What This Is
 
-Oalla demonstrates running a complete Go web server inside an Android app process. The result is a mobile app that can run any Ollama-compatible model locally without internet connectivity.
+Oalla demonstrates running a complete Go web server inside an Android app process. The result is a mobile app that can run any [Ollama](https://github.com/ollama/ollama)-compatible model locally without internet connectivity.
 
-This is completely open source, just like Ollama itself. You can use any models from Ollama's library or Hugging Face that work with the GGUF format.
+This is completely open source, just like [Ollama](https://github.com/ollama/ollama) itself. You can use any models from [Ollama's library](https://ollama.com/search) or [Hugging Face](https://huggingface.co/models?library=gguf) that work with the GGUF format.
 
 ## Architecture
 
@@ -42,13 +42,13 @@ This is completely open source, just like Ollama itself. You can use any models 
 - **Single Process**: Everything runs in one Android app process for efficiency
 - **Dynamic Port**: Randomly allocated port (8000-8500) for security
 
-The app loads Ollama's web interface in a WebView while running the actual Ollama server natively in the same process. JavaScript communicates with the Go backend via standard HTTP requests to localhost.
+The app loads [Ollama's](https://github.com/ollama/ollama) web interface in a WebView while running the actual [Ollama](https://github.com/ollama/ollama) server natively in the same process. JavaScript communicates with the Go backend via standard HTTP requests to localhost.
 
 ## Technical Implementation
 
 ### [Converting Ollama for Android](external/ollama/README.md)
 
-Step-by-step guide to modify the official Ollama repository for Android compatibility. Covers JNI bridge creation, in-process execution, cross-compilation, and the web API endpoints that make this possible.
+Step-by-step guide to modify the official [Ollama](https://github.com/ollama/ollama) repository for Android compatibility. Covers JNI bridge creation, in-process execution, cross-compilation, and the web API endpoints that make this possible.
 
 ### [Android Integration Details](android/README.md)
 
@@ -56,43 +56,42 @@ How the Android app manages the Go server lifecycle, handles JavaScript-native c
 
 ## Models
 
-Works with any Ollama model or GGUF-format models from Hugging Face:
+Works with any [Ollama model](https://ollama.com/search) or GGUF-format models from [Hugging Face](https://huggingface.co/models?library=gguf):
 
-- Llama models (3.1, 3.2, etc.)
-- DeepSeek-R1 series
-- Qwen models
-- Mistral family
-- Any quantized model in GGUF format
+### Tested [Ollama Models](https://ollama.com/search)
 
-## Requirements
+| Model | Size | Context | Type | Status |
+|-------|------|---------|------|--------|
+| `tinyllama:latest` | 638MB | 2K | Text | ✅ Tested |
+| `qwen3:0.6b` | 523MB | 40K | Text | ✅ Tested |
+| `smollm2:135m` | 135MB | 4K | Text | ✅ Tested |
+| `gemma3:270m` | 270MB | 32k | Text | ✅ Tested |
 
-- Android 7.0+
-- ARM64 device
-- 4GB+ RAM for larger models
-- Storage space for models (1-8GB each)
+### Tested [Hugging Face Models](https://huggingface.co/models?library=gguf)
 
-## Building
-
-```bash
-git clone https://github.com/isdzulqor/oalla.git
-cd oalla
-git submodule update --init --recursive
-
-# Build Ollama for Android
-cd external/ollama
-./build_android.sh
-
-# Build Android app
-cd ../../android
-./gradlew assembleRelease
-```
+| Model | Size | Context | Type | Status |
+|-------|------|---------|------|--------|
+| [`hf.co/unsloth/Qwen3-4B-GGUF:Q4_K_M`](https://huggingface.co/unsloth/Qwen3-4B-GGUF) | 1.03GB | 128K | Text | ✅ Tested |
 
 ## Why This Approach
 
-This architecture proves that mobile devices can run sophisticated AI workloads locally. It maintains full compatibility with Ollama's ecosystem while providing a rich web-based interface that would be difficult to implement natively.
+This architecture proves that mobile devices can run sophisticated AI workloads locally. It maintains full compatibility with [Ollama's](https://github.com/ollama/ollama) ecosystem while providing a rich web-based interface that would be difficult to implement natively.
 
 The approach is entirely offline-first and privacy-focused - no data leaves your device, no accounts required, no tracking.
 
+**Benefits:**
+
+- Easy model installation - just download GGUF files and load them
+- Full Ollama API compatibility for seamless integration
+- Web-based UI that's simple to customize and extend
+
+**Current Limitations:**
+
+- Text-only models supported at this time
+- Embedding and image models not yet integrated
+- No Android GPU acceleration (CPU inference only)
+- Performance depends on device capabilities
+
 ## License
 
-MIT License, same as Ollama. This project builds upon Ollama's work to bring it to mobile platforms.
+MIT License, same as [Ollama](https://github.com/ollama/ollama). This project builds upon [Ollama's](https://github.com/ollama/ollama) work to bring it to mobile platforms.

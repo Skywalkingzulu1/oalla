@@ -1,8 +1,13 @@
 package work.isdzulqor.oalla
 
+import android.R.attr.duration
 import android.R.attr.path
+import android.R.attr.text
+import android.app.ActivityManager
 import android.app.ComponentCaller
+import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -26,6 +31,8 @@ import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import android.util.Base64
 import android.util.Log.e
+import android.widget.Toast
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.edit
 import kotlin.jvm.java
 
@@ -126,6 +133,9 @@ class MainActivity : AppCompatActivity() {
         // Ollama init
         copyAssetsToInternalStorage()
         startOllamaWithArgs()
+        
+        // Wait for server to be ready before loading WebView
+        waitForServerAndLoadWebView()
 
         onBackPressedDispatcher.addCallback(this@MainActivity) {
             val currentFragment = mainPagerAdapter.getFragment(viewPager.currentItem)
@@ -140,6 +150,21 @@ class MainActivity : AppCompatActivity() {
             // fallback
             isEnabled = false
             onBackPressedDispatcher.onBackPressed()
+        }
+
+        if (DEBUG_MODE) {
+            val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val defaultHeap = activityManager.memoryClass // without largeHeap
+            val largeHeap = activityManager.largeMemoryClass // with largeHeap
+
+            val isLargeHeap = applicationInfo.flags and ApplicationInfo.FLAG_LARGE_HEAP != 0
+            val text = if (isLargeHeap) {
+                "App large heap limit: ${largeHeap}MB"
+            } else {
+                "App default heap limit: ${defaultHeap}MB"
+            }
+
+            Toast.makeText(this, text, Toast.LENGTH_LONG).show()
         }
 
         handleNotificationIntent(intent)
@@ -236,6 +261,59 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun waitForServerAndLoadWebView() {
+        Thread {
+            var attempts = 0
+            val maxAttempts = 30 // 30 seconds timeout
+            
+            while (attempts < maxAttempts) {
+                try {
+                    val url = "http://localhost:$SERVER_PORT/"
+                    val connection = java.net.URL(url).openConnection() as java.net.HttpURLConnection
+                    connection.connectTimeout = 1000
+                    connection.readTimeout = 1000
+                    connection.requestMethod = "GET"
+                    connection.setRequestProperty("User-Agent", USER_AGENT_SECRET)
+
+                    val responseCode = connection.responseCode
+                    connection.disconnect()
+                    
+                    if (responseCode == 200) {
+                        Log.d("Ollama", "Server is ready on port $SERVER_PORT")
+                        runOnUiThread {
+                            loadWebViewContent()
+                        }
+                        return@Thread
+                    }
+                } catch (e: Exception) {
+                    Log.d("Ollama", "Server not ready yet, attempt ${attempts + 1}/$maxAttempts")
+                }
+                
+                attempts++
+                Thread.sleep(1000) // Wait 1 second between attempts
+            }
+            
+            Log.e("Ollama", "Server failed to start after $maxAttempts seconds")
+            runOnUiThread {
+                // Show error message or fallback UI
+                Log.e("WebView", "Failed to start Ollama server, loading anyway...")
+                loadWebViewContent()
+            }
+        }.start()
+    }
+
+    private fun loadWebViewContent() {
+        // Get the ChatFragment from the adapter and tell it to load the WebView
+        val chatFragment = mainPagerAdapter.getFragment(0) as? ChatFragment
+        
+        chatFragment?.let { fragment ->
+            Log.d("WebView", "Telling ChatFragment to load WebView")
+            fragment.loadWebViewWhenReady()
+        } ?: run {
+            Log.w("WebView", "ChatFragment not found in adapter")
+        }
+    }
+
     private fun startOllamaWithArgs() {
         Thread {
             try {
@@ -265,7 +343,12 @@ class MainActivity : AppCompatActivity() {
                     "serve",
                     "--debug", "$DEBUG_MODE",
                     "--host", "localhost:$SERVER_PORT",
-                    "--useragent-secret", USER_AGENT_SECRET
+                    "--useragent-secret", USER_AGENT_SECRET,
+
+                    // try to optimize ollama on android
+                    // but not surely works, haha
+                    // "--num-parallel", "1", // OLLAMA_NUM_PARALLEL
+                    // "--max-loaded-models", "1", // OLLAMA_MAX_LOADED_MODELS
                 )
 
                 val storagePref = getSharedPreferences("model_prefs", 0).getString("storage_model", "internal")
@@ -289,7 +372,7 @@ class MainActivity : AppCompatActivity() {
 
     fun logFromNative(msg: String) {
         runOnUiThread {
-            logOutput.append("$msg\n")
+            logOutput.append("$msg")
         }
     }
 
