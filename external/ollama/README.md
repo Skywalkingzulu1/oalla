@@ -1,6 +1,6 @@
 # Converting Ollama for Android
 
-How to modify the official Ollama repository to run on Android devices.
+How to modify the official [Ollama](https://github.com/ollama/ollama) repository to run on Android devices.
 
 ## Architecture Overview
 
@@ -25,8 +25,8 @@ How to modify the official Ollama repository to run on Android devices.
 │  ┌─────────────────┐    HTTP     ┌─────────────────────────┐    │
 │  │   JavaScript    │ ←────────→  │    Go Server            │    │
 │  │   (WebView)     │  localhost  │    (In-Process)         │    │
-│  └─────────────────┘             └─────────────────────────┘    │
-│           │                                    │                │
+│  └─────────────────┘ :8000-8500  └─────────────────────────┘    │
+│           │          (dynamic)             │                │
 │  ┌─────────────────┐             ┌─────────────────────────┐    │
 │  │   Android       │    JNI      │    Native Library       │    │
 │  │   Activity      │ ←────────→  │    (libollama.so)       │    │
@@ -202,7 +202,7 @@ Output: `libollama.so` and `libollama.h`
 
 ## Web Interface and API
 
-The converted Ollama provides:
+The converted [Ollama](https://github.com/ollama/ollama) provides:
 
 **Web UI**
 
@@ -240,8 +240,8 @@ fetch('http://localhost:8080/api/chat', {
 
 ## Requirements
 
-- Android NDK 26.1.10909125
-- Go 1.21+ with CGO
+- [Android NDK](https://developer.android.com/ndk) 26.1.10909125
+- [Go](https://golang.org/) 1.21+ with CGO
 - ARM64 target devices (API 21+)
 
-This process transforms standard Ollama into an Android-compatible library while maintaining full API compatibility.
+This process transforms standard [Ollama](https://github.com/ollama/ollama) into an Android-compatible library while maintaining full API compatibility.

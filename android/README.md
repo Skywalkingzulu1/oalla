@@ -4,7 +4,7 @@ Running Go web server inside Android with JavaScript UI.
 
 ## Architecture
 
-Oalla runs a complete Go web server inside the Android app process. The JavaScript UI communicates with this server via HTTP while also calling native Android functions through a bridge.
+Oalla runs a complete [Go](https://golang.org/) web server inside the Android app process. The JavaScript UI communicates with this server via HTTP while also calling native Android functions through a bridge.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -140,7 +140,7 @@ This hybrid approach provides:
 - Offline-first operation
 - Cross-platform UI potential
 
-The Go server handles AI inference while JavaScript manages the complex chat interface. Android provides native system integration like notifications, file management, and lifecycle handling.
+The [Go](https://golang.org/) server handles AI inference while JavaScript manages the complex chat interface. Android provides native system integration like notifications, file management, and lifecycle handling.
 
 ## Build Requirements
 
