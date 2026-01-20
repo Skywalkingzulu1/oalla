@@ -1,11 +1,17 @@
 <div align="center">
-  <img src="assets/oala-logo-flat-horizontal.svg" alt="Oalla Logo" width="400"/>
+  <img src="assets/oala-logo.svg" alt="Oalla Logo" height="80"/>
   
-# Oalla
+  <p><strong>Run Ollama and open language models directly on Android devices</strong></p>
   
-  Run [Ollama](https://github.com/ollama/ollama) and any open language models directly on Android devices.
+  <img src="assets/demo.gif" alt="Oalla Demo" width="220"/>
   
-  <img src="assets/demo.gif" alt="Oalla Demo" width="300"/>
+  <p>
+    <a href="#what-this-is">What This Is</a> •
+    <a href="#architecture">Architecture</a> •
+    <a href="#technical-implementation">Technical Implementation</a> •
+    <a href="#models">Models</a> •
+    <a href="#why-this-approach">Why This Approach</a>
+  </p>
 </div>
 
 ## What This Is
