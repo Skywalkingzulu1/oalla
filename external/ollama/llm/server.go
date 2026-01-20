@@ -833,8 +833,12 @@ func (s *llmServer) Completion(ctx context.Context, req CompletionRequest, fn fu
 	var lastToken string
 	var tokenRepeat int
 	var fullContent strings.Builder
-	fmt.Println("Content Logs:")
-	fmt.Print("  ") // indent the content line once
+
+	isDebugAssistant := os.Getenv("OLLAMA_DEBUG") == "true"
+	if isDebugAssistant {
+		fmt.Println("Assistant response:")
+		fmt.Print("  ") // indent the content line once
+	}
 
 	for scanner.Scan() {
 		select {
@@ -870,9 +874,10 @@ func (s *llmServer) Completion(ctx context.Context, req CompletionRequest, fn fu
 			}
 
 			if c.Content != "" {
-				fmt.Print(c.Content) // Print the content directly to stdout
+				if isDebugAssistant {
+					fmt.Print(c.Content) // Print the content directly to stdout
+				}
 				fullContent.WriteString(c.Content)
-
 				fn(CompletionResponse{
 					Content: c.Content,
 				})
@@ -880,7 +885,9 @@ func (s *llmServer) Completion(ctx context.Context, req CompletionRequest, fn fu
 
 			if c.Done {
 				fn(c)
-				fmt.Println() // Final newline
+				if isDebugAssistant {
+					fmt.Println() // Final newline
+				}
 				return nil
 			}
 		}

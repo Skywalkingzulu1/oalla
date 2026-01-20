@@ -1,21 +1,30 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# === KEEP JSBridge for WebView ===
+# JSBridge - full retention including annotations
+-keep class work.isdzulqor.oalla.ChatFragment$JSBridge { *; }
+-keepclassmembers class work.isdzulqor.oalla.ChatFragment$JSBridge {
+    @android.webkit.JavascriptInterface <methods>;
+    public *;
+}
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# === KEEP MainActivity methods related to JNI ===
+-keep class work.isdzulqor.oalla.MainActivity {
+    public native *;
+    public void logFromNative(java.lang.String);
+}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Keep Gson annotations and constructors
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+    public <init>();
+}
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Preserve all type info used by Gson
+-keepattributes *Annotation*, Signature
+
+
+# Keep all model-related classes fully
+-keep class work.isdzulqor.oalla.ModelData { *; }
+-keep class work.isdzulqor.oalla.ModelDataInfo { *; }
+-keep class work.isdzulqor.oalla.ModelVariant { *; }
+-keep class work.isdzulqor.oalla.ModelSuggestion { *; }
+

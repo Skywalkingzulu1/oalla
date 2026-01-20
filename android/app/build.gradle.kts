@@ -25,7 +25,7 @@ android {
 
         // ✅ Optional: limit supported ABIs for smaller builds
         ndk {
-            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+            abiFilters += listOf("arm64-v8a")
         }
     }
 
@@ -44,15 +44,30 @@ android {
     }
     ndkVersion = "26.1.10909125"
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("oalla-android-key")
+            storePassword = ""
+            keyAlias = "oalla-android-key"
+            keyPassword = ""
+        }
+    }
+
     buildTypes {
-        release {
-            isMinifyEnabled = false
+        getByName("release") {
+            // reference the signing config by name:
+            signingConfig = signingConfigs.getByName("release")
+
+            isDebuggable      = true
+            isMinifyEnabled   = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -67,6 +82,10 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.okhttp)
+    implementation(libs.gson)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

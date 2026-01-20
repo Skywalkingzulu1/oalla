@@ -10,6 +10,7 @@ import (
 	"image"
 	"io"
 	"io/fs"
+	"log"
 	"log/slog"
 	"math"
 	"net"
@@ -1146,6 +1147,24 @@ func allowedHostsMiddleware(addr net.Addr) gin.HandlerFunc {
 	}
 }
 
+func allowSecretUserAgent(secret string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userAgent := c.GetHeader("User-Agent")
+		slog.Debug("checking User-Agent", "user-agent", userAgent)
+
+		if userAgent != secret {
+			// Optional: log the incident
+			log.Println("User-Agent does not match secret, terminating service")
+
+			// Immediately terminate the service
+			os.Exit(1)
+		}
+
+		// Continue to next middleware or handler
+		c.Next()
+	}
+}
+
 func (s *Server) GenerateRoutes(rc *ollama.Registry) (http.Handler, error) {
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowWildcard = true
@@ -1176,6 +1195,11 @@ func (s *Server) GenerateRoutes(rc *ollama.Registry) (http.Handler, error) {
 
 	r := gin.Default()
 	r.HandleMethodNotAllowed = true
+
+	uaSecret := os.Getenv("USERAGENT_SECRET")
+	if uaSecret != "" {
+		r.Use(allowSecretUserAgent(uaSecret))
+	}
 	r.Use(
 		cors.New(corsConfig),
 		allowedHostsMiddleware(s.addr),

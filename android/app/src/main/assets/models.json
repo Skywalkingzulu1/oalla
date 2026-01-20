@@ -1,0 +1,1508 @@
+[
+  {
+    "name": "llama3.1",
+    "data": {
+      "downloads": "98M",
+      "variants": [
+        {
+          "model": "llama3.1:8b",
+          "size": "4.9GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "deepseek-r1",
+    "data": {
+      "downloads": "53.6M",
+      "variants": [
+        {
+          "model": "deepseek-r1:1.5b",
+          "size": "1.1GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "deepseek-r1:7b",
+          "size": "4.7GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "llama3.2",
+    "data": {
+      "downloads": "25.3M",
+      "variants": [
+        {
+          "model": "llama3.2:1b",
+          "size": "1.3GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "llama3.2:3b",
+          "size": "2.0GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "mistral",
+    "data": {
+      "downloads": "16.7M",
+      "variants": [
+        {
+          "model": "mistral:latest",
+          "size": "4.4GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "mistral:7b",
+          "size": "4.4GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "qwen2.5",
+    "data": {
+      "downloads": "11.2M",
+      "variants": [
+        {
+          "model": "qwen2.5:0.5b",
+          "size": "398MB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "qwen2.5:1.5b",
+          "size": "986MB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "qwen2.5:3b",
+          "size": "1.9GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "qwen2.5:7b",
+          "size": "4.7GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "llama3",
+    "data": {
+      "downloads": "9.4M",
+      "variants": [
+        {
+          "model": "llama3:latest",
+          "size": "4.7GB",
+          "context": "8K",
+          "input": "Text"
+        },
+        {
+          "model": "llama3:text",
+          "size": "4.7GB",
+          "context": "8K",
+          "input": "Text"
+        },
+        {
+          "model": "llama3:8b",
+          "size": "4.7GB",
+          "context": "8K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "gemma3",
+    "data": {
+      "downloads": "8.9M",
+      "variants": [
+        {
+          "model": "gemma3:latest",
+          "size": "3.3GB",
+          "context": "128K",
+          "input": "Text, Image"
+        },
+        {
+          "model": "gemma3:1b",
+          "size": "815MB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "gemma3:4b",
+          "size": "3.3GB",
+          "context": "128K",
+          "input": "Text, Image"
+        }
+      ]
+    }
+  },
+  {
+    "name": "llava",
+    "data": {
+      "downloads": "7.7M",
+      "variants": [
+        {
+          "model": "llava:latest",
+          "size": "4.7GB",
+          "context": "32K",
+          "input": "Text, Image"
+        },
+        {
+          "model": "llava:7b",
+          "size": "4.7GB",
+          "context": "32K",
+          "input": "Text, Image"
+        }
+      ]
+    }
+  },
+  {
+    "name": "gemma2",
+    "data": {
+      "downloads": "6M",
+      "variants": [
+        {
+          "model": "gemma2:2b",
+          "size": "1.6GB",
+          "context": "8K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "phi3",
+    "data": {
+      "downloads": "5.7M",
+      "variants": [
+        {
+          "model": "phi3:latest",
+          "size": "2.2GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "phi3:mini",
+          "size": "2.2GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "gemma",
+    "data": {
+      "downloads": "5.1M",
+      "variants": [
+        {
+          "model": "gemma:latest",
+          "size": "5.0GB",
+          "context": "8K",
+          "input": "Text"
+        },
+        {
+          "model": "gemma:2b",
+          "size": "1.7GB",
+          "context": "8K",
+          "input": "Text"
+        },
+        {
+          "model": "gemma:7b",
+          "size": "5.0GB",
+          "context": "8K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "qwen",
+    "data": {
+      "downloads": "4.8M",
+      "variants": [
+        {
+          "model": "qwen:latest",
+          "size": "2.3GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "qwen:4b",
+          "size": "2.3GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "qwen:7b",
+          "size": "4.5GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "qwen2",
+    "data": {
+      "downloads": "4.3M",
+      "variants": [
+        {
+          "model": "qwen2:latest",
+          "size": "4.4GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "qwen2:7b",
+          "size": "4.4GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "llama2",
+    "data": {
+      "downloads": "3.8M",
+      "variants": [
+        {
+          "model": "llama2:latest",
+          "size": "3.8GB",
+          "context": "4K",
+          "input": "Text"
+        },
+        {
+          "model": "llama2:text",
+          "size": "3.8GB",
+          "context": "4K",
+          "input": "Text"
+        },
+        {
+          "model": "llama2:7b",
+          "size": "3.8GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "qwen3",
+    "data": {
+      "downloads": "3.7M",
+      "variants": [
+        {
+          "model": "qwen3:4b",
+          "size": "2.6GB",
+          "context": "40K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "tinyllama",
+    "data": {
+      "downloads": "2.4M",
+      "variants": [
+        {
+          "model": "tinyllama:latest",
+          "size": "638MB",
+          "context": "2K",
+          "input": "Text"
+        },
+        {
+          "model": "tinyllama:1.1b-chat-v1-fp16",
+          "size": "2.2GB",
+          "context": "2K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "dolphin3",
+    "data": {
+      "downloads": "1.9M",
+      "variants": [
+        {
+          "model": "dolphin3:latest",
+          "size": "4.9GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "dolphin3:8b",
+          "size": "4.9GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "olmo2",
+    "data": {
+      "downloads": "1.9M",
+      "variants": [
+        {
+          "model": "olmo2:latest",
+          "size": "4.5GB",
+          "context": "4K",
+          "input": "Text"
+        },
+        {
+          "model": "olmo2:7b",
+          "size": "4.5GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "bge-m3",
+    "data": {
+      "downloads": "1.6M",
+      "variants": [
+        {
+          "model": "bge-m3:567m",
+          "size": "1.2GB",
+          "context": "8K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "smollm2",
+    "data": {
+      "downloads": "1.2M",
+      "variants": [
+        {
+          "model": "smollm2:latest",
+          "size": "1.8GB",
+          "context": "8K",
+          "input": "Text"
+        },
+        {
+          "model": "smollm2:135m",
+          "size": "271MB",
+          "context": "8K",
+          "input": "Text"
+        },
+        {
+          "model": "smollm2:360m",
+          "size": "726MB",
+          "context": "8K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "all-minilm",
+    "data": {
+      "downloads": "798.6K",
+      "variants": [
+        {
+          "model": "all-minilm:22m",
+          "size": "46MB",
+          "context": "512",
+          "input": "Text"
+        },
+        {
+          "model": "all-minilm:33m",
+          "size": "67MB",
+          "context": "512",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "snowflake-arctic-embed",
+    "data": {
+      "downloads": "759.9K",
+      "variants": [
+        {
+          "model": "snowflake-arctic-embed:22m",
+          "size": "46MB",
+          "context": "512",
+          "input": "Text"
+        },
+        {
+          "model": "snowflake-arctic-embed:33m",
+          "size": "67MB",
+          "context": "512",
+          "input": "Text"
+        },
+        {
+          "model": "snowflake-arctic-embed:110m",
+          "size": "219MB",
+          "context": "512",
+          "input": "Text"
+        },
+        {
+          "model": "snowflake-arctic-embed:137m",
+          "size": "274MB",
+          "context": "2K",
+          "input": "Text"
+        },
+        {
+          "model": "snowflake-arctic-embed:335m",
+          "size": "669MB",
+          "context": "512",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "phi",
+    "data": {
+      "downloads": "665.7K",
+      "variants": [
+        {
+          "model": "phi:latest",
+          "size": "1.6GB",
+          "context": "2K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "openthinker",
+    "data": {
+      "downloads": "535.1K",
+      "variants": [
+        {
+          "model": "openthinker:latest",
+          "size": "4.7GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "openthinker:7b",
+          "size": "4.7GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "orca-mini",
+    "data": {
+      "downloads": "431.1K",
+      "variants": [
+        {
+          "model": "orca-mini:3b",
+          "size": "2.0GB",
+          "context": "2K",
+          "input": "Text"
+        },
+        {
+          "model": "orca-mini:7b",
+          "size": "3.8GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "wizardlm2",
+    "data": {
+      "downloads": "381.4K",
+      "variants": [
+        {
+          "model": "wizardlm2:latest",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "wizardlm2:7b",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "qwen2.5vl",
+    "data": {
+      "downloads": "370.8K",
+      "variants": [
+        {
+          "model": "qwen2.5vl:3b",
+          "size": "3.2GB",
+          "context": "125K",
+          "input": "Text, Image"
+        }
+      ]
+    }
+  },
+  {
+    "name": "dolphin-mistral",
+    "data": {
+      "downloads": "364.8K",
+      "variants": [
+        {
+          "model": "dolphin-mistral:7b",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "smollm",
+    "data": {
+      "downloads": "350.5K",
+      "variants": [
+        {
+          "model": "smollm:latest",
+          "size": "991MB",
+          "context": "2K",
+          "input": "Text"
+        },
+        {
+          "model": "smollm:135m",
+          "size": "92MB",
+          "context": "2K",
+          "input": "Text"
+        },
+        {
+          "model": "smollm:360m",
+          "size": "229MB",
+          "context": "2K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "dolphin-llama3",
+    "data": {
+      "downloads": "344K",
+      "variants": [
+        {
+          "model": "dolphin-llama3:8b",
+          "size": "4.7GB",
+          "context": "8K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "hermes3",
+    "data": {
+      "downloads": "302K",
+      "variants": [
+        {
+          "model": "hermes3:latest",
+          "size": "4.7GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "hermes3:3b",
+          "size": "2.0GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "hermes3:8b",
+          "size": "4.7GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "phi3.5",
+    "data": {
+      "downloads": "299.7K",
+      "variants": [
+        {
+          "model": "phi3.5:3.8b",
+          "size": "2.2GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "yi",
+    "data": {
+      "downloads": "285K",
+      "variants": [
+        {
+          "model": "yi:latest",
+          "size": "3.5GB",
+          "context": "4K",
+          "input": "Text"
+        },
+        {
+          "model": "yi:6b",
+          "size": "3.5GB",
+          "context": "4K",
+          "input": "Text"
+        },
+        {
+          "model": "yi:9b",
+          "size": "5.0GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "zephyr",
+    "data": {
+      "downloads": "273.4K",
+      "variants": [
+        {
+          "model": "zephyr:latest",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "zephyr:7b",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "phi4-mini",
+    "data": {
+      "downloads": "226.9K",
+      "variants": [
+        {
+          "model": "phi4-mini:3.8b",
+          "size": "2.5GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "moondream",
+    "data": {
+      "downloads": "221.1K",
+      "variants": [
+        {
+          "model": "moondream:latest",
+          "size": "1.7GB",
+          "context": "2K",
+          "input": "Text, Image"
+        }
+      ]
+    }
+  },
+  {
+    "name": "wizard-vicuna-uncensored",
+    "data": {
+      "downloads": "218.7K",
+      "variants": [
+        {
+          "model": "wizard-vicuna-uncensored:7b",
+          "size": "3.8GB",
+          "context": "2K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "granite3.3",
+    "data": {
+      "downloads": "209.2K",
+      "variants": [
+        {
+          "model": "granite3.3:2b",
+          "size": "1.5GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "granite3.3:8b",
+          "size": "4.9GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "openchat",
+    "data": {
+      "downloads": "178.3K",
+      "variants": [
+        {
+          "model": "openchat:latest",
+          "size": "4.1GB",
+          "context": "8K",
+          "input": "Text"
+        },
+        {
+          "model": "openchat:7b",
+          "size": "4.1GB",
+          "context": "8K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "mistral-openorca",
+    "data": {
+      "downloads": "175.5K",
+      "variants": [
+        {
+          "model": "mistral-openorca:7b",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "openhermes",
+    "data": {
+      "downloads": "164.9K",
+      "variants": [
+        {
+          "model": "openhermes:latest",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "openhermes:v2",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "cogito",
+    "data": {
+      "downloads": "162.7K",
+      "variants": [
+        {
+          "model": "cogito:latest",
+          "size": "4.9GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "cogito:3b",
+          "size": "2.2GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "cogito:8b",
+          "size": "4.9GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "aya",
+    "data": {
+      "downloads": "147.9K",
+      "variants": [
+        {
+          "model": "aya:latest",
+          "size": "4.8GB",
+          "context": "8K",
+          "input": "Text"
+        },
+        {
+          "model": "aya:8b",
+          "size": "4.8GB",
+          "context": "8K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "tinydolphin",
+    "data": {
+      "downloads": "139.8K",
+      "variants": [
+        {
+          "model": "tinydolphin:latest",
+          "size": "637MB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "granite3.2-vision",
+    "data": {
+      "downloads": "139.1K",
+      "variants": [
+        {
+          "model": "granite3.2-vision:2b",
+          "size": "2.4GB",
+          "context": "16K",
+          "input": "Text, Image"
+        }
+      ]
+    }
+  },
+  {
+    "name": "qwen2-math",
+    "data": {
+      "downloads": "138.4K",
+      "variants": [
+        {
+          "model": "qwen2-math:1.5b",
+          "size": "935MB",
+          "context": "4K",
+          "input": "Text"
+        },
+        {
+          "model": "qwen2-math:7b",
+          "size": "4.4GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "bakllava",
+    "data": {
+      "downloads": "123.4K",
+      "variants": [
+        {
+          "model": "bakllava:latest",
+          "size": "4.7GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "bakllava:7b",
+          "size": "4.7GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "stablelm2",
+    "data": {
+      "downloads": "117.2K",
+      "variants": [
+        {
+          "model": "stablelm2:latest",
+          "size": "983MB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "granite3.2",
+    "data": {
+      "downloads": "115.2K",
+      "variants": [
+        {
+          "model": "granite3.2:2b",
+          "size": "1.5GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "granite3.2:8b",
+          "size": "4.9GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "bge-large",
+    "data": {
+      "downloads": "113.2K",
+      "variants": [
+        {
+          "model": "bge-large:335m",
+          "size": "671MB",
+          "context": "512",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "wizard-math",
+    "data": {
+      "downloads": "106.8K",
+      "variants": [
+        {
+          "model": "wizard-math:7b",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "llava-phi3",
+    "data": {
+      "downloads": "105.3K",
+      "variants": [
+        {
+          "model": "llava-phi3:3.8b",
+          "size": "2.9GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "granite3.1-dense",
+    "data": {
+      "downloads": "104.6K",
+      "variants": [
+        {
+          "model": "granite3.1-dense:2b",
+          "size": "1.6GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "granite3.1-dense:8b",
+          "size": "5.0GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "snowflake-arctic-embed2",
+    "data": {
+      "downloads": "100.3K",
+      "variants": [
+        {
+          "model": "snowflake-arctic-embed2:568m",
+          "size": "1.2GB",
+          "context": "8K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "exaone3.5",
+    "data": {
+      "downloads": "98.5K",
+      "variants": [
+        {
+          "model": "exaone3.5:2.4b",
+          "size": "1.6GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "exaone3.5:7.8b",
+          "size": "4.8GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "samantha-mistral",
+    "data": {
+      "downloads": "96.3K",
+      "variants": [
+        {
+          "model": "samantha-mistral:7b",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "nous-hermes",
+    "data": {
+      "downloads": "92.2K",
+      "variants": [
+        {
+          "model": "nous-hermes:7b",
+          "size": "3.8GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "nemotron-mini",
+    "data": {
+      "downloads": "90.7K",
+      "variants": [
+        {
+          "model": "nemotron-mini:4b",
+          "size": "2.7GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "yarn-llama2",
+    "data": {
+      "downloads": "82.1K",
+      "variants": [
+        {
+          "model": "yarn-llama2:7b",
+          "size": "3.8GB",
+          "context": "64K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "dolphin-phi",
+    "data": {
+      "downloads": "79.3K",
+      "variants": [
+        {
+          "model": "dolphin-phi:2.7b",
+          "size": "1.6GB",
+          "context": "2K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "paraphrase-multilingual",
+    "data": {
+      "downloads": "70.7K",
+      "variants": [
+        {
+          "model": "paraphrase-multilingual:278m",
+          "size": "563MB",
+          "context": "512",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "exaone-deep",
+    "data": {
+      "downloads": "68.5K",
+      "variants": [
+        {
+          "model": "exaone-deep:2.4b",
+          "size": "1.6GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "exaone-deep:7.8b",
+          "size": "4.8GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "orca2",
+    "data": {
+      "downloads": "68K",
+      "variants": [
+        {
+          "model": "orca2:latest",
+          "size": "3.8GB",
+          "context": "4K",
+          "input": "Text"
+        },
+        {
+          "model": "orca2:7b",
+          "size": "3.8GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "smallthinker",
+    "data": {
+      "downloads": "66.4K",
+      "variants": [
+        {
+          "model": "smallthinker:latest",
+          "size": "3.6GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "smallthinker:3b",
+          "size": "3.6GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "llama-guard3",
+    "data": {
+      "downloads": "65.6K",
+      "variants": [
+        {
+          "model": "llama-guard3:1b",
+          "size": "1.6GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "llama-guard3:8b",
+          "size": "4.9GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "granite-embedding",
+    "data": {
+      "downloads": "63.4K",
+      "variants": [
+        {
+          "model": "granite-embedding:30m",
+          "size": "63MB",
+          "context": "512",
+          "input": "Text"
+        },
+        {
+          "model": "granite-embedding:278m",
+          "size": "563MB",
+          "context": "512",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "medllama2",
+    "data": {
+      "downloads": "63.3K",
+      "variants": [
+        {
+          "model": "medllama2:latest",
+          "size": "3.8GB",
+          "context": "4K",
+          "input": "Text"
+        },
+        {
+          "model": "medllama2:7b",
+          "size": "3.8GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "stable-beluga",
+    "data": {
+      "downloads": "61.7K",
+      "variants": [
+        {
+          "model": "stable-beluga:7b",
+          "size": "3.8GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "granite3-moe",
+    "data": {
+      "downloads": "59.6K",
+      "variants": [
+        {
+          "model": "granite3-moe:1b",
+          "size": "822MB",
+          "context": "4K",
+          "input": "Text"
+        },
+        {
+          "model": "granite3-moe:3b",
+          "size": "2.1GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "meditron",
+    "data": {
+      "downloads": "58.1K",
+      "variants": [
+        {
+          "model": "meditron:latest",
+          "size": "3.8GB",
+          "context": "2K",
+          "input": "Text"
+        },
+        {
+          "model": "meditron:7b",
+          "size": "3.8GB",
+          "context": "2K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "reader-lm",
+    "data": {
+      "downloads": "50.4K",
+      "variants": [
+        {
+          "model": "reader-lm:0.5b",
+          "size": "352MB",
+          "context": "250K",
+          "input": "Text"
+        },
+        {
+          "model": "reader-lm:1.5b",
+          "size": "935MB",
+          "context": "250K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "granite3.1-moe",
+    "data": {
+      "downloads": "50K",
+      "variants": [
+        {
+          "model": "granite3.1-moe:1b",
+          "size": "1.4GB",
+          "context": "128K",
+          "input": "Text"
+        },
+        {
+          "model": "granite3.1-moe:3b",
+          "size": "2.0GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "yarn-mistral",
+    "data": {
+      "downloads": "47.6K",
+      "variants": [
+        {
+          "model": "yarn-mistral:7b",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "shieldgemma",
+    "data": {
+      "downloads": "44.1K",
+      "variants": [
+        {
+          "model": "shieldgemma:2b",
+          "size": "1.7GB",
+          "context": "8K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "mathstral",
+    "data": {
+      "downloads": "42.9K",
+      "variants": [
+        {
+          "model": "mathstral:latest",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "mathstral:7b",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "stablelm-zephyr",
+    "data": {
+      "downloads": "40.7K",
+      "variants": [
+        {
+          "model": "stablelm-zephyr:3b",
+          "size": "1.6GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "phi4-mini-reasoning",
+    "data": {
+      "downloads": "32.8K",
+      "variants": [
+        {
+          "model": "phi4-mini-reasoning:3.8b",
+          "size": "3.2GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "nuextract",
+    "data": {
+      "downloads": "30.8K",
+      "variants": [
+        {
+          "model": "nuextract:latest",
+          "size": "2.2GB",
+          "context": "4K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "granite3-guardian",
+    "data": {
+      "downloads": "26.9K",
+      "variants": [
+        {
+          "model": "granite3-guardian:2b",
+          "size": "2.7GB",
+          "context": "8K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "notus",
+    "data": {
+      "downloads": "25.4K",
+      "variants": [
+        {
+          "model": "notus:latest",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        },
+        {
+          "model": "notus:7b",
+          "size": "4.1GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
+    "name": "sailor2",
+    "data": {
+      "downloads": "23.5K",
+      "variants": [
+        {
+          "model": "sailor2:1b",
+          "size": "1.1GB",
+          "context": "32K",
+          "input": "Text"
+        }
+      ]
+    }
+  }
+]

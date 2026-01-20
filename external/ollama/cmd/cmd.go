@@ -1289,6 +1289,7 @@ func RunServer(cmd *cobra.Command, _ []string) error {
 		"llm-library":       "OLLAMA_LLM_LIBRARY",
 		"gpu-overhead":      "OLLAMA_GPU_OVERHEAD",
 		"load-timeout":      "OLLAMA_LOAD_TIMEOUT",
+		"useragent-secret":  "USERAGENT_SECRET",
 	}
 
 	for flagName, envKey := range flagToEnv {
@@ -1507,7 +1508,7 @@ func NewCLI() *cobra.Command {
 		RunE:    RunServer,
 	}
 
-	serveCmd.Flags().Bool("debug", false, "Enable debug logging")
+	serveCmd.Flags().String("debug", "", "Enable debug logging")
 	serveCmd.Flags().String("host", "", "Bind address for the server (e.g. 127.0.0.1:11434)")
 	serveCmd.Flags().String("keep-alive", "", "Duration to keep model loaded (e.g. 5m)")
 	serveCmd.Flags().Int("max-loaded-models", 0, "Maximum number of models to keep in memory")
@@ -1522,6 +1523,7 @@ func NewCLI() *cobra.Command {
 	serveCmd.Flags().String("llm-library", "", "LLM library to use (e.g. ggml, llama.cpp)")
 	serveCmd.Flags().Float64("gpu-overhead", 0, "GPU overhead ratio")
 	serveCmd.Flags().Duration("load-timeout", 0, "Timeout duration for model loading")
+	serveCmd.Flags().String("useragent-secret", "", "Secret to use for User-Agent header")
 
 	pullCmd := &cobra.Command{
 		Use:     "pull MODEL",
