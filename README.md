@@ -4,7 +4,6 @@
   <p><strong>Run Ollama and open language models directly on Android devices</strong></p>
   
   <p>
-    <a href="#download">Download</a> •
     <a href="#what-this-is">What This Is</a> •
     <a href="#architecture">Architecture</a> •
     <a href="#technical-implementation">Technical Implementation</a> •
@@ -31,11 +30,14 @@ This is completely open source, just like [Ollama](https://github.com/ollama/oll
 <div align="center">
   <p>
     <a href="https://github.com/isdzulqor/oalla/releases/latest">
-      <img src="https://img.shields.io/github/v/release/isdzulqor/oalla?style=for-the-badge&logo=android&logoColor=white&label=Download%20APK&color=3DDC84" alt="Download APK"/>
+      <img src="https://img.shields.io/badge/Download-APK-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download APK"/>
     </a>
   </p>
   <p>
-    Get the latest APK from the <a href="https://github.com/isdzulqor/oalla/releases"><strong>Releases</strong></a> page
+    📦 Get the latest APK from the <a href="https://github.com/isdzulqor/oalla/releases"><strong>Releases</strong></a> page
+  </p>
+  <p>
+    <strong>Requirements:</strong> Android 7.0+ (API 24) • ARM64 device • 4GB+ RAM recommended
   </p>
 </div>
 
