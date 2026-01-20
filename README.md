@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/oala-logo.svg" alt="Oalla Logo" height="80"/>
+  <img src="assets/oala-logo.svg" alt="Oalla Logo" height="110"/>
   
   <p><strong>Run Ollama and open language models directly on Android devices</strong></p>
   
