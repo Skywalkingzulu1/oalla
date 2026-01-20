@@ -34,10 +34,7 @@ This is completely open source, just like [Ollama](https://github.com/ollama/oll
     </a>
   </p>
   <p>
-    📦 Get the latest APK from the <a href="https://github.com/isdzulqor/oalla/releases"><strong>Releases</strong></a> page
-  </p>
-  <p>
-    <strong>Requirements:</strong> Android 7.0+ (API 24) • ARM64 device • 4GB+ RAM recommended
+    Get the latest APK from the <a href="https://github.com/isdzulqor/oalla/releases"><strong>Releases</strong></a> page
   </p>
 </div>
 
