@@ -30,12 +30,12 @@ This is completely open source, just like [Ollama](https://github.com/ollama/oll
 
 <div align="center">
   <p>
-    <a href="../../releases/latest">
+    <a href="https://github.com/isdzulqor/oalla/releases/latest">
       <img src="https://img.shields.io/github/v/release/isdzulqor/oalla?style=for-the-badge&logo=android&logoColor=white&label=Download%20APK&color=3DDC84" alt="Download APK"/>
     </a>
   </p>
   <p>
-    Get the latest APK from the <a href="../../releases"><strong>Releases</strong></a> page
+    Get the latest APK from the <a href="https://github.com/isdzulqor/oalla/releases"><strong>Releases</strong></a> page
   </p>
 </div>
 
