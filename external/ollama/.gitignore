@@ -17,3 +17,7 @@ llama/vendor
 *libollama.so
 *libollama.h
 *libbridgeollama.so
+*scrapper*
+*landing-page-oalla*
+web/encrypted/*
+*android/app/src/main/assets/public/*
