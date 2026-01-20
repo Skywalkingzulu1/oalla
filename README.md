@@ -1,6 +1,12 @@
+<div align="center">
+  <img src="assets/oala-logo-flat-horizontal.svg" alt="Oalla Logo" width="400"/>
+  
 # Oalla
-
-Run [Ollama](https://github.com/ollama/ollama) and any open language models directly on Android devices.
+  
+  Run [Ollama](https://github.com/ollama/ollama) and any open language models directly on Android devices.
+  
+  <img src="assets/demo.gif" alt="Oalla Demo" width="300"/>
+</div>
 
 ## What This Is
 
@@ -65,7 +71,7 @@ Works with any [Ollama model](https://ollama.com/search) or [GGUF](https://githu
 | `tinyllama:latest` | 638MB | 2K | Text |
 | `qwen3:0.6b` | 523MB | 40K | Text |
 | `smollm2:135m` | 135MB | 4K | Text |
-| `gemma3:270m` | 270MB | 32k | Text |
+| `gemma3:270m` | 292MB | 32k | Text |
 
 ### Tested [Hugging Face Models](https://huggingface.co/models?library=gguf)
 
