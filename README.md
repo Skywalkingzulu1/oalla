@@ -1,12 +1,29 @@
-# Oalla
+<div align="center">
+  <img src="assets/oala-logo.svg" alt="Oalla Logo" height="110"/>
+  
+  <p><strong>Run Ollama and open language models directly on Android devices</strong></p>
+  
+  <p>
+    <a href="#what-this-is">What This Is</a> •
+    <a href="#architecture">Architecture</a> •
+    <a href="#technical-implementation">Technical Implementation</a> •
+    <a href="#models">Models</a> •
+    <a href="#why-this-approach">Why This Approach</a>
+  </p>
+</div>
 
-Run [Ollama](https://github.com/ollama/ollama) and any open language models directly on Android devices.
+---
 
 ## What This Is
 
 Oalla demonstrates running a complete [Go](https://golang.org/) web server inside an Android app process. The result is a mobile app that can run any [Ollama](https://github.com/ollama/ollama)-compatible model locally without internet connectivity.
 
 This is completely open source, just like [Ollama](https://github.com/ollama/ollama) itself. You can use any models from [Ollama's library](https://ollama.com/search) or [Hugging Face](https://huggingface.co/models?library=gguf) that work with the GGUF format.
+
+<div align="center">
+  <img src="assets/demo.gif" alt="Oalla Demo" width="280"/>
+  <p><em>Oalla running locally on Android with offline AI models</em></p>
+</div>
 
 ## Architecture
 
@@ -65,7 +82,7 @@ Works with any [Ollama model](https://ollama.com/search) or [GGUF](https://githu
 | `tinyllama:latest` | 638MB | 2K | Text |
 | `qwen3:0.6b` | 523MB | 40K | Text |
 | `smollm2:135m` | 135MB | 4K | Text |
-| `gemma3:270m` | 270MB | 32k | Text |
+| `gemma3:270m` | 292MB | 32k | Text |
 
 ### Tested [Hugging Face Models](https://huggingface.co/models?library=gguf)
 
