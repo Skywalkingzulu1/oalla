@@ -4,7 +4,7 @@ Run [Ollama](https://github.com/ollama/ollama) and any open language models dire
 
 ## What This Is
 
-Oalla demonstrates running a complete Go web server inside an Android app process. The result is a mobile app that can run any [Ollama](https://github.com/ollama/ollama)-compatible model locally without internet connectivity.
+Oalla demonstrates running a complete [Go](https://golang.org/) web server inside an Android app process. The result is a mobile app that can run any [Ollama](https://github.com/ollama/ollama)-compatible model locally without internet connectivity.
 
 This is completely open source, just like [Ollama](https://github.com/ollama/ollama) itself. You can use any models from [Ollama's library](https://ollama.com/search) or [Hugging Face](https://huggingface.co/models?library=gguf) that work with the GGUF format.
 
@@ -35,28 +35,28 @@ This is completely open source, just like [Ollama](https://github.com/ollama/oll
 
 **Key Components:**
 
-- **JavaScript UI**: Rich web-based chat interface running in WebView
+- **JavaScript UI**: Rich web-based chat interface running in [WebView](https://developer.android.com/develop/ui/views/layout/webapps/webview)
 - **HTTP API**: Standard REST endpoints (`/api/chat`, `/api/models`, etc.)
-- **Go Server**: Full Ollama server compiled as Android native library
-- **JNI Bridge**: Connects Kotlin/Java Android code with Go server
+- **Go Server**: Full [Ollama](https://github.com/ollama/ollama) server compiled as Android native library
+- **JNI Bridge**: Connects [Kotlin](https://kotlinlang.org/)/Java Android code with [Go](https://golang.org/) server
 - **Single Process**: Everything runs in one Android app process for efficiency
 - **Dynamic Port**: Randomly allocated port (8000-8500) for security
 
-The app loads [Ollama's](https://github.com/ollama/ollama) web interface in a WebView while running the actual [Ollama](https://github.com/ollama/ollama) server natively in the same process. JavaScript communicates with the Go backend via standard HTTP requests to localhost.
+The app loads [Ollama's](https://github.com/ollama/ollama) web interface in a [WebView](https://developer.android.com/develop/ui/views/layout/webapps/webview) while running the actual [Ollama](https://github.com/ollama/ollama) server natively in the same process. JavaScript communicates with the [Go](https://golang.org/) backend via standard HTTP requests to localhost.
 
 ## Technical Implementation
 
 ### [Converting Ollama for Android](external/ollama/README.md)
 
-Step-by-step guide to modify the official [Ollama](https://github.com/ollama/ollama) repository for Android compatibility. Covers JNI bridge creation, in-process execution, cross-compilation, and the web API endpoints that make this possible.
+Step-by-step guide to modify the official [Ollama](https://github.com/ollama/ollama) repository for Android compatibility. Covers [JNI](https://developer.android.com/training/articles/perf-jni) bridge creation, in-process execution, cross-compilation, and the web API endpoints that make this possible.
 
 ### [Android Integration Details](android/README.md)
 
-How the Android app manages the Go server lifecycle, handles JavaScript-native communication, implements security through dynamic ports and authentication, and manages encrypted assets.
+How the Android app manages the [Go](https://golang.org/) server lifecycle, handles JavaScript-native communication, implements security through dynamic ports and authentication, and manages encrypted assets.
 
 ## Models
 
-Works with any [Ollama model](https://ollama.com/search) or GGUF-format models from [Hugging Face](https://huggingface.co/models?library=gguf):
+Works with any [Ollama model](https://ollama.com/search) or [GGUF](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md)-format models from [Hugging Face](https://huggingface.co/models?library=gguf):
 
 ### Tested [Ollama Models](https://ollama.com/search)
 
@@ -81,8 +81,8 @@ The approach is entirely offline-first and privacy-focused - no data leaves your
 
 **Benefits:**
 
-- Easy model installation - just download GGUF files and load them
-- Full Ollama API compatibility for seamless integration
+- Easy model installation - just download [GGUF](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md) files and load them
+- Full [Ollama API](https://github.com/ollama/ollama/blob/main/docs/api.md) compatibility for seamless integration
 - Web-based UI that's simple to customize and extend
 
 **Current Limitations:**

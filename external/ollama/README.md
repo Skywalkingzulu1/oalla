@@ -62,7 +62,7 @@ cd ollama
 
 Create these files in the ollama directory:
 
-**android-main.go** - Entry point for Android
+**[android-main.go](android-main.go)** - Entry point for Android
 
 ```go
 package main
@@ -103,7 +103,7 @@ func runOllamaWithArgs(argv **C.char, argc C.int) {
 func main() {}
 ```
 
-**jni_bridgeollama.cpp** - JNI bridge
+**[jni_bridgeollama.cpp](jni_bridgeollama.cpp)** - [JNI](https://developer.android.com/training/articles/perf-jni) bridge
 
 ```cpp
 #include <jni.h>
@@ -129,7 +129,7 @@ Java_your_package_MainActivity_runOllamaWithArgs(JNIEnv* env, jobject thiz, jobj
 }
 ```
 
-**build_android.sh** - Build script
+**[build_android.sh](build_android.sh)** - Build script
 
 ```bash
 #!/bin/bash
@@ -143,7 +143,7 @@ CGO_ENABLED=1 GOOS=android GOARCH=arm64 \
   go build -buildmode=c-shared -o libollama.so android-main.go
 ```
 
-**android-clang-wrapper.sh** - C++ wrapper
+**[android-clang-wrapper.sh](android-clang-wrapper.sh)** - C++ wrapper
 
 ```bash
 #!/bin/bash
@@ -158,7 +158,7 @@ exec $NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android2
 
 ### 3. Modify Core Files
 
-**llm/server.go** - Add in-process support
+**[llm/server.go](llm/server.go)** - Add in-process support
 
 ```go
 // Add at top of file
@@ -217,6 +217,8 @@ The converted [Ollama](https://github.com/ollama/ollama) provides:
 - `DELETE /api/delete` - Remove models
 - `POST /api/generate` - Single completions
 
+See [Ollama API documentation](https://github.com/ollama/ollama/blob/main/docs/api.md) for full details.
+
 **Android Usage**
 
 ```kotlin
@@ -233,10 +235,10 @@ fetch('http://localhost:8080/api/chat', {
 
 ## Key Changes
 
-**In-Process Execution**: `RunRunnerFunc` callback eliminates subprocess overhead
-**Android Memory**: Fixes `madvise` compatibility for model loading
-**JNI Bridge**: Enables direct Java-to-Go communication
-**Cross-Compilation**: NDK toolchain builds ARM64 native library
+**In-Process Execution**: `RunRunnerFunc` callback eliminates subprocess overhead  
+**Android Memory**: Fixes `madvise` compatibility for model loading  
+**[JNI](https://developer.android.com/training/articles/perf-jni) Bridge**: Enables direct Java-to-[Go](https://golang.org/) communication  
+**Cross-Compilation**: [NDK](https://developer.android.com/ndk) toolchain builds ARM64 native library
 
 ## Requirements
 

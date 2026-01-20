@@ -26,13 +26,13 @@ Oalla runs a complete [Go](https://golang.org/) web server inside the Android ap
 ```
 
 **Communication Flow:**
-- **HTTP**: JavaScript ↔ Go server on dynamic localhost port
+- **HTTP**: JavaScript ↔ [Go](https://golang.org/) server on dynamic localhost port
 - **JSBridge**: JavaScript ↔ Android native functions  
-- **JNI**: Android ↔ Go server lifecycle management
+- **[JNI](https://developer.android.com/training/articles/perf-jni)**: Android ↔ [Go](https://golang.org/) server lifecycle management
 
 ## Implementation
 
-**Go Server Startup**
+**[Go](https://golang.org/) Server Startup**
 
 ```kotlin
 // Load native library
@@ -134,7 +134,7 @@ Web UI files are encrypted in assets and decrypted at runtime to prevent tamperi
 
 This hybrid approach provides:
 
-- Full Ollama API compatibility
+- Full [Ollama API](https://github.com/ollama/ollama/blob/main/docs/api.md) compatibility
 - Rich JavaScript UI capabilities
 - Native Android integration
 - Offline-first operation
