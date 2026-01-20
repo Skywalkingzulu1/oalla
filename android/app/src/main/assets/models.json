@@ -14,6 +14,20 @@
     }
   },
   {
+    "name": "hf.co/unsloth/Qwen3-4B-GGUF",
+    "data": {
+      "downloads": "unknown",
+      "variants": [
+        {
+          "model": "hf.co/unsloth/Qwen3-4B-GGUF:Q4_K_M",
+          "size": "1.03GB",
+          "context": "128K",
+          "input": "Text"
+        }
+      ]
+    }
+  },
+  {
     "name": "deepseek-r1",
     "data": {
       "downloads": "53.6M",
@@ -314,6 +328,12 @@
     "data": {
       "downloads": "3.7M",
       "variants": [
+        {
+          "model": "qwen3:0.6b",
+          "size": "523MB",
+          "context": "40K",
+          "input": "Text"
+        },
         {
           "model": "qwen3:4b",
           "size": "2.6GB",
