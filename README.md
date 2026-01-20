@@ -60,18 +60,18 @@ Works with any [Ollama model](https://ollama.com/search) or GGUF-format models f
 
 ### Tested [Ollama Models](https://ollama.com/search)
 
-| Model | Size | Context | Type | Status |
-|-------|------|---------|------|--------|
-| `tinyllama:latest` | 638MB | 2K | Text | ✅ Tested |
-| `qwen3:0.6b` | 523MB | 40K | Text | ✅ Tested |
-| `smollm2:135m` | 135MB | 4K | Text | ✅ Tested |
-| `gemma3:270m` | 270MB | 32k | Text | ✅ Tested |
+| Model | Size | Context | Type |
+|-------|------|---------|------|
+| `tinyllama:latest` | 638MB | 2K | Text |
+| `qwen3:0.6b` | 523MB | 40K | Text |
+| `smollm2:135m` | 135MB | 4K | Text |
+| `gemma3:270m` | 270MB | 32k | Text |
 
 ### Tested [Hugging Face Models](https://huggingface.co/models?library=gguf)
 
-| Model | Size | Context | Type | Status |
-|-------|------|---------|------|--------|
-| [`hf.co/unsloth/Qwen3-4B-GGUF:Q4_K_M`](https://huggingface.co/unsloth/Qwen3-4B-GGUF) | 1.03GB | 128K | Text | ✅ Tested |
+| Model | Size | Context | Type |
+|-------|------|---------|------|
+| [`hf.co/unsloth/Qwen3-4B-GGUF:Q4_K_M`](https://huggingface.co/unsloth/Qwen3-4B-GGUF) | 1.03GB | 128K | Text |
 
 ## Why This Approach
 
