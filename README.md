@@ -94,4 +94,4 @@ The approach is entirely offline-first and privacy-focused - no data leaves your
 
 ## License
 
-MIT License, same as [Ollama](https://github.com/ollama/ollama). This project builds upon [Ollama's](https://github.com/ollama/ollama) work to bring it to mobile platforms.
+[MIT License](./LICENSE), same as [Ollama](https://github.com/ollama/ollama). This project builds upon [Ollama's](https://github.com/ollama/ollama) work to bring it to mobile platforms.
