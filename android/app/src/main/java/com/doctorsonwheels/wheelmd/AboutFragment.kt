@@ -1,4 +1,4 @@
-package work.isdzulqor.oalla
+package com.doctorsonwheels.wheelmd
 
 import android.content.Intent
 import android.graphics.Color
@@ -81,10 +81,10 @@ class AboutFragment : Fragment() {
         Is it fast? On high-spec devices, sure. On most phones... it's getting there.
         But it works — and it's private, local, and evolving f̶a̶s̶t̶.
 
-        We’re building:
+        We're building:
         – MCP Integration
         – Custom AI Agent
-        – Other stuff we’re still testing at 2AM
+        – Other stuff we're still testing at 2AM
 
         Have feedback or ideas?
         Drop us a line: oalla@isdzulqor.work

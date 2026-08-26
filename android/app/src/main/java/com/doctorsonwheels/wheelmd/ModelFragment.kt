@@ -1,4 +1,4 @@
-package work.isdzulqor.oalla
+package com.doctorsonwheels.wheelmd
 
 import android.app.NotificationManager
 import android.app.Service
@@ -365,7 +365,7 @@ class ModelFragment : Fragment() {
         progressBar.isIndeterminate = true
         downloadLog.text = "Starting model pull..."
 
-        modelInput.isEnabled = false // ❗ Disable input
+        modelInput.isEnabled = false // Disable input
 
         CoroutineScope(Dispatchers.IO).launch {
             var hasError = false
@@ -411,7 +411,7 @@ class ModelFragment : Fragment() {
                     fetchModelList()
                     DownloadService.instance?.finishDownload()
 
-                    // ✅ Re-enable and clear input
+                    // Re-enable and clear input
                     modelInput.isEnabled = true
                     modelInput.setText("")
 
@@ -427,7 +427,7 @@ class ModelFragment : Fragment() {
                     cancelButton.visibility = View.GONE
                     progressBar.visibility = View.GONE
 
-                    // ✅ Re-enable input if error
+                    // Re-enable input if error
                     modelInput.isEnabled = true
                 }
             } finally {

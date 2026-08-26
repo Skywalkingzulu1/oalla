@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "work.isdzulqor.oalla"
+    namespace = "com.doctorsonwheels.wheelmd"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "work.isdzulqor.oalla"
+        applicationId = "com.doctorsonwheels.wheelmd"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -46,10 +46,10 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("oalla-android-key")
-            storePassword = ""
-            keyAlias = "oalla-android-key"
-            keyPassword = ""
+            storeFile = file(System.getenv("KEYSTORE_PATH") ?: "debug.keystore")
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "android"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "androiddebugkey"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "android"
         }
     }
 

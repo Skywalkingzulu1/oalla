@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Oalla"
+rootProject.name = "WheelMD"
 include(":app")
  

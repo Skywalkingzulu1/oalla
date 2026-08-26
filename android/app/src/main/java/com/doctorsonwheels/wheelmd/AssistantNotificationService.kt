@@ -1,4 +1,4 @@
-package work.isdzulqor.oalla
+package com.doctorsonwheels.wheelmd
 
 import android.app.*
 import android.content.Context
@@ -31,7 +31,7 @@ class AssistantNotificationService : Service() {
                 return
             }
 
-            // 🚫 Suppress updates if within 5 seconds of last tap
+            // Suppress updates if within 5 seconds of last tap
             if (System.currentTimeMillis() < suppressUntil) {
                 Log.d("NotificationService", "Notification suppressed due to recent tap.")
                 return
@@ -55,7 +55,7 @@ class AssistantNotificationService : Service() {
         fun stopNotification(context: Context) {
             try {
                 val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                manager.cancel(NOTIF_ID) // ✅ Remove the notification
+                manager.cancel(NOTIF_ID)
 
                 context.stopService(Intent(context, AssistantNotificationService::class.java))
             } catch (e: Exception) {

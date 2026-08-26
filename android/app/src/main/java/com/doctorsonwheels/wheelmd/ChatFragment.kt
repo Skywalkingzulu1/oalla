@@ -1,4 +1,4 @@
-package work.isdzulqor.oalla
+package com.doctorsonwheels.wheelmd
 
 import android.content.Intent
 import android.net.Uri
@@ -48,12 +48,16 @@ class ChatFragment : Fragment() {
                 override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest): Boolean {
                     val url = request.url.toString()
                     if (url.startsWith("http://localhost:$ollamaPort")) return false
+                    if (url.startsWith("https://skywalkingzulu1.github.io")) return false
+                    if (url.startsWith("https://jvsfhrekkkhijneqngax.supabase.co")) return false
                     view?.context?.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                     return true
                 }
 
                 override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
                     if (url != null && url.startsWith("http://localhost:$ollamaPort")) return false
+                    if (url != null && url.startsWith("https://skywalkingzulu1.github.io")) return false
+                    if (url != null && url.startsWith("https://jvsfhrekkkhijneqngax.supabase.co")) return false
                     if (url != null && url.startsWith("http")) {
                         view?.context?.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                         return true
@@ -118,8 +122,8 @@ class ChatFragment : Fragment() {
         }
         
         webView?.post {
-            Log.d("WebView", "Loading WebView URL: http://localhost:$ollamaPort/web")
-            webView?.loadUrl("http://localhost:$ollamaPort/web")
+            Log.d("WebView", "Loading WebView URL: https://skywalkingzulu1.github.io/leviathan/")
+            webView?.loadUrl("https://skywalkingzulu1.github.io/leviathan/")
         }
     }
 

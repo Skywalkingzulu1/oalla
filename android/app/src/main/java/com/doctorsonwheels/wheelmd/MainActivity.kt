@@ -1,4 +1,4 @@
-package work.isdzulqor.oalla
+package com.doctorsonwheels.wheelmd
 
 import android.R.attr.duration
 import android.R.attr.path
@@ -48,18 +48,7 @@ class MainActivity : AppCompatActivity() {
     val DEBUG_MODE = false // Set to false to hide log area and log button
     val USER_AGENT_SECRET = "ikilho-secrete-bosque-38298939"
 
-    val SERVER_PORT: Int by lazy {
-        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        val savedPort = prefs.getInt("server_port", -1)
-
-        if (savedPort in 8000..8500 || savedPort == 9090) {
-            savedPort
-        } else {
-            val chosenPort = if (DEBUG_MODE) 9090 else (8000..8500).random()
-            prefs.edit().putInt("server_port", chosenPort).apply()
-            chosenPort
-        }
-    }
+    val SERVER_PORT: Int = 11434
     external fun runOllamaWithArgs(args: Array<String>)
 
     companion object {
@@ -283,6 +272,7 @@ class MainActivity : AppCompatActivity() {
                         runOnUiThread {
                             loadWebViewContent()
                         }
+                        autoPullWheelmd()
                         return@Thread
                     }
                 } catch (e: Exception) {
@@ -322,7 +312,7 @@ class MainActivity : AppCompatActivity() {
                 connection.connectTimeout = 1000
                 connection.readTimeout = 1000
                 connection.requestMethod = "GET"
-                connection.setRequestProperty("User-Agent", USER_AGENT_SECRET) // ✅ Add custom header
+                connection.setRequestProperty("User-Agent", USER_AGENT_SECRET)
 
                 val isRunning = try {
                     val code = connection.responseCode
@@ -336,6 +326,7 @@ class MainActivity : AppCompatActivity() {
 
                 if (isRunning) {
                     Log.d("Ollama", "Ollama already running — skipping startup")
+                    autoPullWheelmd()
                     return@Thread
                 }
 
@@ -344,11 +335,6 @@ class MainActivity : AppCompatActivity() {
                     "--debug", "$DEBUG_MODE",
                     "--host", "localhost:$SERVER_PORT",
                     "--useragent-secret", USER_AGENT_SECRET,
-
-                    // try to optimize ollama on android
-                    // but not surely works, haha
-                    // "--num-parallel", "1", // OLLAMA_NUM_PARALLEL
-                    // "--max-loaded-models", "1", // OLLAMA_MAX_LOADED_MODELS
                 )
 
                 val storagePref = getSharedPreferences("model_prefs", 0).getString("storage_model", "internal")
@@ -366,6 +352,53 @@ class MainActivity : AppCompatActivity() {
 
             } catch (e: Exception) {
                 Log.e("Ollama", "Failed to start Ollama: ${e.message}", e)
+            }
+        }.start()
+    }
+
+    private fun autoPullWheelmd() {
+        Thread {
+            try {
+                // Check if wheelmd already exists
+                val tagsUrl = "http://localhost:$SERVER_PORT/api/tags"
+                val tagsConnection = java.net.URL(tagsUrl).openConnection() as java.net.HttpURLConnection
+                tagsConnection.connectTimeout = 5000
+                tagsConnection.readTimeout = 5000
+                tagsConnection.requestMethod = "GET"
+                tagsConnection.setRequestProperty("User-Agent", USER_AGENT_SECRET)
+
+                val tagsBody = tagsConnection.inputStream.bufferedReader().use { it.readText() }
+                tagsConnection.disconnect()
+
+                if (tagsBody.contains("wheelmd")) {
+                    Log.d("Ollama", "wheelmd model already exists, skipping pull")
+                    return@Thread
+                }
+
+                Log.d("Ollama", "wheelmd not found, starting auto-pull...")
+                runOnUiThread {
+                    Toast.makeText(this, "Downloading WheelMD AI model (~1.6GB)...", Toast.LENGTH_LONG).show()
+                }
+
+                // Pull wheelmd model
+                val pullUrl = "http://localhost:$SERVER_PORT/api/pull"
+                val pullConnection = java.net.URL(pullUrl).openConnection() as java.net.HttpURLConnection
+                pullConnection.requestMethod = "POST"
+                pullConnection.setRequestProperty("Content-Type", "application/json")
+                pullConnection.setRequestProperty("User-Agent", USER_AGENT_SECRET)
+                pullConnection.doOutput = true
+                pullConnection.outputStream.bufferedWriter().use { it.write("""{"name":"wheelmd"}""") }
+
+                // Read response to ensure pull completes
+                pullConnection.inputStream.bufferedReader().use { it.readText() }
+                pullConnection.disconnect()
+
+                Log.d("Ollama", "wheelmd model pull complete")
+                runOnUiThread {
+                    Toast.makeText(this, "WheelMD AI model ready!", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("Ollama", "Auto-pull wheelmd failed: ${e.message}", e)
             }
         }.start()
     }

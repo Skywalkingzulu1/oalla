@@ -1,4 +1,4 @@
-package work.isdzulqor.oalla
+package com.doctorsonwheels.wheelmd
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity

@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">Oalla</string>
-    <string name="app_tagline">On-device AIs.\nAll yours. Just don’t ask about speed.</string>
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="app_name">WheelMD</string>
+    <string name="app_tagline">Doctors on Wheels Clinical Copilot.\nAI-powered decision support - verify before acting.</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

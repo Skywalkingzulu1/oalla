@@ -29,7 +29,7 @@ void startLogThread() {
 
 // TODO: change MainActivity to the actual activity name later on
 extern "C" JNIEXPORT void JNICALL
-Java_work_isdzulqor_oalla_MainActivity_runOllamaWithArgs(JNIEnv* env, jobject thiz, jobjectArray args) {
+Java_com_doctorsonwheels_wheelmd_MainActivity_runOllamaWithArgs(JNIEnv* env, jobject thiz, jobjectArray args) {
     env->GetJavaVM(&jvm);
     activityGlobal = env->NewGlobalRef(thiz);
 

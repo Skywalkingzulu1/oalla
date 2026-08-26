@@ -32,12 +32,12 @@ func runOllamaWithArgs(argv **C.char, argc C.int) {
 	// TODO: tidy up these environment variables
 	modelsDir := os.Getenv("OLLAMA_MODELS")
 	if modelsDir == "" {
-		modelsDir = "/data/data/work.isdzulqor.oalla/files/.ollama"
+		modelsDir = "/data/data/com.doctorsonwheels.wheelmd/files/.ollama"
 	}
-	cacheDir := "/data/data/work.isdzulqor.oalla/cache"
+	cacheDir := "/data/data/com.doctorsonwheels.wheelmd/cache"
 	os.Setenv("OLLAMA_MODELS", modelsDir)
-	os.Setenv("OLLAMA_WEB_STATIC_DIR", "/data/data/work.isdzulqor.oalla/files/public")
-	os.Setenv("HOME", "/data/data/work.isdzulqor.oalla/files")
+	os.Setenv("OLLAMA_WEB_STATIC_DIR", "/data/data/com.doctorsonwheels.wheelmd/files/public")
+	os.Setenv("HOME", "/data/data/com.doctorsonwheels.wheelmd/files")
 	os.Setenv("TMPDIR", cacheDir)
 	os.Setenv("ANDROID_DATA", "/data")
 	os.Setenv("ANDROID_ROOT", "/system")

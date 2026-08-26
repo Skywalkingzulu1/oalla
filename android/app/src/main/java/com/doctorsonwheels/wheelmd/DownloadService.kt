@@ -1,4 +1,4 @@
-package work.isdzulqor.oalla
+package com.doctorsonwheels.wheelmd
 
 import android.app.*
 import android.content.Context
@@ -57,7 +57,7 @@ class DownloadService : Service() {
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setOnlyAlertOnce(true)
             .setProgress(100, percent, false)
-            .setContentIntent(pendingIntent) // 👈 Tap opens app
+            .setContentIntent(pendingIntent)
             .build()
 
         val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
