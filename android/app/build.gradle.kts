@@ -45,9 +45,9 @@ android {
     ndkVersion = "26.1.10909125"
 
     signingConfigs {
-        create("release") {
-            val ksPath = System.getenv("KEYSTORE_PATH")
-            if (ksPath != null && file(ksPath).exists()) {
+        val ksPath = System.getenv("KEYSTORE_PATH")
+        if (ksPath != null && file(ksPath).exists()) {
+            create("release") {
                 storeFile = file(ksPath)
                 storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "android"
                 keyAlias = System.getenv("KEY_ALIAS") ?: "androiddebugkey"
@@ -58,8 +58,9 @@ android {
 
     buildTypes {
         getByName("release") {
-            // reference the signing config by name:
-            signingConfig = signingConfigs.getByName("release")
+            if (signingConfigs.findByName("release") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
 
             isDebuggable      = true
             isMinifyEnabled   = true
